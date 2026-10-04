@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Recipes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F3F4F0">
+<title>Cameron Family Recipe Book</title>
+<style>
+:root{
+  --paper:#F3F4F0; --card:#FFFFFF; --ink:#1F2622; --muted:#5E6A63; --line:#D9DED8;
+  --basil:#2F6B4F; --basil-soft:#E3EEE7; --basil-edge:#C9DCCF;
+  --saffron:#B97F0F; --danger:#A33B2B; --link-bg:#E6EBF1; --link-ink:#36506E;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r-sm:6px; --r:10px; --tap:44px;
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:16px/1.5 var(--sans);color:var(--ink);background:var(--paper);-webkit-text-size-adjust:100%;display:flex;flex-direction:column;height:100vh;height:100dvh}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--basil);outline-offset:2px}
+[hidden]{display:none!important}
+a{color:var(--basil)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--tap);padding:0 14px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--card);font-weight:600;font-size:.92rem;text-decoration:none;color:var(--ink);white-space:nowrap}
+.btn.primary{background:var(--basil);border-color:var(--basil);color:#fff}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--basil)}
+.btn.danger{color:var(--danger)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.icon{width:var(--tap);padding:0;font-size:1.15rem}
+
+/* Top bar */
+.topbar{flex:none;display:flex;align-items:center;gap:6px;padding:calc(8px + var(--st)) 12px 8px 16px;background:var(--paper);border-bottom:1px solid var(--line)}
+.topbar h1{font:600 1.3rem/1.2 var(--serif);margin:0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sync{border:none;background:none;font-size:.8rem;color:var(--muted);min-height:var(--tap);padding:0 6px}
+.sync.warn{color:var(--saffron)} .sync.err{color:var(--danger)}
+
+/* Layout */
+#app{flex:1;min-height:0;display:flex;flex-direction:column}
+.layout{flex:1;min-height:0;display:grid;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr)}
+.layout>*{min-height:0}
+.list-pane{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px calc(24px + var(--sb))}
+.search{width:100%;min-height:var(--tap);padding:0 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--card);-webkit-appearance:none;appearance:none}
+.filters{display:flex;gap:8px;align-items:center;margin:10px 0 2px}
+.chips{display:flex;gap:6px;overflow-x:auto;flex:1;padding:2px 0 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.85rem;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.sort{flex:none;min-height:34px;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:0 10px;font-size:.85rem}
+.count{font-size:.8rem;color:var(--muted);margin:6px 2px}
+.list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.item{display:grid;grid-template-columns:1fr auto;gap:2px 14px;align-items:center;width:100%;padding:12px 6px;border:none;border-bottom:1px solid var(--line);background:none;text-align:left}
+.item[aria-current="true"]{background:var(--basil-soft)}
+.item-title{font:600 1.08rem/1.3 var(--serif)}
+.item-meta{font-size:.82rem;color:var(--muted)}
+.item-meta .stars{margin-right:6px}
+.badge{display:inline-block;font:600 .7rem/1 var(--sans);padding:3px 6px;border-radius:4px;background:var(--link-bg);color:var(--link-ink);margin-left:6px;vertical-align:2px}
+.months{grid-row:1/span 2;grid-column:2;display:grid;grid-template-columns:repeat(12,6px);gap:2px}
+.months i{display:block;width:6px;height:16px;border-radius:2px;background:var(--line)}
+.months i.on{background:var(--basil)}
+.stars{color:var(--saffron);letter-spacing:1px}
+.empty{padding:32px 8px;color:var(--muted);text-align:center}
+
+/* Detail */
+.detail-pane{background:var(--card);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.detail-empty{display:grid;place-items:center;min-height:100%;color:var(--muted);padding:40px;text-align:center}
+.detail{max-width:780px;margin:0 auto;padding:16px 22px calc(48px + var(--sb))}
+.back{margin-left:-10px}
+.detail h2{font:600 2.1rem/1.12 var(--serif);margin:6px 0 6px;letter-spacing:-.01em;overflow-wrap:break-word}
+.source{color:var(--muted);font-size:.92rem;overflow-wrap:anywhere;margin:0}
+.facts{display:flex;flex-wrap:wrap;gap:4px 18px;color:var(--muted);font-size:.9rem;margin:8px 0 0}
+.rate{display:flex;align-items:center;margin:4px 0 0 -4px}
+.rate button{border:none;background:none;font-size:1.55rem;line-height:1;color:var(--saffron);padding:6px 3px;min-height:var(--tap)}
+.rate .stars{font-size:1.3rem}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.tag{font-size:.8rem;padding:3px 10px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--muted)}
+.actions{display:flex;gap:8px;margin:16px 0 0;flex-wrap:wrap}
+
+.logbox{margin:24px 0 0;padding:16px;border-radius:var(--r);background:var(--basil-soft);border:1px solid var(--basil-edge)}
+.logbox h3{font:600 1.15rem/1.3 var(--serif);margin:0 0 10px}
+.logrow{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:10px;align-items:start}
+.logbox .btn{margin-top:10px}
+@media (max-width:520px){.logrow{grid-template-columns:1fr}}
+
+.section{margin-top:30px}
+.section h3{font:600 1.3rem/1.3 var(--serif);margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.ing{list-style:none;padding:0;margin:0}
+.ing label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer}
+.ing input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--basil);flex:none}
+.ing input:checked+span{color:var(--muted);text-decoration:line-through}
+.ing .sub{font-weight:700;padding:10px 0 2px}
+.method{padding-left:1.5em;margin:0}
+.method li{padding:2px 0 10px;line-height:1.62}
+.method li::marker{font-family:var(--serif);font-weight:700;color:var(--basil)}
+.notes{white-space:pre-wrap;line-height:1.62;margin:0}
+.linkout{padding:16px;border-radius:var(--r);background:var(--paper);border:1px solid var(--line)}
+.linkout p{margin:0 0 10px}
+.history{list-style:none;margin:0 0 0 6px;padding:0;border-left:2px solid var(--basil-edge)}
+.history li{position:relative;padding:0 0 16px 20px}
+.history li::before{content:"";position:absolute;left:-8px;top:5px;width:14px;height:14px;border-radius:50%;background:var(--basil);border:3px solid var(--card)}
+.history .when{font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.history .ago{font-weight:400;color:var(--muted);font-size:.85rem}
+.history .c{white-space:pre-wrap;margin:2px 0 0}
+.history .rm{border:none;background:none;color:var(--muted);font-size:.8rem;text-decoration:underline;padding:4px;min-height:32px}
+.muted{color:var(--muted)}
+
+/* Inputs */
+input[type=text],input[type=url],input[type=password],input[type=date],input[type=search],textarea,select.field-select{width:100%;min-height:var(--tap);border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 12px;background:var(--card);-webkit-appearance:none;appearance:none}
+textarea{resize:vertical;line-height:1.5}
+input[type=date]{min-width:150px}
+
+/* Dialogs */
+dialog{border:none;border-radius:14px;padding:0;width:min(680px,calc(100vw - 20px));max-height:calc(100dvh - 30px);background:var(--card);color:var(--ink);box-shadow:0 24px 70px rgba(20,32,26,.28)}
+dialog::backdrop{background:rgba(24,34,29,.45)}
+.dlg-head{display:flex;align-items:center;gap:8px;padding:10px 10px 10px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:2}
+.dlg-head h2{font:600 1.25rem/1.2 var(--serif);margin:0;flex:1}
+.dlg-body{padding:16px 18px 20px;display:grid;gap:16px}
+.dlg-foot{display:flex;gap:8px;justify-content:flex-end;padding:12px 18px calc(14px + var(--sb));border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--card)}
+.field>label,.field>.lbl{display:block;font-weight:600;font-size:.88rem;margin-bottom:5px}
+.hint{font-size:.82rem;color:var(--muted);margin:5px 0 0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{display:flex;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+.seg button{flex:1;min-height:40px;border:none;background:var(--card);font-size:.92rem}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.quicktags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.quicktags .chip{min-height:30px;font-size:.8rem}
+.msg{padding:10px 12px;border-radius:var(--r-sm);font-size:.9rem;margin:0}
+.msg.err{background:#F7E4E0;color:var(--danger)}
+.msg.ok{background:var(--basil-soft);color:var(--basil)}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap}
+.thumbs img{width:76px;height:76px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--basil);margin:1px 0 0;flex:none}
+.stack{display:flex;flex-wrap:wrap;gap:8px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Connect screen */
+.connect{flex:1;display:grid;place-items:center;padding:24px}
+.connect-card{max-width:440px;width:100%;display:grid;gap:14px}
+.connect-card h1{font:600 2rem/1.15 var(--serif);margin:0}
+.connect-card p{margin:0;color:var(--muted)}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + var(--sb));transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:.9rem;z-index:100;max-width:calc(100vw - 32px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+
+@media (max-width:899px){
+  .detail-pane{position:fixed;inset:0;z-index:30;padding-top:var(--st);transform:translateX(100%);visibility:hidden;transition:transform .24s ease,visibility 0s linear .24s}
+  body.show-detail .detail-pane{transform:none;visibility:visible;transition:transform .24s ease}
+}
+@media (min-width:900px){
+  .layout{grid-template-columns:minmax(320px,400px) 1fr}
+  .list-pane{border-right:1px solid var(--line)}
+  .back{display:none!important}
+  .cols{display:grid;grid-template-columns:2fr 3fr;gap:34px}
+  .cols .section{margin-top:30px}
+}
+@media (max-width:520px){.row2{grid-template-columns:1fr}.detail h2{font-size:1.8rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{
+  .topbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast{display:none!important}
+  body{display:block;height:auto;background:#fff}
+  .layout{display:block}
+  .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
+  .ing input{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SETUP: paste your Dropbox App key between the quotes below.
+     (Dropbox App Console → your app → Settings → "App key")
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+window.RECIPE_CONFIG = {
+  dropboxAppKey: 'PASTE_YOUR_APP_KEY_HERE',
+  filePath: '/recipes.json',
+  bookTitle: 'Cameron Family Recipe Book',
+  defaultModel: 'claude-sonnet-5-5'
+};
+</script>
+
+<section id="connect" class="connect" hidden>
+  <div class="connect-card">
+    <h1 class="book-title">Recipe Book</h1>
+    <p>Your recipes are kept in one file in your Dropbox. Connect Dropbox once on each device.</p>
+    <p id="connect-msg" class="msg err" hidden></p>
+    <button id="connect-go" class="btn primary" type="button">Connect Dropbox</button>
+    <button id="connect-code" class="btn ghost" type="button">Use a sign-in code instead</button>
+    <div id="code-box" class="field" hidden>
+      <label for="code-input">Paste the code Dropbox showed you</label>
+      <input id="code-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <p class="hint">After tapping Allow, Dropbox shows a code. Copy it, come back here and paste it.</p>
+      <button id="code-submit" class="btn primary" type="button" style="margin-top:10px">Finish connecting</button>
+    </div>
+  </div>
+</section>
+
+<div id="app" hidden>
+  <header class="topbar">
+    <h1 class="book-title">Recipe Book</h1>
+    <button id="sync" class="sync" type="button" title="Tap to sync now"></button>
+    <button id="btn-import" class="btn edit-only" type="button">Import</button>
+    <button id="btn-add" class="btn primary edit-only" type="button">Add</button>
+    <button id="btn-settings" class="btn icon ghost" type="button" aria-label="Settings">&#9881;&#xFE0E;</button>
+  </header>
+  <div class="layout">
+    <aside class="list-pane">
+      <input id="search" class="search" type="search" placeholder="Search recipes, ingredients, comments" autocomplete="off">
+      <div class="filters">
+        <div id="chips" class="chips" role="group" aria-label="Filter by tag"></div>
+        <select id="sort" class="sort" aria-label="Sort recipes">
+          <option value="title">A to Z</option>
+          <option value="recent">Recently made</option>
+          <option value="most">Most made</option>
+          <option value="rating">Top rated</option>
+        </select>
+      </div>
+      <p id="count" class="count"></p>
+      <ul id="list" class="list"></ul>
+    </aside>
+    <main id="detail" class="detail-pane" aria-live="polite"></main>
+  </div>
+</div>
+
+<!-- Edit recipe -->
+<dialog id="dlg-edit" aria-labelledby="edit-h">
+  <div class="dlg-head"><h2 id="edit-h">Edit recipe</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <div class="field"><label for="f-title">Title</label><input id="f-title" type="text"></div>
+    <div class="field"><span class="lbl">Kind</span>
+      <div class="seg" id="f-type"><button type="button" data-v="Full">Full recipe</button><button type="button" data-v="External">Link only</button></div>
+    </div>
+    <div class="field"><label for="f-source">Source</label><input id="f-source" type="text" placeholder="Web address, or book and page number"></div>
+    <div class="row2">
+      <div class="field"><label for="f-serves">Serves</label><input id="f-serves" type="text" placeholder="e.g. 4"></div>
+      <div class="field"><label for="f-time">Time</label><input id="f-time" type="text" placeholder="e.g. 1 hr 15 min"></div>
+    </div>
+    <div class="field"><label for="f-tags">Tags</label><input id="f-tags" type="text" placeholder="Separate with commas"><div id="f-quicktags" class="quicktags"></div></div>
+    <div class="field full-only"><label for="f-ings">Ingredients</label><textarea id="f-ings" rows="8"></textarea><p class="hint">One per line. End a line with a colon to make a heading, e.g. "For the sauce:"</p></div>
+    <div class="field full-only"><label for="f-method">Method</label><textarea id="f-method" rows="8"></textarea><p class="hint">One step per line.</p></div>
+    <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" rows="4" placeholder="Tips, swaps, what to do differently"></textarea></div>
+    <div class="field"><label for="f-rating">Rating</label>
+      <select id="f-rating" class="field-select"><option value="0">Not rated</option><option value="1">1 star</option><option value="2">2 stars</option><option value="3">3 stars</option><option value="4">4 stars</option><option value="5">5 stars</option></select>
+    </div>
+    <p id="edit-msg" class="msg err" hidden></p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="edit-save" class="btn primary" type="button">Save recipe</button></div>
+</dialog>
+
+<!-- Import -->
+<dialog id="dlg-import" aria-labelledby="imp-h">
+  <div class="dlg-head"><h2 id="imp-h">Import a recipe</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <div class="seg" id="imp-tabs"><button type="button" data-v="photo">Photo</button><button type="button" data-v="url">Website</button><button type="button" data-v="text">Paste text</button></div>
+    <div data-pane="photo" class="field">
+      <label for="imp-files">Photos of the recipe</label>
+      <input id="imp-files" type="file" accept="image/*" multiple>
+      <p class="hint">Take a photo or choose from your library. Add two photos if the recipe runs over two pages.</p>
+      <div id="imp-thumbs" class="thumbs" style="margin-top:10px"></div>
+    </div>
+    <div data-pane="url" class="field">
+      <label for="imp-url">Recipe web address</label>
+      <input id="imp-url" type="url" placeholder="https://" autocapitalize="off">
+      <p class="hint">Tip: in Safari, tap Share, then Copy, then paste here.</p>
+    </div>
+    <div data-pane="text" class="field">
+      <label for="imp-text">Recipe text</label>
+      <textarea id="imp-text" rows="10" placeholder="Paste the recipe here"></textarea>
+      <p class="hint">Works without a Claude key. To copy text from a cookbook photo, open the photo, press and hold on the words, then Select All and Copy.</p>
+    </div>
+    <p id="imp-msg" class="msg err" hidden></p>
+    <p id="imp-nokey" class="msg err" hidden>Photo and website import need a Claude API key. Add one in Settings, or use Paste text.</p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="imp-go" class="btn primary" type="button">Read recipe</button></div>
+</dialog>
+
+<!-- Settings -->
+<dialog id="dlg-settings" aria-labelledby="set-h">
+  <div class="dlg-head"><h2 id="set-h">Settings</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <label class="check"><input id="s-viewonly" type="checkbox"><span><strong>View only on this device</strong><br><span class="muted">Hides adding, editing and logging. Useful on your phone.</span></span></label>
+    <div class="field">
+      <label for="s-key">Claude API key (for photo and website import)</label>
+      <input id="s-key" type="password" autocomplete="off" placeholder="sk-ant-…">
+      <p class="hint">Stored only in this browser on this device. Set a monthly spend limit in the Claude Console.</p>
+    </div>
+    <div class="field">
+      <label for="s-model">Model</label>
+      <input id="s-model" type="text" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="field"><span class="lbl">Recipe file</span>
+      <p class="hint" style="margin:0">Dropbox › Apps › <em>your app name</em> › recipes.json</p>
+      <div class="stack" style="margin-top:10px">
+        <button id="s-reload" class="btn" type="button">Reload from Dropbox</button>
+        <button id="s-backup" class="btn" type="button">Download a backup</button>
+        <button id="s-disconnect" class="btn danger" type="button">Disconnect Dropbox</button>
+      </div>
+    </div>
+  </div>
+  <div class="dlg-foot"><button id="s-save" class="btn primary" type="button">Done</button></div>
+</dialog>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+(function(){
+'use strict';
+const CONFIG = window.RECIPE_CONFIG;
+
+/* Starter content, used only if recipes.json doesn't exist in Dropbox yet */
+const STARTER = {version:2,recipes:[
+ {id:"r-grandmas-tomato-sauce",title:"Grandma's Tomato Sauce",type:"Full",source:"Family handwritten card",serves:"",time:"",
+  ingredients:["2 cans (28 oz each) crushed San Marzano tomatoes","1/4 cup extra-virgin olive oil","6 cloves garlic, thinly sliced","1 tsp crushed red pepper flakes","1 tsp sugar","1 tsp kosher salt, plus more to taste","1/2 tsp freshly ground black pepper","Large handful fresh basil leaves","2 tbsp unsalted butter (optional, for richness)"],
+  instructions:["Heat olive oil in a wide, heavy-bottomed pot over medium-low heat.","Add the sliced garlic and red pepper flakes. Cook gently for 3–4 minutes until fragrant and very lightly golden — do not let it brown.","Add both cans of tomatoes. Stir in the sugar, salt, and black pepper.","Bring to a gentle simmer, then reduce heat to low. Partially cover and cook for at least 45 minutes, stirring occasionally, until the sauce is thick and deeply flavoured.","Remove from heat. Tear in the fresh basil and stir through. Add butter if using.","Taste and adjust salt. Use immediately or cool and refrigerate for up to 5 days, or freeze for up to 3 months."],
+  tags:["Italian","Sauce","Vegetarian","Dinner","Make Ahead"],rating:5,
+  notes:"Double the batch and freeze half in mason jars. Add the basil only at the end. Brown the garlic gently — burned garlic ruins it.",
+  cookLog:[{id:"l-2024-11-24",date:"2024-11-24",comment:""}]},
+ {id:"r-smitten-kitchen-banana-bread",title:"Smitten Kitchen Banana Bread",type:"External",source:"https://smittenkitchen.com/2009/09/banana-bread/",serves:"",time:"",
+  ingredients:[],instructions:[],tags:["Baking","Breakfast","Sweet","Quick"],rating:4,
+  notes:"Used brown butter instead of regular — highly recommend, adds a nutty depth. Add a pinch of cinnamon and a handful of walnuts. The bananas must be very ripe (almost black).",
+  cookLog:[{id:"l-2024-08-10",date:"2024-08-10",comment:""}]}
+]};
+
+/* ── Helpers ─────────────────────────────────────────── */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const clone = o => JSON.parse(JSON.stringify(o));
+const ls = {
+  get(k,d){ try{ const v=localStorage.getItem('rb.'+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem('rb.'+k, JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem('rb.'+k); }catch(e){} }
+};
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function uid(p){ return p + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function isUrl(s){ return /^https?:\/\/\S+$/i.test(String(s||'').trim()); }
+function host(u){ try{ return new URL(u).hostname.replace(/^www\./,''); }catch(e){ return u; } }
+function slug(s){ return (String(s||'recipe').toLowerCase().replace(/['’]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)) || 'recipe'; }
+function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function parseIso(iso){ const [y,m,d]=String(iso).split('-').map(Number); return new Date(y,(m||1)-1,d||1); }
+function fmtDate(iso,long){ try{ return parseIso(iso).toLocaleDateString('en-GB', long?{weekday:'short',day:'numeric',month:'long',year:'numeric'}:{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return iso; } }
+function ago(iso){
+  const days=Math.round((parseIso(today())-parseIso(iso))/86400000);
+  if(days<=0) return 'today'; if(days===1) return 'yesterday';
+  if(days<14) return days+' days ago'; if(days<60) return Math.round(days/7)+' weeks ago';
+  if(days<730) return Math.round(days/30.4)+' months ago'; return Math.round(days/365)+' years ago';
+}
+function stars(n){ n=Math.round(n)||0; return '★'.repeat(n)+'☆'.repeat(5-n); }
+function lines(t){ return String(t||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean); }
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>{t.hidden=true;},2600); }
+function canEdit(){ return !ls.get('viewOnly',false); }
+
+/* ── Data model ──────────────────────────────────────── */
+function normalise(raw){
+  let changed=false, d;
+  if(Array.isArray(raw)){ d={version:2,recipes:raw}; changed=true; }
+  else if(raw && Array.isArray(raw.recipes)){ d=raw; }
+  else { d={version:2,recipes:[]}; changed=true; }
+  if(d.version!==2){ d.version=2; changed=true; }
+  const seen=new Set();
+  d.recipes=d.recipes.map((r,i)=>{
+    const o=Object.assign({},r);
+    if(!o.id || seen.has(o.id)){ o.id='r-'+slug(o.title)+'-'+i; changed=true; }
+    seen.add(o.id);
+    ['ingredients','instructions','tags'].forEach(k=>{ if(!Array.isArray(o[k])){ o[k]=lines(o[k]); changed=true; } });
+    if(!Array.isArray(o.cookLog)){ o.cookLog=[]; changed=true; }
+    if(o.dateMade){ if(!o.cookLog.some(e=>e.date===o.dateMade)) o.cookLog.push({id:'l-'+o.dateMade,date:o.dateMade,comment:''}); delete o.dateMade; changed=true; }
+    if('dateMade' in o){ delete o.dateMade; changed=true; }
+    o.cookLog=o.cookLog.filter(e=>e&&e.date).sort((a,b)=>b.date.localeCompare(a.date));
+    if(!o.type){ o.type=(isUrl(o.source)&&!o.ingredients.length)?'External':'Full'; changed=true; }
+    o.title=o.title||'Untitled recipe';
+    o.rating=Number(o.rating)||0;
+    ['source','serves','time','notes'].forEach(k=>{ if(o[k]==null) o[k]=''; });
+    return o;
+  });
+  return {d,changed};
+}
+function applyOp(d,op){
+  const find=id=>d.recipes.find(r=>r.id===id);
+  switch(op.t){
+    case 'seed': if(!d.recipes.length) d.recipes=clone(op.recipes); break;
+    case 'upsert': {
+      const i=d.recipes.findIndex(r=>r.id===op.r.id);
+      if(i>=0){ const keepLog=d.recipes[i].cookLog||[]; d.recipes[i]=Object.assign(clone(op.r),{cookLog:keepLog}); }
+      else d.recipes.push(Object.assign({cookLog:[]},clone(op.r)));
+      break;
+    }
+    case 'patch': { const r=find(op.id); if(r) Object.assign(r,op.f,{updated:op.at}); break; }
+    case 'delete': d.recipes=d.recipes.filter(r=>r.id!==op.id); break;
+    case 'log': { const r=find(op.id); if(r && !r.cookLog.some(e=>e.id===op.e.id)){ r.cookLog.push(clone(op.e)); r.cookLog.sort((a,b)=>b.date.localeCompare(a.date)); } break; }
+    case 'unlog': { const r=find(op.id); if(r) r.cookLog=r.cookLog.filter(e=>e.id!==op.eid); break; }
+  }
+  return d;
+}
+
+/* ── State ───────────────────────────────────────────── */
+const state={ db:{version:2,recipes:[]}, queue:ls.get('queue',[]), selected:null, search:'', tags:new Set(), sort:ls.get('sort','title'), ticks:{}, lastPull:0 };
+let pulling=false, flushing=false;
+function saveCache(){ ls.set('cache',{db:state.db}); }
+function queueOp(op){ state.queue.push(op); ls.set('queue',state.queue); }
+function commit(op){ applyOp(state.db,op); queueOp(op); saveCache(); render(); flush(); }
+
+/* ── Dropbox ─────────────────────────────────────────── */
+const DBX_CONTENT='https://content.dropboxapi.com/2/files/';
+const TOKEN_URL='https://api.dropboxapi.com/oauth2/token';
+function authError(m){ const e=new Error(m); e.auth=true; return e; }
+function headerArg(o){ return JSON.stringify(o).replace(/[\u007f-\uffff]/g,c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')); }
+function redirectUri(){ return location.origin+location.pathname; }
+
+async function getToken(force){
+  const t=ls.get('token',null);
+  if(!t||!t.refresh) throw authError('Not connected to Dropbox.');
+  if(!force && t.access && t.expires>Date.now()+60000) return t.access;
+  const res=await fetch(TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:new URLSearchParams({grant_type:'refresh_token',refresh_token:t.refresh,client_id:CONFIG.dropboxAppKey})});
+  const j=await res.json().catch(()=>({}));
+  if(!res.ok||!j.access_token){ if(res.status===400||res.status===401) throw authError('Dropbox needs you to sign in again.'); throw new Error('Could not refresh the Dropbox sign-in ('+res.status+').'); }
+  t.access=j.access_token; t.expires=Date.now()+(j.expires_in||14400)*1000; ls.set('token',t);
+  return t.access;
+}
+async function dbxFetch(url,opts,retried){
+  const tok=await getToken(!!retried);
+  const res=await fetch(url,Object.assign({},opts,{headers:Object.assign({},opts.headers,{Authorization:'Bearer '+tok})}));
+  if(res.status===401){ if(!retried) return dbxFetch(url,opts,true); throw authError('Dropbox rejected the sign-in.'); }
+  return res;
+}
+async function dbxDownload(){
+  const res=await dbxFetch(DBX_CONTENT+'download',{method:'POST',headers:{'Dropbox-API-Arg':headerArg({path:CONFIG.filePath})}});
+  if(res.status===409){
+    const j=await res.json().catch(()=>({}));
+    if(String(j.error_summary||'').indexOf('not_found')>=0) return {notFound:true};
+    throw new Error('Dropbox: '+(j.error_summary||'download failed'));
+  }
+  if(!res.ok) throw new Error('Dropbox download failed ('+res.status+').');
+  let rev=null; try{ rev=JSON.parse(res.headers.get('Dropbox-API-Result')||'{}').rev||null; }catch(e){}
+  const text=await res.text();
+  let data; try{ data=JSON.parse(text); }catch(e){ throw new Error('recipes.json in Dropbox isn\'t valid JSON. Fix or replace it, then reload.'); }
+  return {data,rev};
+}
+async function dbxUpload(data,mode){
+  const res=await dbxFetch(DBX_CONTENT+'upload',{method:'POST',
+    headers:{'Dropbox-API-Arg':headerArg({path:CONFIG.filePath,mode,autorename:false,mute:true}),'Content-Type':'application/octet-stream'},
+    body:JSON.stringify(data,null,2)});
+  if(res.status===409){
+    const j=await res.json().catch(()=>({}));
+    if(/conflict/.test(j.error_summary||'')) return {conflict:true};
+    throw new Error('Dropbox: '+(j.error_summary||'save failed'));
+  }
+  if(!res.ok) throw new Error('Dropbox save failed ('+res.status+').');
+  const j=await res.json(); return {rev:j.rev};
+}
+
+async function pull(){
+  if(pulling||flushing) return; pulling=true; setStatus('loading');
+  try{
+    const r=await dbxDownload();
+    if(r.notFound){
+      if(!state.queue.some(o=>o.t==='seed')) queueOp({t:'seed',recipes:normalise(clone(STARTER)).d.recipes});
+      const local={version:2,recipes:[]}; state.queue.forEach(o=>applyOp(local,o));
+      state.db=local;
+    } else {
+      const {d,changed}=normalise(r.data);
+      if(changed && !state.queue.length) queueOp({t:'noop'});
+      const local=clone(d); state.queue.forEach(o=>applyOp(local,o));
+      state.db=local;
+    }
+    saveCache(); render(); state.lastPull=Date.now();
+    pulling=false;
+    if(state.queue.length) await flush(); else setStatus('saved');
+  }catch(e){ syncError(e); }
+  finally{ pulling=false; }
+}
+
+async function flush(){
+  if(flushing||!state.queue.length) return;
+  flushing=true; setStatus('saving');
+  let again=false;
+  try{
+    let done=false;
+    for(let attempt=0; attempt<4 && !done; attempt++){
+      const r=await dbxDownload();
+      const base=r.notFound?{version:2,recipes:[]}:normalise(r.data).d;
+      const n=state.queue.length;
+      state.queue.slice(0,n).forEach(op=>applyOp(base,op));
+      const mode=r.notFound?'add':(r.rev?{'.tag':'update',update:r.rev}:'overwrite');
+      const up=await dbxUpload(base,mode);
+      if(up.conflict) continue;
+      state.queue=state.queue.slice(n); ls.set('queue',state.queue);
+      const local=clone(base); state.queue.forEach(op=>applyOp(local,op));
+      state.db=local; saveCache(); render(); state.lastPull=Date.now();
+      done=true; again=state.queue.length>0;
+    }
+    if(!done) setStatus('error','The file kept changing while saving. Tap to try again.');
+    else if(!again) setStatus('saved');
+  }catch(e){ syncError(e); }
+  finally{ flushing=false; }
+  if(again) flush();
+}
+
+function syncError(e){
+  console.error(e);
+  if(e && e.auth){ ls.del('token'); showConnect(e.message+(state.queue.length?' Your unsaved changes are kept on this device.':'')); return; }
+  if(e instanceof TypeError || !navigator.onLine){ setStatus('offline'); return; }
+  setStatus('error',e && e.message);
+}
+function setStatus(kind,msg){
+  const el=$('#sync'); if(!el) return;
+  const n=state.queue.length;
+  const txt={loading:'Checking Dropbox…',saving:'Saving…',saved:'Saved',
+    offline:n?'Offline, '+n+' change'+(n>1?'s':'')+' waiting':'Offline',
+    error:'Sync problem, tap to retry'}[kind]||'';
+  el.textContent=txt; el.className='sync'+(kind==='offline'?' warn':kind==='error'?' err':'');
+  el.title=msg||'Tap to sync now';
+  if(kind==='error' && msg) toast(msg);
+}
+
+/* ── Dropbox sign-in (PKCE) ──────────────────────────── */
+let pkcePrepared=null;
+function b64url(bytes){ let s=''; bytes.forEach(b=>s+=String.fromCharCode(b)); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+async function preparePkce(){
+  if(!window.crypto||!crypto.subtle){ pkcePrepared=null; return; }
+  const verifier=b64url(crypto.getRandomValues(new Uint8Array(48)));
+  const challenge=b64url(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))));
+  pkcePrepared={verifier,challenge,state:b64url(crypto.getRandomValues(new Uint8Array(12)))};
+}
+function isStandalone(){ return window.navigator.standalone===true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches); }
+function keyMissing(){ return !CONFIG.dropboxAppKey || /PASTE_YOUR/.test(CONFIG.dropboxAppKey); }
+function connectMsg(m){ const el=$('#connect-msg'); el.textContent=m||''; el.hidden=!m; }
+
+function startConnect(usePaste){
+  if(keyMissing()){ connectMsg('Add your Dropbox app key to index.html first (see the setup guide, step 3).'); return; }
+  if(!pkcePrepared){ connectMsg(window.crypto&&crypto.subtle?'Getting ready, tap again in a moment.':'Open this page from its https:// address for Dropbox sign-in to work.'); if(window.crypto&&crypto.subtle) preparePkce(); return; }
+  const pk=pkcePrepared;
+  ls.set('pkce',{verifier:pk.verifier,state:pk.state,mode:usePaste?'paste':'redirect'});
+  const p=new URLSearchParams({client_id:CONFIG.dropboxAppKey,response_type:'code',code_challenge:pk.challenge,code_challenge_method:'S256',token_access_type:'offline'});
+  if(!usePaste){ p.set('redirect_uri',redirectUri()); p.set('state',pk.state); }
+  const url='https://www.dropbox.com/oauth2/authorize?'+p.toString();
+  if(usePaste){ window.open(url,'_blank'); $('#code-box').hidden=false; setTimeout(()=>$('#code-input').focus(),300); }
+  else location.href=url;
+}
+async function exchangeCode(code,mode){
+  const pk=ls.get('pkce',null);
+  if(!pk) throw new Error('That sign-in has expired. Tap Connect Dropbox again.');
+  const body=new URLSearchParams({code:code.trim(),grant_type:'authorization_code',code_verifier:pk.verifier,client_id:CONFIG.dropboxAppKey});
+  if(mode==='redirect') body.set('redirect_uri',redirectUri());
+  const res=await fetch(TOKEN_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+  const j=await res.json().catch(()=>({}));
+  if(!res.ok||!j.refresh_token) throw new Error('Dropbox didn\'t accept that: '+(j.error_description||j.error||res.status)+'. Tap Connect Dropbox to try again.');
+  ls.set('token',{access:j.access_token,refresh:j.refresh_token,expires:Date.now()+(j.expires_in||14400)*1000});
+  ls.del('pkce');
+}
+
+function showConnect(msg){
+  $('#app').hidden=true; $('#connect').hidden=false; $('#code-box').hidden=true;
+  document.body.classList.remove('show-detail');
+  connectMsg(msg);
+  const standalone=isStandalone();
+  $('#connect-go').textContent=standalone?'Connect Dropbox with a code':'Connect Dropbox';
+  $('#connect-code').hidden=standalone;
+  preparePkce();
+}
+function showApp(){
+  $('#connect').hidden=true; $('#app').hidden=false;
+  const c=ls.get('cache',null);
+  if(c&&c.db){ state.db=normalise(c.db).d; state.queue.forEach(op=>applyOp(state.db,op)); }
+  render(); pull();
+}
+
+/* ── Rendering ───────────────────────────────────────── */
+function lastMade(r){ return r.cookLog[0]?r.cookLog[0].date:''; }
+function filtered(){
+  const words=state.search.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const rs=state.db.recipes.filter(r=>{
+    for(const t of state.tags) if(!r.tags.includes(t)) return false;
+    if(!words.length) return true;
+    const hay=[r.title,r.source,r.notes].concat(r.tags,r.ingredients,r.cookLog.map(e=>e.comment)).join(' ').toLowerCase();
+    return words.every(w=>hay.indexOf(w)>=0);
+  });
+  const byTitle=(a,b)=>a.title.localeCompare(b.title,'en-GB',{sensitivity:'base'});
+  const sorters={
+    title:byTitle,
+    recent:(a,b)=>lastMade(b).localeCompare(lastMade(a))||byTitle(a,b),
+    most:(a,b)=>b.cookLog.length-a.cookLog.length||byTitle(a,b),
+    rating:(a,b)=>b.rating-a.rating||byTitle(a,b)
+  };
+  return rs.sort(sorters[state.sort]||byTitle);
+}
+function monthStrip(r){
+  const now=new Date(); let cells='', on=0;
+  for(let i=11;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const hit=r.cookLog.some(e=>e.date.slice(0,7)===key); if(hit) on++;
+    cells+='<i class="'+(hit?'on':'')+'"></i>';
+  }
+  return '<span class="months" role="img" aria-label="Made in '+on+' of the last 12 months" title="Made in '+on+' of the last 12 months">'+cells+'</span>';
+}
+function allTags(){
+  const counts={}; state.db.recipes.forEach(r=>r.tags.forEach(t=>counts[t]=(counts[t]||0)+1));
+  return Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||a.localeCompare(b));
+}
+function render(){
+  document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
+  document.title=CONFIG.bookTitle;
+  $$('.edit-only').forEach(el=>el.hidden=!canEdit());
+  for(const t of Array.from(state.tags)) if(!allTags().includes(t)) state.tags.delete(t);
+  $('#chips').innerHTML=allTags().map(t=>'<button type="button" class="chip" data-tag="'+esc(t)+'" aria-pressed="'+state.tags.has(t)+'">'+esc(t)+'</button>').join('');
+  $('#sort').value=state.sort;
+  const rs=filtered(), total=state.db.recipes.length;
+  $('#count').textContent=rs.length===total?total+' recipe'+(total===1?'':'s'):rs.length+' of '+total+' recipes';
+  $('#list').innerHTML=rs.length?rs.map(r=>{
+    const n=r.cookLog.length;
+    const meta=n?'Made '+(n===1?'once':n+' times')+', last '+fmtDate(lastMade(r)):'Not made yet';
+    return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(r.id===state.selected)+'">'+
+      '<span class="item-title">'+esc(r.title)+(r.type==='External'?'<span class="badge">Link</span>':'')+'</span>'+
+      monthStrip(r)+
+      '<span class="item-meta">'+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+esc(meta)+'</span>'+
+      '</button></li>';
+  }).join(''):'<li class="empty">'+(total?'No recipes match. Try fewer words or clear a tag.':(canEdit()?'No recipes yet. Tap Add or Import to start.':'No recipes yet.'))+'</li>';
+  renderDetail();
+}
+
+function renderDetail(){
+  const pane=$('#detail');
+  const r=state.db.recipes.find(x=>x.id===state.selected);
+  if(!r){
+    state.selected=null; document.body.classList.remove('show-detail');
+    pane.innerHTML='<div class="detail-empty"><p>Choose a recipe from the list.</p></div>'; return;
+  }
+  const oldDate=$('#log-date'), oldCom=$('#log-comment');
+  const keepDate=(oldDate&&oldDate.dataset.rid===r.id)?oldDate.value:today();
+  const keepCom=(oldCom&&oldCom.dataset.rid===r.id)?oldCom.value:'';
+  const scrollTop=pane.dataset.rid===r.id?pane.scrollTop:0;
+  const ed=canEdit(), ticks=state.ticks[r.id]||{};
+  let h='<article class="detail">';
+  h+='<button type="button" class="btn ghost back" data-act="back">‹ All recipes</button>';
+  h+='<h2>'+esc(r.title)+'</h2>';
+  if(r.source) h+='<p class="source">'+(isUrl(r.source)?'From <a href="'+esc(r.source)+'" target="_blank" rel="noopener">'+esc(host(r.source))+'</a>':esc(r.source))+'</p>';
+  const facts=[]; if(r.serves) facts.push('Serves '+esc(r.serves)); if(r.time) facts.push(esc(r.time));
+  if(facts.length) h+='<div class="facts">'+facts.map(f=>'<span>'+f+'</span>').join('')+'</div>';
+  if(ed){ h+='<div class="rate" role="group" aria-label="Rating">'; for(let i=1;i<=5;i++) h+='<button type="button" data-act="rate" data-v="'+i+'" aria-label="Rate '+i+' out of 5" aria-pressed="'+(i<=r.rating)+'">'+(i<=r.rating?'★':'☆')+'</button>'; h+='</div>'; }
+  else if(r.rating) h+='<div class="rate"><span class="stars" aria-label="'+r.rating+' out of 5 stars">'+stars(r.rating)+'</span></div>';
+  if(r.tags.length) h+='<div class="tags">'+r.tags.map(t=>'<span class="tag">'+esc(t)+'</span>').join('')+'</div>';
+  if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
+
+  if(ed){
+    h+='<section class="logbox" aria-labelledby="log-h"><h3 id="log-h">Made it?</h3><div class="logrow">'+
+       '<input id="log-date" type="date" data-rid="'+esc(r.id)+'" value="'+esc(keepDate)+'" max="'+today()+'" aria-label="Date made">'+
+       '<textarea id="log-comment" data-rid="'+esc(r.id)+'" rows="2" placeholder="How did it go? Anything to change next time?" aria-label="Comment">'+esc(keepCom)+'</textarea>'+
+       '</div><button type="button" class="btn primary" data-act="log">✓ Record that I made it</button></section>';
+  }
+
+  if(r.type==='External' && !r.ingredients.length && !r.instructions.length){
+    h+='<section class="section"><div class="linkout"><p>The full recipe is on '+(isUrl(r.source)?esc(host(r.source)):'the original source')+'.</p><div class="stack">'+
+      (isUrl(r.source)?'<a class="btn primary" href="'+esc(r.source)+'" target="_blank" rel="noopener">Open recipe</a>':'')+
+      (ed&&isUrl(r.source)?'<button type="button" class="btn" data-act="import-link">Import the full recipe</button>':'')+
+      '</div></div></section>';
+  } else {
+    h+='<div class="cols">';
+    if(r.ingredients.length){
+      h+='<section class="section"><h3>Ingredients</h3><ul class="ing">'+r.ingredients.map((x,i)=>/:\s*$/.test(x)?
+        '<li class="sub">'+esc(x.replace(/:\s*$/,''))+'</li>':
+        '<li><label><input type="checkbox" data-act="tick" data-i="'+i+'"'+(ticks[i]?' checked':'')+'><span>'+esc(x)+'</span></label></li>').join('')+'</ul></section>';
+    }
+    if(r.instructions.length) h+='<section class="section"><h3>Method</h3><ol class="method">'+r.instructions.map(s=>'<li>'+esc(s.replace(/^(step\s*)?\d+[.):]\s*/i,''))+'</li>').join('')+'</ol></section>';
+    h+='</div>';
+    if(r.type==='External' && isUrl(r.source)) h+='<p class="source" style="margin-top:14px"><a href="'+esc(r.source)+'" target="_blank" rel="noopener">Open the original recipe</a></p>';
+  }
+  if(r.notes) h+='<section class="section"><h3>Notes</h3><p class="notes">'+esc(r.notes)+'</p></section>';
+  const n=r.cookLog.length;
+  h+='<section class="section"><h3>'+(n?'Cooked '+(n===1?'once':n+' times'):'Cooking history')+'</h3>';
+  h+=n?'<ul class="history">'+r.cookLog.map(e=>'<li><div class="when">'+esc(fmtDate(e.date,true))+'<span class="ago">'+esc(ago(e.date))+'</span>'+
+      (ed?'<button type="button" class="rm" data-act="unlog" data-eid="'+esc(e.id)+'">Remove</button>':'')+'</div>'+
+      (e.comment?'<p class="c">'+esc(e.comment)+'</p>':'')+'</li>').join('')+'</ul>'
+     :'<p class="muted">'+(ed?'Not made yet. Record it above when you do.':'Not made yet.')+'</p>';
+  h+='</section></article>';
+  pane.innerHTML=h; pane.dataset.rid=r.id; pane.scrollTop=scrollTop;
+}
+
+function select(id){
+  const changed=state.selected!==id;
+  state.selected=id; render();
+  if(changed) $('#detail').scrollTop=0;
+  document.body.classList.add('show-detail');
+}
+
+/* ── Edit dialog ─────────────────────────────────────── */
+let editing=null;
+function setSeg(sel,v){ $$(sel+' button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v))); }
+function segVal(sel){ const b=$$(sel+' button').find(b=>b.getAttribute('aria-pressed')==='true'); return b?b.dataset.v:null; }
+function syncTypeFields(){ const full=segVal('#f-type')!=='External'; $$('#dlg-edit .full-only').forEach(el=>el.hidden=!full); }
+function renderQuickTags(){
+  const cur=$('#f-tags').value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+  $('#f-quicktags').innerHTML=allTags().slice(0,24).map(t=>'<button type="button" class="chip" data-qt="'+esc(t)+'" aria-pressed="'+cur.includes(t.toLowerCase())+'">'+esc(t)+'</button>').join('');
+}
+function openEdit(r,isNew){
+  editing={id:r.id||uid('r-'),isNew:!!isNew,created:r.created||new Date().toISOString()};
+  $('#edit-h').textContent=isNew?'New recipe':'Edit recipe';
+  $('#f-title').value=r.title||''; $('#f-source').value=r.source||'';
+  $('#f-serves').value=r.serves||''; $('#f-time').value=r.time||'';
+  $('#f-tags').value=(r.tags||[]).join(', ');
+  $('#f-ings').value=(r.ingredients||[]).join('\n'); $('#f-method').value=(r.instructions||[]).join('\n');
+  $('#f-notes').value=r.notes||''; $('#f-rating').value=String(Math.round(r.rating)||0);
+  setSeg('#f-type',r.type==='External'?'External':'Full'); syncTypeFields();
+  $('#edit-msg').hidden=true; renderQuickTags();
+  $('#dlg-edit').showModal(); $('#dlg-edit').scrollTop=0;
+}
+function saveEdit(){
+  const title=$('#f-title').value.trim();
+  if(!title){ const m=$('#edit-msg'); m.textContent='Give the recipe a title.'; m.hidden=false; $('#f-title').focus(); return; }
+  const seenTag=new Set();
+  const tags=$('#f-tags').value.split(',').map(s=>s.trim()).filter(t=>t && !seenTag.has(t.toLowerCase()) && seenTag.add(t.toLowerCase()));
+  const type=segVal('#f-type')||'Full';
+  const r={id:editing.id,title,type,source:$('#f-source').value.trim(),serves:$('#f-serves').value.trim(),time:$('#f-time').value.trim(),
+    tags,ingredients:lines($('#f-ings').value),instructions:lines($('#f-method').value).map(s=>s.replace(/^(step\s*)?\d+[.):]\s*/i,'')),
+    notes:$('#f-notes').value.trim(),rating:Number($('#f-rating').value)||0,created:editing.created,updated:new Date().toISOString()};
+  const wasNew=editing.isNew;
+  $('#dlg-edit').close(); editing=null;
+  commit({t:'upsert',r});
+  select(r.id);
+  toast(wasNew?'Recipe added':'Recipe saved');
+}
+
+/* ── Import ──────────────────────────────────────────── */
+let impImages=[], impMerge=null;
+const SYSTEM='You extract recipes for a personal family recipe book. Reply with ONLY one JSON object, with no markdown fences and no commentary, in exactly this shape:\n'+
+ '{"title": string, "source": string, "serves": string, "time": string, "ingredients": [string], "instructions": [string], "tags": [string], "notes": string}\n'+
+ 'Rules: "source" is the web address, or the cookbook title (and page number) if visible, otherwise "". Keep quantities and wording faithful to the original. One ingredient per item; if the recipe groups ingredients, add the group heading as its own item ending with a colon, e.g. "For the sauce:". One step per instructions item, without step numbers. Give 2 to 5 short tags in Title Case, such as cuisine, course and main ingredient. Put tips, variations and storage advice in "notes". Use "" or [] for anything not present. If there is no recipe, reply {"error": "short reason"}.';
+
+async function callClaude(content,tools){
+  const key=ls.get('apiKey','');
+  if(!key) throw new Error('Add your Claude API key in Settings first.');
+  const body={model:ls.get('model','')||CONFIG.defaultModel,max_tokens:4096,system:SYSTEM,messages:[{role:'user',content}]};
+  if(tools) body.tools=tools;
+  let res;
+  try{
+    res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
+  }catch(e){ throw new Error('Couldn\'t reach the Claude API. Check your connection.'); }
+  const j=await res.json().catch(()=>null);
+  if(!res.ok) throw new Error((j&&j.error&&j.error.message)||('Claude API error '+res.status));
+  const blocks=j.content||[];
+  let lastNonText=-1; blocks.forEach((b,i)=>{ if(b.type!=='text') lastNonText=i; });
+  const text=blocks.slice(lastNonText+1).filter(b=>b.type==='text').map(b=>b.text).join('\n') || blocks.filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  const s=text.indexOf('{'), e=text.lastIndexOf('}');
+  if(s<0||e<s) throw new Error(j.stop_reason==='pause_turn'?'The page took too long to read. Try again.':'No recipe came back. Try a clearer photo or a different page.');
+  let o; try{ o=JSON.parse(text.slice(s,e+1)); }catch(err){ throw new Error('The reply couldn\'t be read as a recipe. Try again.'); }
+  if(o.error) throw new Error(o.error);
+  return o;
+}
+function prepImage(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      const max=1568, sc=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+      const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*sc); c.height=Math.round(img.naturalHeight*sc);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url); resolve(c.toDataURL('image/jpeg',0.85));
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('Couldn\'t read that image.')); };
+    img.src=url;
+  });
+}
+function parsePlain(t){
+  const ls_=lines(t); const out={title:ls_[0]||'',source:'',serves:'',time:'',ingredients:[],instructions:[],tags:[],notes:''};
+  let mode='intro'; const intro=[];
+  ls_.slice(1).forEach(l=>{
+    if(/^ingredients?\s*:?$/i.test(l)){ mode='ing'; return; }
+    if(/^(method|instructions?|directions?|preparation|steps)\s*:?$/i.test(l)){ mode='steps'; return; }
+    if(/^(notes?|tips?)\s*:?$/i.test(l)){ mode='notes'; return; }
+    const m=l.match(/^serves\s*:?\s*(.+)$/i); if(m && !out.serves){ out.serves=m[1]; return; }
+    const clean=l.replace(/^(\d+[.)]|[-•*–])\s*/,'');
+    if(mode==='ing') out.ingredients.push(clean);
+    else if(mode==='steps') out.instructions.push(clean);
+    else if(mode==='notes') out.notes+=(out.notes?'\n':'')+l;
+    else intro.push(l);
+  });
+  if(intro.length) out.notes=intro.join('\n')+(out.notes?'\n'+out.notes:'');
+  return out;
+}
+function impTab(v){
+  setSeg('#imp-tabs',v);
+  $$('#dlg-import [data-pane]').forEach(p=>p.hidden=p.dataset.pane!==v);
+  $('#imp-nokey').hidden=v==='text'||!!ls.get('apiKey','');
+  $('#imp-go').textContent=v==='url'?'Fetch recipe':v==='text'?'Tidy into a recipe':'Read recipe';
+  $('#imp-msg').hidden=true;
+}
+function openImport(tab,url){
+  impMerge=null; impImages=[];
+  $('#imp-files').value=''; $('#imp-thumbs').innerHTML=''; $('#imp-url').value=url||''; $('#imp-text').value='';
+  impTab(tab||'photo'); $('#dlg-import').showModal();
+}
+async function runImport(){
+  const tab=segVal('#imp-tabs'), btn=$('#imp-go'), msg=$('#imp-msg'), label=btn.textContent;
+  msg.hidden=true;
+  try{
+    let result;
+    if(tab==='photo'){
+      if(!impImages.length) throw new Error('Choose at least one photo.');
+      btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Reading…';
+      result=await callClaude(impImages.map(d=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:d.split(',')[1]}}))
+        .concat([{type:'text',text:'These photos show one recipe, probably from a cookbook. Extract it.'}]));
+      if(!result.source) result.source='Cookbook photo';
+    } else if(tab==='url'){
+      const u=$('#imp-url').value.trim();
+      if(!isUrl(u)) throw new Error('Enter a full web address starting with https://');
+      btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Fetching…';
+      result=await callClaude([{type:'text',text:'Fetch this web page with the web_fetch tool and extract the recipe on it: '+u}],[{type:'web_fetch_20250910',name:'web_fetch',max_uses:3}]);
+      result.source=u;
+    } else {
+      const t=$('#imp-text').value.trim();
+      if(!t) throw new Error('Paste some recipe text first.');
+      if(ls.get('apiKey','')){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Tidying…'; result=await callClaude([{type:'text',text:'Tidy this recipe text into the structure:\n\n'+t}]); }
+      else result=parsePlain(t);
+    }
+    $('#dlg-import').close();
+    let draft=Object.assign({type:'Full',rating:0},result);
+    let isNew=true;
+    if(impMerge){
+      const ex=state.db.recipes.find(r=>r.id===impMerge);
+      if(ex){
+        isNew=false;
+        const tags=ex.tags.slice(); (result.tags||[]).forEach(t=>{ if(!tags.some(x=>x.toLowerCase()===String(t).toLowerCase())) tags.push(t); });
+        draft=Object.assign({},ex,{type:'Full',ingredients:result.ingredients||[],instructions:result.instructions||[],serves:ex.serves||result.serves||'',time:ex.time||result.time||'',tags,
+          notes:[ex.notes,result.notes].filter(Boolean).join('\n\n')});
+      }
+    }
+    openEdit(draft,isNew);
+  }catch(e){ msg.textContent=e.message; msg.hidden=false; }
+  finally{ btn.disabled=false; btn.textContent=label; }
+}
+
+/* ── Settings ────────────────────────────────────────── */
+function openSettings(){
+  $('#s-viewonly').checked=!!ls.get('viewOnly',false);
+  $('#s-key').value=ls.get('apiKey','');
+  $('#s-model').value=ls.get('model','')||CONFIG.defaultModel;
+  $('#dlg-settings').showModal();
+}
+function saveSettings(){
+  ls.set('viewOnly',$('#s-viewonly').checked);
+  ls.set('apiKey',$('#s-key').value.trim());
+  const m=$('#s-model').value.trim(); ls.set('model',m===CONFIG.defaultModel?'':m);
+  $('#dlg-settings').close(); render();
+}
+function downloadBackup(){
+  const blob=new Blob([JSON.stringify(state.db,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='recipes-backup-'+today()+'.json';
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1000);
+}
+
+/* ── Events ──────────────────────────────────────────── */
+function bind(){
+  $('#connect-go').addEventListener('click',()=>startConnect(isStandalone()));
+  $('#connect-code').addEventListener('click',()=>startConnect(true));
+  $('#code-submit').addEventListener('click',async()=>{
+    const code=$('#code-input').value.trim(); if(!code){ connectMsg('Paste the code first.'); return; }
+    const b=$('#code-submit'); b.disabled=true;
+    try{ await exchangeCode(code,'paste'); showApp(); }catch(e){ connectMsg(e.message); preparePkce(); }
+    finally{ b.disabled=false; }
+  });
+
+  $('#search').addEventListener('input',e=>{ state.search=e.target.value; clearTimeout(bind._t); bind._t=setTimeout(render,120); });
+  $('#sort').addEventListener('change',e=>{ state.sort=e.target.value; ls.set('sort',state.sort); render(); });
+  $('#chips').addEventListener('click',e=>{ const b=e.target.closest('[data-tag]'); if(!b) return; const t=b.dataset.tag; state.tags.has(t)?state.tags.delete(t):state.tags.add(t); render(); });
+  $('#list').addEventListener('click',e=>{ const b=e.target.closest('.item'); if(b) select(b.dataset.id); });
+  $('#sync').addEventListener('click',()=>{ state.queue.length?flush():pull(); });
+  $('#btn-add').addEventListener('click',()=>openEdit({type:'Full'},true));
+  $('#btn-import').addEventListener('click',()=>openImport('photo'));
+  $('#btn-settings').addEventListener('click',openSettings);
+
+  $('#detail').addEventListener('click',e=>{
+    const el=e.target.closest('[data-act]'); if(!el) return;
+    const r=state.db.recipes.find(x=>x.id===state.selected); const act=el.dataset.act;
+    if(act==='back'){ document.body.classList.remove('show-detail'); return; }
+    if(!r) return;
+    if(act==='tick'){ (state.ticks[r.id]=state.ticks[r.id]||{})[el.dataset.i]=el.checked; return; }
+    if(act==='rate'){ const v=Number(el.dataset.v); commit({t:'patch',id:r.id,f:{rating:v===r.rating?0:v},at:new Date().toISOString()}); }
+    if(act==='edit') openEdit(r,false);
+    if(act==='print') window.print();
+    if(act==='delete'){ if(confirm('Delete "'+r.title+'" and its cooking history? This can\'t be undone.')){ commit({t:'delete',id:r.id}); state.selected=null; render(); toast('Recipe deleted'); } }
+    if(act==='log'){
+      const date=$('#log-date').value||today(), comment=$('#log-comment').value.trim();
+      $('#log-comment').value='';
+      commit({t:'log',id:r.id,e:{id:uid('l-'),date,comment,at:new Date().toISOString()}});
+      toast('Recorded for '+fmtDate(date));
+    }
+    if(act==='unlog'){ if(confirm('Remove this entry from the cooking history?')) commit({t:'unlog',id:r.id,eid:el.dataset.eid}); }
+    if(act==='import-link'){ openImport('url',r.source); impMerge=r.id; }
+  });
+
+  $$('dialog [data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
+  $('#f-type').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ setSeg('#f-type',b.dataset.v); syncTypeFields(); } });
+  $('#f-tags').addEventListener('input',renderQuickTags);
+  $('#f-quicktags').addEventListener('click',e=>{
+    const b=e.target.closest('[data-qt]'); if(!b) return;
+    const t=b.dataset.qt; let cur=$('#f-tags').value.split(',').map(s=>s.trim()).filter(Boolean);
+    cur=cur.some(x=>x.toLowerCase()===t.toLowerCase())?cur.filter(x=>x.toLowerCase()!==t.toLowerCase()):cur.concat(t);
+    $('#f-tags').value=cur.join(', '); renderQuickTags();
+  });
+  $('#edit-save').addEventListener('click',saveEdit);
+
+  $('#imp-tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) impTab(b.dataset.v); });
+  $('#imp-files').addEventListener('change',async e=>{
+    const files=Array.from(e.target.files||[]).slice(0,4); impImages=[]; $('#imp-thumbs').innerHTML='';
+    for(const f of files){ try{ const d=await prepImage(f); impImages.push(d); $('#imp-thumbs').insertAdjacentHTML('beforeend','<img alt="" src="'+d+'">'); }catch(err){ $('#imp-msg').textContent=err.message; $('#imp-msg').hidden=false; } }
+  });
+  $('#imp-go').addEventListener('click',runImport);
+
+  $('#s-save').addEventListener('click',saveSettings);
+  $('#s-reload').addEventListener('click',()=>{ $('#dlg-settings').close(); pull(); });
+  $('#s-backup').addEventListener('click',downloadBackup);
+  $('#s-disconnect').addEventListener('click',()=>{
+    const warn=state.queue.length?' You have '+state.queue.length+' unsaved change(s) that will be lost.':'';
+    if(!confirm('Disconnect Dropbox on this device?'+warn)) return;
+    ls.del('token'); ls.del('queue'); ls.del('cache'); state.queue=[]; state.db={version:2,recipes:[]}; state.selected=null;
+    $('#dlg-settings').close(); showConnect();
+  });
+
+  window.addEventListener('online',()=>{ if(ls.get('token',null)) state.queue.length?flush():pull(); });
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible' && ls.get('token',null) && !$('#app').hidden && Date.now()-state.lastPull>30000) pull();
+  });
+}
+
+/* ── Start ───────────────────────────────────────────── */
+async function init(){
+  if(ls.get('viewOnly',null)===null) ls.set('viewOnly',window.matchMedia('(max-width: 600px)').matches);
+  document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
+  bind();
+  const q=new URLSearchParams(location.search);
+  if(q.get('code')||q.get('error')){
+    history.replaceState(null,'',location.pathname);
+    if(q.get('error')){ showConnect('Dropbox sign-in didn\'t finish: '+(q.get('error_description')||q.get('error'))); return; }
+    const pk=ls.get('pkce',null);
+    if(!pk || pk.state!==q.get('state')){ showConnect('That sign-in link had expired. Tap Connect Dropbox again.'); return; }
+    try{ await exchangeCode(q.get('code'),'redirect'); }catch(e){ showConnect(e.message); return; }
+  }
+  if(!ls.get('token',null)){ showConnect(keyMissing()?'Add your Dropbox app key to index.html first (see the setup guide, step 3).':''); return; }
+  showApp();
+}
+init();
+})();
+</script>
+</body>
+</html>
