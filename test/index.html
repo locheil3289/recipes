@@ -99,6 +99,27 @@ dialog.sheet .dlg-foot{position:static}
 .tg-body{padding:2px 12px 12px}
 .tg-add{display:flex;gap:8px;margin-top:10px}
 .tg-add input{flex:1}
+/* Browse home, view toggle and grid */
+.vbtn{flex:none;min-height:38px;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:0 12px;font-size:.85rem;font-weight:600}
+.browse{margin:12px 0 2px}
+.browse h2{font:600 .72rem/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+.colls{display:flex;gap:8px;overflow-x:auto;padding:0 0 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.colls::-webkit-scrollbar{display:none}
+.coll{flex:none;width:148px;display:grid;gap:3px;align-content:start;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+.coll .cn{font:600 1rem/1.2 var(--serif)}
+.coll .cs{font-size:.76rem;color:var(--muted);line-height:1.3}
+.coll .cc{font:600 .78rem/1 var(--sans);color:var(--basil);margin-top:4px}
+.achip.coll-chip{background:var(--basil);border-color:var(--basil)}
+.list.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;border-top:none;padding-top:4px}
+.list.grid li{min-width:0}
+.list.grid .item{display:flex;flex-direction:column;align-items:stretch;text-align:left;height:100%;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--card);overflow:hidden;gap:0}
+.list.grid .item[aria-current="true"]{border-color:var(--basil);box-shadow:0 0 0 2px var(--basil-edge)}
+.tile{display:flex;align-items:flex-end;aspect-ratio:4/3;padding:10px 12px;color:var(--ink)}
+.tile-t{font:600 1rem/1.22 var(--serif);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word}
+.tile-meta{display:block;padding:8px 12px 10px;font-size:.78rem;color:var(--muted)}
+.tile-meta .badge{margin:0 4px 0 0}
+.tile-meta .stars{display:block;margin-bottom:2px}
+.list.grid .empty{grid-column:1/-1}
 /* Sources */
 .srcbtn{display:flex;align-items:center;gap:8px;width:100%;min-height:var(--tap);padding:6px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);text-align:left}
 .srcbtn::after{content:"";margin-left:auto;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
@@ -350,7 +371,7 @@ window.RECIPE_CONFIG = {
   </div>
   <div class="layout">
     <aside class="list-pane">
-      <input id="search" class="search" type="search" placeholder="Search recipes, ingredients, notes" autocomplete="off">
+      <input id="search" class="search" type="search" placeholder="Search recipes, ingredients, tags, notes" autocomplete="off">
       <div class="filters">
         <button id="btn-filter" class="fbtn" type="button" aria-haspopup="dialog">Filters</button>
         <select id="sort" class="sort" aria-label="Sort recipes">
@@ -360,8 +381,10 @@ window.RECIPE_CONFIG = {
           <option value="rating">Top rated</option>
           <option value="added">Recently added</option>
         </select>
+        <button id="btn-view" class="vbtn" type="button" aria-label="Show as grid">Grid</button>
       </div>
       <div id="active" class="active" hidden></div>
+      <section id="browse" class="browse" aria-labelledby="browse-h" hidden></section>
       <p id="count" class="count"></p>
       <ul id="list" class="list"></ul>
     </aside>
@@ -563,7 +586,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '3.0';
-const BUILD = 'R1 step 4 (test)';
+const BUILD = 'R1 step 5 (test)';
 const DATA_VERSION = 4;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -1051,7 +1074,7 @@ function applyOp(d,op){
 }
 
 /* ── State ───────────────────────────────────────────── */
-const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['source','course']), srcQuery:'', sort:ls.get('sort','title'), ticks:{}, lastPull:0, locked:null };
+const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['source','course']), srcQuery:'', coll:null, view:ls.get('view','list'), sort:ls.get('sort','title'), ticks:{}, lastPull:0, locked:null };
 let pulling=false, flushing=false;
 function saveCache(){ ls.set('cache'+DK,{db:state.db}); }
 function queueOp(op){ state.queue.push(op); ls.set('queue'+DK,state.queue); }
@@ -1293,11 +1316,98 @@ function srcLine(r,ed){
   if(ed && r.sourceReview) h+='<span class="badge review" title="Was: '+esc(r.legacySource)+'">Check source</span>';
   return h;
 }
-function searchText(r){
-  const s=srcOf(r);
-  return [r.title,s?s.name:'',s?s.author:'',r.siteName,r.legacySource,r.notes,r.versionLabel,r.changeNote].concat(flatTags(r),r.ingredients.map(itemText),
-    r.cookLog.map(e=>e.comment),r.annotations.map(a=>a.text)).join(' ');
+/* ── Search: ranked, with one-letter typo tolerance for words of five letters or more ── */
+function normText(s){ return String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’‘]/g,"'"); }
+function tokens(s){ return normText(s).split(/[^a-z0-9]+/).filter(Boolean); }
+/* True if a and b differ by at most one letter added, removed, changed, or two letters swapped */
+function within1(a,b){
+  if(a===b) return true;
+  const la=a.length, lb=b.length; if(Math.abs(la-lb)>1) return false;
+  if(la>lb) return within1(b,a);
+  let i=0; while(i<la && a[i]===b[i]) i++;
+  if(la===lb) return a.slice(i+1)===b.slice(i+1) || (i+1<la && a[i]===b[i+1] && a[i+1]===b[i] && a.slice(i+2)===b.slice(i+2));
+  return a.slice(i)===b.slice(i+1);
 }
+/* Where a match counts most: title, then tags, then source and website, then ingredients, then notes and comments */
+const SEARCH_WEIGHTS=[['title',100],['tags',60],['source',40],['ingredients',20],['notes',10]];
+function searchIndex(r){
+  const s=srcOf(r), f={
+    title:r.title,
+    tags:flatTags(r).join(' ')+' '+(r.versionLabel||''),
+    source:[s&&s.id!==ONLINE_ID?s.name:'',s?s.author:'',r.siteName,s&&s.kind==='Online'?'online':''].join(' '),
+    ingredients:r.ingredients.map(itemText).join(' '),
+    notes:[r.notes,r.changeNote,r.legacySource].concat(r.cookLog.map(e=>e.comment),r.annotations.map(a=>a.text)).join(' ')
+  }, o={};
+  for(const k in f){ const t=normText(f[k]); o[k]={text:t,toks:tokens(t)}; }
+  return o;
+}
+function wordScore(idx,w){
+  let best=0;
+  SEARCH_WEIGHTS.forEach(([k,wt])=>{
+    const f=idx[k]; let sc=0;
+    if(f.toks.includes(w)) sc=wt;
+    else if(f.toks.some(t=>t.indexOf(w)===0)) sc=wt*.9;
+    else if(f.text.indexOf(w)>=0) sc=wt*.75;
+    else if(w.length>=5 && f.toks.some(t=>within1(w,t) || (t.length>w.length && within1(w,t.slice(0,w.length))))) sc=wt*.5;
+    if(sc>best) best=sc;
+  });
+  return best;
+}
+function searchWords(){
+  const w=normText(state.search).split(/[^a-z0-9]+/).filter(Boolean);
+  return w.length>1?w.filter(x=>x.length>1):w;
+}
+let scoreCache=null;
+/* Best score across a recipe's versions; every word has to match within one version. 0 means no match. */
+function searchScore(g,words){
+  if(!words.length) return 1;
+  const key=words.join(' ');
+  if(!scoreCache || scoreCache.q!==key) scoreCache={q:key,map:new Map()};
+  if(scoreCache.map.has(g.fid)) return scoreCache.map.get(g.fid);
+  let best=0;
+  (g.active.length?g.active:[g.def]).forEach(r=>{
+    const idx=searchIndex(r); let tot=0;
+    for(const w of words){ const sc=wordScore(idx,w); if(!sc) return; tot+=sc; }
+    if(idx.title.text.indexOf(key)===0) tot+=50;
+    if(r===g.def) tot+=1;
+    if(tot>best) best=tot;
+  });
+  scoreCache.map.set(g.fid,best);
+  return best;
+}
+function passSearch(g,words){ return searchScore(g,words)>0; }
+
+/* ── Browse home: collections that apply as a filter ── */
+function monthsAgo(n){ const d=new Date(); d.setHours(0,0,0,0); d.setMonth(d.getMonth()-n); return d; }
+const COLLECTIONS=[
+  {k:'fav',name:'Favourites',sub:'Rated 4 or 5 stars',test:g=>g.def.rating>=4,sort:'rating'},
+  {k:'recent',name:'Recently made',sub:'Made in the last month',test:g=>!!g.logs[0] && parseIso(g.logs[0].date)>=monthsAgo(1),sort:'recent'},
+  {k:'while',name:'Not made in a while',sub:'Last made over 3 months ago',test:g=>!!g.logs[0] && parseIso(g.logs[0].date)<monthsAgo(3),sort:'recent'},
+  {k:'quick',name:'Quick',sub:QUICK_MINUTES+' minutes or less',test:g=>!!g.def.timeMinutes && g.def.timeMinutes<=QUICK_MINUTES},
+  {k:'books',name:'Bookshelf',sub:'From your cookbooks',test:g=>{ const x=srcOf(g.def); return !!x && x.kind==='Book'; }}
+];
+function collOf(k){ return COLLECTIONS.find(c=>c.k===k)||null; }
+/* A collection can pick its own sort; your saved sort comes back when it's removed */
+function clearColl(){ if(state.coll){ state.coll=null; state.sort=ls.get('sort','title'); } }
+function passColl(g){ const c=collOf(state.coll); return !c || c.test(g); }
+function setColl(k){
+  clearColl();
+  const c=collOf(k); state.coll=c?k:null;
+  if(c && c.sort) state.sort=c.sort;
+  $('#search').value=''; state.search='';
+  render(); $('.list-pane').scrollTop=0;
+}
+function renderBrowse(gs){
+  const el=$('#browse'), show=!state.search.trim() && !filterCount() && !state.coll && gs.length>0;
+  el.hidden=!show; if(!show){ el.innerHTML=''; return; }
+  const cards=COLLECTIONS.map(c=>({c,n:gs.filter(c.test).length})).filter(x=>x.n);
+  if(!cards.length){ el.hidden=true; return; }
+  el.innerHTML='<h2 id="browse-h">Browse</h2><div class="colls">'+cards.map(({c,n})=>
+    '<button type="button" class="coll" data-coll="'+c.k+'"><span class="cn">'+esc(c.name)+'</span><span class="cs">'+esc(c.sub)+'</span><span class="cc">'+n+' recipe'+(n>1?'s':'')+'</span></button>').join('')+'</div>';
+}
+/* Grid tiles use a plain coloured title tile until photos arrive in Release 2 */
+const TILE_COLOURS=['#E3EEE7','#F3E9D7','#E6EBF1','#F1E4E1','#ECE8F2','#E8EFE0','#F4EBDD','#E2EDEE'];
+function tileColour(id){ let h=0; String(id).split('').forEach(c=>{ h=(h*31+c.charCodeAt(0))>>>0; }); return TILE_COLOURS[h%TILE_COLOURS.length]; }
 /* Filters: OR within a group, AND across groups. Diet is AND within the group too,
    so Vegetarian + Gluten-free means recipes that are both. Filters use the current version. */
 function fsel(g){ return state.filters[g]||(state.filters[g]=new Set()); }
@@ -1319,12 +1429,6 @@ function groupPass(r,g,sel){
   return g==='diet'?Array.from(sel).every(has):Array.from(sel).some(has);
 }
 function passFilters(r,excl){ return FILTER_KEYS.every(g=>g===excl || groupPass(r,g,state.filters[g])); }
-function searchWords(){ return state.search.trim().toLowerCase().split(/\s+/).filter(Boolean); }
-function passSearch(g,words){
-  if(!words.length) return true;
-  const hay=(g.active.length?g.active:[g.def]).map(searchText).join(' ').toLowerCase();
-  return words.every(w=>hay.indexOf(w)>=0);
-}
 function groupValues(g){ const t=state.db.taxonomy||{}; return (t[g]||[]).slice(); }
 /* Drop filter values that no longer exist (renamed, merged or deleted) */
 function pruneFilters(){
@@ -1335,7 +1439,7 @@ function pruneFilters(){
 }
 function filtered(gs){
   const words=searchWords();
-  const out=gs.filter(g=>passFilters(g.def) && passSearch(g,words));
+  const out=gs.filter(g=>passFilters(g.def) && passColl(g) && passSearch(g,words));
   const last=g=>g.logs[0]?g.logs[0].date:'';
   const added=g=>g.members.reduce((mn,m)=>{ const c=String(m.created||''); return c && (!mn || c<mn)?c:mn; },'');
   const byTitle=(a,b)=>a.def.title.localeCompare(b.def.title,'en-GB',{sensitivity:'base'});
@@ -1346,7 +1450,9 @@ function filtered(gs){
     rating:(a,b)=>b.def.rating-a.def.rating||byTitle(a,b),
     added:(a,b)=>added(b).localeCompare(added(a))||byTitle(a,b)
   };
-  return out.sort(sorters[state.sort]||byTitle);
+  const by=sorters[state.sort]||byTitle;
+  /* While searching, best matches come first; the chosen sort breaks ties */
+  return out.sort(words.length?(a,b)=>searchScore(b,words)-searchScore(a,words)||by(a,b):by);
 }
 function monthStrip(logs){
   const now=new Date(); let cells='', on=0;
@@ -1365,15 +1471,24 @@ function render(){
   renderLock();
   $$('.edit-only').forEach(el=>el.hidden=!canEdit());
   const gs=groups();
-  pruneFilters(); renderFilterButton(); renderActive();
+  scoreCache=null;
+  pruneFilters(); renderFilterButton(); renderActive(); renderBrowse(gs);
   if($('#dlg-filter').open) renderFilterPanel(gs);
   $('#sort').value=state.sort;
   const sel=state.db.recipes.find(x=>x.id===state.selected);
   const rs=filtered(gs), total=gs.length;
-  $('#count').textContent=rs.length===total?total+' recipe'+(total===1?'':'s'):rs.length+' of '+total+' recipes';
+  const searching=searchWords().length>0, grid=state.view==='grid';
+  $('#count').textContent=(rs.length===total?total+' recipe'+(total===1?'':'s'):rs.length+' of '+total+' recipes')+(searching&&rs.length>1?', best match first':'');
+  const vb=$('#btn-view'); vb.textContent=grid?'List':'Grid'; vb.setAttribute('aria-label',grid?'Show as a list':'Show as a grid');
+  $('#list').classList.toggle('grid',grid);
   $('#list').innerHTML=rs.length?rs.map(g=>{
     const r=g.def, n=g.logs.length;
     const meta=n?'Made '+times(n)+', last '+fmtDate(g.logs[0].date):'Not made yet';
+    if(grid) return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
+      '<span class="tile" style="background:'+tileColour(g.fid)+'"><span class="tile-t">'+esc(r.title)+'</span></span>'+
+      '<span class="tile-meta">'+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+
+        (r.type==='External'?'<span class="badge">Link</span>':'')+(g.active.length>1?'<span class="badge ver-badge">'+g.active.length+' versions</span>':'')+
+        esc(n?'Made '+times(n):'Not made yet')+'</span></button></li>';
     return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
       '<span class="item-title">'+esc(r.title)+(r.type==='External'?'<span class="badge">Link</span>':'')+
         (g.active.length>1?'<span class="badge ver-badge">'+g.active.length+' versions</span>':'')+'</span>'+
@@ -1393,12 +1508,14 @@ function renderFilterButton(){
 function renderActive(){
   const el=$('#active'), items=[];
   FILTER_ORDER.forEach(g=>fsel(g).forEach(v=>{ const lab=g==='source'?srcKeyLabel(v):v, gl=g==='source'&&v.indexOf('site:')===0?'Website':GROUP_LABEL[g]; items.push('<button type="button" class="achip" data-g="'+g+'" data-v="'+esc(v)+'" aria-label="Remove filter '+esc(gl+': '+lab)+'"><span class="g">'+esc(gl)+'</span>'+esc(lab)+'<span class="x" aria-hidden="true">✕</span></button>'); }));
+  const c=collOf(state.coll);
+  if(c) items.unshift('<button type="button" class="achip coll-chip" data-coll-x aria-label="Remove collection '+esc(c.name)+'"><span class="g">Collection</span>'+esc(c.name)+'<span class="x" aria-hidden="true">✕</span></button>');
   el.hidden=!items.length;
   el.innerHTML=items.join('')+(items.length>1?'<button type="button" class="aclear" data-clear>Clear all</button>':'');
 }
 function renderFilterPanel(gs){
   gs=gs||groups();
-  const words=searchWords(), pool=gs.filter(g=>passSearch(g,words));
+  const words=searchWords(), pool=gs.filter(g=>passSearch(g,words) && passColl(g));
   const groupsToShow=FILTER_ORDER.filter(g=>g!=='unsorted' || groupValues('unsorted').length);
   const scroll=$('#flt-body').scrollTop;
   $('#flt-body').innerHTML=groupsToShow.map(g=>{
@@ -1447,7 +1564,7 @@ function openFilters(){
   renderFilterPanel(); $('#dlg-filter').showModal();
 }
 function toggleFilter(g,v){ const sel=fsel(g); sel.has(v)?sel.delete(v):sel.add(v); render(); }
-function clearFilters(){ FILTER_KEYS.forEach(g=>fsel(g).clear()); render(); }
+function clearFilters(){ FILTER_KEYS.forEach(g=>fsel(g).clear()); clearColl(); render(); }
 
 function noteBtn(id){ return '<button type="button" class="anno-add" data-act="note" data-target="'+esc(id)+'" aria-label="Add a note to this line" title="Add a note">✎</button>'; }
 function annoList(list,ed){
@@ -2290,8 +2407,11 @@ function bind(){
   $('#search').addEventListener('input',e=>{ state.search=e.target.value; clearTimeout(bind._t); bind._t=setTimeout(render,120); });
   $('#sort').addEventListener('change',e=>{ state.sort=e.target.value; ls.set('sort',state.sort); render(); });
   $('#btn-filter').addEventListener('click',openFilters);
+  $('#browse').addEventListener('click',e=>{ const b=e.target.closest('[data-coll]'); if(b) setColl(b.dataset.coll); });
+  $('#btn-view').addEventListener('click',()=>{ state.view=state.view==='grid'?'list':'grid'; ls.set('view',state.view); render(); });
   $('#active').addEventListener('click',e=>{
     if(e.target.closest('[data-clear]')){ clearFilters(); return; }
+    if(e.target.closest('[data-coll-x]')){ clearColl(); render(); return; }
     const b=e.target.closest('.achip'); if(b){ fsel(b.dataset.g).delete(b.dataset.v); render(); }
   });
   $('#flt-body').addEventListener('click',e=>{ const b=e.target.closest('.fchip'); if(b && !b.disabled) toggleFilter(b.dataset.g,b.dataset.v); });
@@ -2407,7 +2527,7 @@ function bind(){
   $('#se-save').addEventListener('click',saveSourceEdit);
   $('#sd-go').addEventListener('click',runSourceDelete);
   $('#sv-edit').addEventListener('click',()=>{ if(svCtx) openSourceEdit(svCtx.id); });
-  $('#sv-filter').addEventListener('click',()=>{ if(!svCtx) return; FILTER_KEYS.forEach(g=>fsel(g).clear()); fsel('source').add('id:'+svCtx.id);
+  $('#sv-filter').addEventListener('click',()=>{ if(!svCtx) return; FILTER_KEYS.forEach(g=>fsel(g).clear()); clearColl(); fsel('source').add('id:'+svCtx.id);
     $$('dialog[open]').forEach(d=>d.close()); document.body.classList.remove('show-detail'); render(); });
   $('#sv-body').addEventListener('click',e=>{ const b=e.target.closest('[data-svopen]'); if(!b) return; $$('dialog[open]').forEach(d=>d.close()); select(b.dataset.svopen); });
   $('#tm-body').addEventListener('click',tagManagerClick);
