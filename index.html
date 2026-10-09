@@ -44,6 +44,11 @@ a{color:var(--basil)}
 .sync{border:none;background:none;font-size:.8rem;color:var(--muted);min-height:var(--tap);padding:0 6px}
 .sync.warn{color:var(--saffron)} .sync.err{color:var(--danger)}
 
+/* Read-only lock (file saved by a newer app) */
+.lockbar{flex:none;padding:12px 16px;background:#FBF4E4;border-bottom:1px solid #EAD8AC}
+.lockbar strong{display:block;font-size:1rem}
+.lockbar p{margin:2px 0 10px;font-size:.9rem;max-width:70ch}
+
 /* Layout */
 #app{flex:1;min-height:0;display:flex;flex-direction:column}
 .layout{flex:1;min-height:0;display:grid;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr)}
@@ -212,7 +217,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 @media (max-width:520px){.row2{grid-template-columns:1fr}.detail h2{font-size:1.8rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{
-  .topbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
+  .topbar,.lockbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
   .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
@@ -261,6 +266,11 @@ window.RECIPE_CONFIG = {
     <button id="btn-add" class="btn primary edit-only" type="button">Add</button>
     <button id="btn-settings" class="btn icon ghost" type="button" aria-label="Settings">&#9881;&#xFE0E;</button>
   </header>
+  <div id="lockbar" class="lockbar" role="alert" hidden>
+    <strong>Update this app before editing</strong>
+    <p id="lock-text"></p>
+    <button id="lock-retry" class="btn" type="button">Reload the app</button>
+  </div>
   <div class="layout">
     <aside class="list-pane">
       <input id="search" class="search" type="search" placeholder="Search recipes, ingredients, notes" autocomplete="off">
@@ -407,8 +417,12 @@ window.RECIPE_CONFIG = {
 (function(){
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.1';
+const BUILD = 'R0';
 const DATA_VERSION = 3;
+/* The newest file format this copy of the app can safely save. A file with a higher
+   version was written by a newer app: this copy shows what it has cached and saves nothing. */
+const MAX_DATA_VERSION = DATA_VERSION;
 /* Cache and unsaved changes are kept separately for a test file, so testing never mixes with the real book */
 const DK = CONFIG.filePath === '/recipes.json' ? '' : ':' + CONFIG.filePath;
 
@@ -456,7 +470,36 @@ function itemText(x){ return typeof x==='string'?x:(x&&x.text!=null?String(x.tex
 function stripStep(s){ return String(s).replace(/^(step\s*)?\d+[.):]\s*/i,''); }
 function times(n){ return n===1?'once':n===2?'twice':n+' times'; }
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>{t.hidden=true;},2600); }
-function canEdit(){ return !ls.get('viewOnly',false); }
+function canEdit(){ return !state.locked && !ls.get('viewOnly',false); }
+
+/* ── Version guard ───────────────────────────────────── */
+/* The file format a raw Dropbox file declares. Old files with no number count as 1. */
+function fileVersion(raw){
+  if(Array.isArray(raw)) return 1;
+  const v=Number(raw && raw.version);
+  return isFinite(v) && v>0 ? v : 1;
+}
+function tooNew(raw){ return fileVersion(raw)>MAX_DATA_VERSION; }
+function lock(v){
+  const first=!state.locked;
+  state.locked=v;
+  $$('dialog[open]').forEach(d=>{ if(d.id!=='dlg-settings') d.close(); });
+  editing=null; noteCtx=null;
+  setStatus('locked');
+  render();
+  if(first) toast('Update this app before editing');
+}
+function unlock(){ if(state.locked){ state.locked=null; render(); } }
+function renderLock(){
+  const bar=$('#lockbar'); if(!bar) return;
+  bar.hidden=!state.locked;
+  if(!state.locked) return;
+  const n=state.queue.length;
+  $('#lock-text').textContent='Your recipe file was saved by a newer version of this app (data format '+state.locked+
+    '). This copy only understands up to format '+MAX_DATA_VERSION+', so editing is switched off to protect the file. '+
+    (n?n+' unsaved change'+(n>1?'s are':' is')+' kept on this device and will save after the update. ':'')+
+    'Close the app fully and open it again to load the update.';
+}
 
 /* ── Data model ──────────────────────────────────────── */
 /* Ingredients and steps are stored as {id, text}. Plain-text lines from older files get
@@ -613,12 +656,15 @@ function applyOp(d,op){
 }
 
 /* ── State ───────────────────────────────────────────── */
-const state={ db:{version:DATA_VERSION,recipes:[],families:{}}, queue:ls.get('queue'+DK,[]), selected:null, search:'', tags:new Set(), sort:ls.get('sort','title'), ticks:{}, lastPull:0 };
+const state={ db:{version:DATA_VERSION,recipes:[],families:{}}, queue:ls.get('queue'+DK,[]), selected:null, search:'', tags:new Set(), sort:ls.get('sort','title'), ticks:{}, lastPull:0, locked:null };
 let pulling=false, flushing=false;
 function saveCache(){ ls.set('cache'+DK,{db:state.db}); }
 function queueOp(op){ state.queue.push(op); ls.set('queue'+DK,state.queue); }
 function commit(op){ commitMany([op]); }
-function commitMany(ops){ ops.forEach(op=>{ applyOp(state.db,op); queueOp(op); }); saveCache(); render(); flush(); }
+function commitMany(ops){
+  if(state.locked){ toast('Update this app before editing'); return; }
+  ops.forEach(op=>{ applyOp(state.db,op); queueOp(op); }); saveCache(); render(); flush();
+}
 
 /* ── Dropbox ─────────────────────────────────────────── */
 const DBX_CONTENT='https://content.dropboxapi.com/2/files/';
@@ -682,6 +728,9 @@ async function pull(){
   if(pulling||flushing) return; pulling=true; setStatus('loading');
   try{
     const r=await dbxDownload();
+    /* Newer file: keep showing the cached copy, save nothing, don't overwrite the cache */
+    if(!r.notFound && tooNew(r.data)){ state.lastPull=Date.now(); lock(fileVersion(r.data)); return; }
+    unlock();
     if(r.notFound){
       if(!state.queue.some(o=>o.t==='seed')) queueOp({t:'seed',recipes:normalise(clone(STARTER)).d.recipes});
       const local={version:DATA_VERSION,recipes:[],families:{}}; state.queue.forEach(o=>applyOp(local,o));
@@ -700,13 +749,17 @@ async function pull(){
 }
 
 async function flush(){
-  if(flushing||!state.queue.length) return;
+  if(flushing||!state.queue.length||state.locked) return;
   flushing=true; setStatus('saving');
   let again=false, backedUp=false;
   try{
     let done=false;
     for(let attempt=0; attempt<4 && !done; attempt++){
       const r=await dbxDownload();
+      /* Version guard: never write over a file from a newer app. The upload below is tied to
+         this download's revision, so a newer file saved in between causes a conflict, and the
+         retry downloads it again and stops here. */
+      if(!r.notFound && tooNew(r.data)){ lock(fileVersion(r.data)); return; }
       /* Before the first save in a new data format, keep an untouched copy of the old file */
       if(!r.notFound && !backedUp && needsBackup(r.data)){
         await dbxPut(backupPath(r.data),r.text,'add',true);
@@ -738,14 +791,16 @@ function syncError(e){
 }
 function setStatus(kind,msg){
   const el=$('#sync'); if(!el) return;
+  if(state.locked && kind!=='loading') kind='locked';
   const n=state.queue.length;
   const txt={loading:'Checking Dropbox…',saving:'Saving…',saved:'Saved',
     offline:n?'Offline, '+n+' change'+(n>1?'s':'')+' waiting':'Offline',
-    error:'Sync problem, tap to retry'}[kind]||'';
-  el.textContent=txt; el.className='sync'+(kind==='offline'?' warn':kind==='error'?' err':'');
-  el.title=msg||'Tap to sync now';
+    error:'Sync problem, tap to retry',locked:'Read only'}[kind]||'';
+  el.textContent=txt; el.className='sync'+(kind==='offline'||kind==='locked'?' warn':kind==='error'?' err':'');
+  el.title=kind==='locked'?'This app needs updating before it can save':(msg||'Tap to sync now');
   if(kind==='error' && msg) toast(msg);
 }
+function syncNow(){ (state.queue.length && !state.locked) ? flush() : pull(); }
 
 /* ── Dropbox sign-in (PKCE) ──────────────────────────── */
 let pkcePrepared=null;
@@ -863,6 +918,7 @@ function allTags(gs){
 function render(){
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
   document.title=CONFIG.bookTitle;
+  renderLock();
   $$('.edit-only').forEach(el=>el.hidden=!canEdit());
   const gs=groups(), tags=allTags(gs);
   for(const t of Array.from(state.tags)) if(!tags.includes(t)) state.tags.delete(t);
@@ -1027,6 +1083,7 @@ function renderQuickTags(){
   $('#f-quicktags').innerHTML=allTags().slice(0,24).map(t=>'<button type="button" class="chip" data-qt="'+esc(t)+'" aria-pressed="'+cur.includes(t.toLowerCase())+'">'+esc(t)+'</button>').join('');
 }
 function openEdit(r,isNew){
+  if(state.locked){ toast('Update this app before editing'); return; }
   editing={id:r.id||uid('r-'),isNew:!!isNew,created:r.created||new Date().toISOString()};
   $('#edit-h').textContent=isNew?'New recipe':'Edit recipe';
   $('#f-title').value=r.title||''; $('#f-source').value=r.source||'';
@@ -1043,6 +1100,7 @@ function openEdit(r,isNew){
   $('#dlg-edit').showModal(); $('#dlg-edit').scrollTop=0;
 }
 function saveEdit(){
+  if(!editing || state.locked){ $('#dlg-edit').close(); editing=null; toast('Update this app before editing'); return; }
   const title=$('#f-title').value.trim();
   if(!title){ const m=$('#edit-msg'); m.textContent='Give the recipe a title.'; m.hidden=false; $('#f-title').focus(); return; }
   const seenTag=new Set();
@@ -1100,6 +1158,7 @@ function saveNote(){
   const changesLine=apply && line!==c.item;
   if(changesLine) ops.push({t:'applyNote',id:c.rid,aid,target:c.target,text:line,at});
   $('#dlg-note').close(); noteCtx=null;
+  if(state.locked){ toast('Update this app before editing'); return; }
   if(ops.length) commitMany(ops);
   toast(changesLine?'Note saved and recipe updated':'Note saved');
 }
@@ -1107,6 +1166,7 @@ function deleteNote(){
   const c=noteCtx; if(!c||!c.aid) return;
   if(!confirm('Delete this note?')) return;
   $('#dlg-note').close(); noteCtx=null;
+  if(state.locked){ toast('Update this app before editing'); return; }
   commit({t:'noteDel',id:c.rid,aid:c.aid});
   toast('Note deleted');
 }
@@ -1123,7 +1183,7 @@ function openNewVersion(r){
 }
 function createVersion(){
   const base=state.db.recipes.find(x=>x.id===verBase);
-  if(!base){ $('#dlg-version').close(); return; }
+  if(!base || state.locked){ $('#dlg-version').close(); if(state.locked) toast('Update this app before editing'); return; }
   const label=$('#v-label').value.trim();
   if(!label){ const m=$('#v-msg'); m.textContent='Give the new version a name, for example "With chicken thighs".'; m.hidden=false; $('#v-label').focus(); return; }
   const now=new Date().toISOString(), nr=clone(base);
@@ -1265,7 +1325,8 @@ function openSettings(){
   $('#s-key').value=ls.get('apiKey','');
   $('#s-model').value=ls.get('model','')||CONFIG.defaultModel;
   $('#s-file').innerHTML='Dropbox › Apps › <em>your app name</em> › '+esc(CONFIG.filePath.replace(/^\//,''));
-  $('#s-ver').textContent='App version '+APP_VERSION+', data format '+DATA_VERSION;
+  $('#s-ver').textContent='App version '+APP_VERSION+', build '+BUILD+', data format '+DATA_VERSION+
+    (state.locked?'. The recipe file is format '+state.locked+', so this copy needs updating.':'');
   $('#dlg-settings').showModal();
 }
 function saveSettings(){
@@ -1295,7 +1356,8 @@ function bind(){
   $('#sort').addEventListener('change',e=>{ state.sort=e.target.value; ls.set('sort',state.sort); render(); });
   $('#chips').addEventListener('click',e=>{ const b=e.target.closest('[data-tag]'); if(!b) return; const t=b.dataset.tag; state.tags.has(t)?state.tags.delete(t):state.tags.add(t); render(); });
   $('#list').addEventListener('click',e=>{ const b=e.target.closest('.item'); if(b) select(b.dataset.id); });
-  $('#sync').addEventListener('click',()=>{ state.queue.length?flush():pull(); });
+  $('#sync').addEventListener('click',syncNow);
+  $('#lock-retry').addEventListener('click',()=>location.reload());
   $('#btn-add').addEventListener('click',()=>openEdit({type:'Full'},true));
   $('#btn-import').addEventListener('click',()=>openImport('photo'));
   $('#btn-settings').addEventListener('click',openSettings);
@@ -1374,11 +1436,11 @@ function bind(){
   $('#s-disconnect').addEventListener('click',()=>{
     const warn=state.queue.length?' You have '+state.queue.length+' unsaved change(s) that will be lost.':'';
     if(!confirm('Disconnect Dropbox on this device?'+warn)) return;
-    ls.del('token'); ls.del('queue'+DK); ls.del('cache'+DK); state.queue=[]; state.db={version:DATA_VERSION,recipes:[],families:{}}; state.selected=null;
+    ls.del('token'); ls.del('queue'+DK); ls.del('cache'+DK); state.queue=[]; state.db={version:DATA_VERSION,recipes:[],families:{}}; state.selected=null; state.locked=null;
     $('#dlg-settings').close(); showConnect();
   });
 
-  window.addEventListener('online',()=>{ if(ls.get('token',null)) state.queue.length?flush():pull(); });
+  window.addEventListener('online',()=>{ if(ls.get('token',null)) syncNow(); });
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible' && ls.get('token',null) && !$('#app').hidden && Date.now()-state.lastPull>30000) pull();
   });
