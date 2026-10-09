@@ -43,6 +43,9 @@ a{color:var(--basil)}
 .topbar h1{font:600 1.3rem/1.2 var(--serif);margin:0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sync{border:none;background:none;font-size:.8rem;color:var(--muted);min-height:var(--tap);padding:0 6px}
 .sync.warn{color:var(--saffron)} .sync.err{color:var(--danger)}
+.testflag{flex:none;font:600 .75rem/1 var(--sans);padding:5px 8px;border-radius:4px;background:var(--saffron);color:#fff}
+.badge.review{background:#FBF4E4;color:var(--saffron)}
+.tag.unsorted{border-style:dashed}
 
 /* Read-only lock (file saved by a newer app) */
 .lockbar{flex:none;padding:12px 16px;background:#FBF4E4;border-bottom:1px solid #EAD8AC}
@@ -56,8 +59,97 @@ a{color:var(--basil)}
 .list-pane{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px calc(24px + var(--sb))}
 .search{width:100%;min-height:var(--tap);padding:0 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--card);-webkit-appearance:none;appearance:none}
 .filters{display:flex;gap:8px;align-items:center;margin:10px 0 2px}
-.chips{display:flex;gap:6px;overflow-x:auto;flex:1;padding:2px 0 6px;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
+.fbtn{flex:1;min-width:0;display:flex;align-items:center;gap:8px;min-height:38px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:.9rem;font-weight:600;padding:0 14px;text-align:left}
+.fbtn.on{border-color:var(--ink)}
+.fbtn .n{min-width:20px;padding:2px 7px;border-radius:999px;background:var(--ink);color:#fff;font-size:.75rem;text-align:center}
+.active{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.achip{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 10px;border-radius:999px;border:1px solid var(--ink);background:var(--ink);color:#fff;font-size:.82rem}
+.achip .g{opacity:.7}
+.achip .x{opacity:.75;font-size:.9rem}
+.aclear{border:none;background:none;color:var(--basil);font-weight:600;font-size:.85rem;min-height:32px;padding:0 6px}
+/* Filter panel: side panel on iPad, full screen on iPhone */
+dialog.sheet{position:fixed;inset:0 0 0 auto;margin:0;width:min(420px,100vw);height:100%;max-height:100%;max-width:100vw;border-radius:0;flex-direction:column}
+dialog.sheet[open]{display:flex}
+dialog.sheet::backdrop{background:rgba(24,34,29,.25)}
+dialog.sheet .dlg-head{padding-top:calc(10px + var(--st))}
+dialog.sheet .dlg-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;align-content:start;gap:0;padding-top:4px}
+dialog.sheet .dlg-foot{position:static}
+@media (max-width:600px){dialog.sheet{width:100vw}}
+.fgroup{border-bottom:1px solid var(--line);padding:2px 0 12px}
+.fgroup summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:var(--tap);font:600 1.05rem/1.2 var(--serif);cursor:pointer}
+.fgroup summary::-webkit-details-marker{display:none}
+.fgroup summary::after{content:"";margin:0 6px 0 auto;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
+.fgroup[open] summary::after{transform:rotate(-135deg)}
+.fsel{font:600 .72rem/1 var(--sans);color:#fff;background:var(--basil);padding:4px 7px;border-radius:999px}
+.fvals{display:flex;flex-wrap:wrap;gap:6px}
+.fchip{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.88rem}
+.fchip .n{color:var(--muted);font-size:.78rem;margin-left:5px}
+.fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.fchip[aria-pressed="true"] .n{color:#CFD6D1}
+.fchip:disabled{opacity:.38;cursor:default}
+.fhint{font-size:.8rem;color:var(--muted);margin:0 0 8px}
+/* Tag pickers in the edit dialog */
+.tgroups{border:1px solid var(--line);border-radius:var(--r-sm)}
+.tg+.tg{border-top:1px solid var(--line)}
+.tg-head{display:grid;grid-template-columns:minmax(120px,auto) 1fr auto;gap:10px;align-items:center;width:100%;min-height:var(--tap);padding:6px 12px;border:none;background:none;text-align:left}
+.tg-head::after{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px}
+.tg.open .tg-head::after{transform:rotate(-135deg)}
+.tg-name{font-weight:600;font-size:.9rem}
+.tg-sum{font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tg-body{padding:2px 12px 12px}
+.tg-add{display:flex;gap:8px;margin-top:10px}
+.tg-add input{flex:1}
+/* Browse home, view toggle and grid */
+.vbtn{flex:none;min-height:38px;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:0 12px;font-size:.85rem;font-weight:600}
+.browse{margin:12px 0 2px}
+.browse h2{font:600 .72rem/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+.colls{display:flex;gap:8px;overflow-x:auto;padding:0 0 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.colls::-webkit-scrollbar{display:none}
+.coll{flex:none;width:148px;display:grid;gap:3px;align-content:start;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+.coll .cn{font:600 1rem/1.2 var(--serif)}
+.coll .cs{font-size:.76rem;color:var(--muted);line-height:1.3}
+.coll .cc{font:600 .78rem/1 var(--sans);color:var(--basil);margin-top:4px}
+.achip.coll-chip{background:var(--basil);border-color:var(--basil)}
+.list.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;border-top:none;padding-top:4px}
+.list.grid li{min-width:0}
+.list.grid .item{display:flex;flex-direction:column;align-items:stretch;text-align:left;height:100%;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--card);overflow:hidden;gap:0}
+.list.grid .item[aria-current="true"]{border-color:var(--basil);box-shadow:0 0 0 2px var(--basil-edge)}
+.tile{display:flex;align-items:flex-end;aspect-ratio:4/3;padding:10px 12px;color:var(--ink)}
+.tile-t{font:600 1rem/1.22 var(--serif);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word}
+.tile-meta{display:block;padding:8px 12px 10px;font-size:.78rem;color:var(--muted)}
+.tile-meta .badge{margin:0 4px 0 0}
+.tile-meta .stars{display:block;margin-bottom:2px}
+.list.grid .empty{grid-column:1/-1}
+/* Sources */
+.srcbtn{display:flex;align-items:center;gap:8px;width:100%;min-height:var(--tap);padding:6px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);text-align:left}
+.srcbtn::after{content:"";margin-left:auto;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
+.srcbtn[aria-expanded="true"]::after{transform:rotate(-135deg)}
+.srcbtn .k{font-size:.78rem;color:var(--muted)}
+.srcpanel{border:1px solid var(--line);border-top:none;border-radius:0 0 var(--r-sm) var(--r-sm);padding:10px 12px 12px;margin-top:-4px}
+.srclist{max-height:280px;overflow-y:auto;margin-top:8px}
+.srcopt{display:flex;align-items:baseline;gap:8px;width:100%;min-height:40px;padding:6px 8px;border:none;border-radius:var(--r-sm);background:none;text-align:left}
+.srcopt:hover,.srcopt[aria-selected="true"]{background:var(--basil-soft)}
+.srcopt .a{font-size:.8rem;color:var(--muted)}
+.srcopt.new{color:var(--basil);font-weight:600}
+.srcsubh{font:600 .72rem/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:10px 8px 4px}
+.srcnew{margin-top:10px;padding:12px;border-radius:var(--r-sm);background:var(--paper);display:grid;gap:12px}
+.srcsub{margin-top:12px}
+.srclink{border:none;background:none;padding:0;color:var(--basil);text-decoration:underline;text-underline-offset:2px;font:inherit;cursor:pointer}
+.fsearch{margin:0 0 10px}
+.fsub+.fsub{margin-top:10px}
+.fsubh{font:600 .72rem/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
+.fsites{margin:6px 0 0 14px;padding-left:10px;border-left:2px solid var(--line)}
+.srcrecipes{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.srcrecipes button{display:block;width:100%;padding:10px 4px;border:none;border-bottom:1px solid var(--line);background:none;text-align:left;font:600 1rem/1.3 var(--serif)}
+.srcrecipes .m{display:block;font:.8rem var(--sans);color:var(--muted)}
+/* Tag manager */
+.tmlist{list-style:none;margin:0 0 10px;padding:0}
+.tmrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.tm-name{font-weight:600}
+.tm-n{font-size:.8rem;color:var(--muted);margin-right:auto}
+.tm-acts{display:flex;gap:4px;flex-wrap:wrap}
+.tm-acts .btn{min-height:34px;padding:0 10px;font-size:.82rem}
+.tm-acts .btn.icon{width:34px;padding:0}
 .chip{flex:none;min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.85rem;color:var(--muted)}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .sort{flex:none;min-height:34px;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:0 10px;font-size:.85rem}
@@ -182,13 +274,19 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 .seg button{flex:1;min-height:40px;border:none;background:var(--card);font-size:.92rem}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
-.quicktags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.quicktags .chip{min-height:30px;font-size:.8rem}
 .msg{padding:10px 12px;border-radius:var(--r-sm);font-size:.9rem;margin:0}
 .msg.err{background:#F7E4E0;color:var(--danger)}
 .msg.ok{background:var(--basil-soft);color:var(--basil)}
-.thumbs{display:flex;gap:8px;flex-wrap:wrap}
-.thumbs img{width:76px;height:76px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.impstep{padding:12px 14px;border-radius:var(--r);background:var(--paper);display:grid;gap:10px}
+.impstep p{margin:0}
+.impstep textarea{font-size:.8rem}
+.tagreview{margin:0 0 10px;padding:10px 12px;border-radius:var(--r-sm);background:#FBF4E4;border:1px solid #EAD8AC;display:grid;gap:8px}
+.tagreview p{margin:0;font-size:.88rem}
+.trrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding-top:8px;border-top:1px solid #EAD8AC}
+.trv{font-weight:600}
+.tracts{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap;align-items:center}
+.tracts .btn{min-height:36px;font-size:.85rem}
+.trmap{min-height:36px;max-width:190px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);font-size:.85rem;padding:0 8px}
 .check{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
 .check input{width:22px;height:22px;accent-color:var(--basil);margin:1px 0 0;flex:none}
 .stack{display:flex;flex-wrap:wrap;gap:8px}
@@ -217,7 +315,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 @media (max-width:520px){.row2{grid-template-columns:1fr}.detail h2{font-size:1.8rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{
-  .topbar,.lockbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
+  .active,.topbar,.lockbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
   .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
@@ -231,14 +329,13 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
      SETUP: paste your Dropbox App key between the quotes below.
      (Dropbox App Console → your app → Settings → "App key")
      filePath is the recipe file inside your Dropbox app folder.
-     For a test copy, use e.g. '/recipes-test.json'.
+     For testing, add ?test to the address to use '/recipes-test.json' instead.
      ═══════════════════════════════════════════════════════════════ -->
 <script>
 window.RECIPE_CONFIG = {
   dropboxAppKey: '89yrb6ctcgdmlar',
   filePath: '/recipes.json',
-  bookTitle: 'Cameron Family Recipe Book',
-  defaultModel: 'claude-sonnet-5-5'
+  bookTitle: 'Cameron Family Recipe Book'
 };
 </script>
 
@@ -261,6 +358,7 @@ window.RECIPE_CONFIG = {
 <div id="app" hidden>
   <header class="topbar">
     <h1 class="book-title">Recipe Book</h1>
+    <span id="testflag" class="testflag" hidden>Test file</span>
     <button id="sync" class="sync" type="button" title="Tap to sync now"></button>
     <button id="btn-import" class="btn edit-only" type="button">Import</button>
     <button id="btn-add" class="btn primary edit-only" type="button">Add</button>
@@ -273,16 +371,20 @@ window.RECIPE_CONFIG = {
   </div>
   <div class="layout">
     <aside class="list-pane">
-      <input id="search" class="search" type="search" placeholder="Search recipes, ingredients, notes" autocomplete="off">
+      <input id="search" class="search" type="search" placeholder="Search recipes, ingredients, tags, notes" autocomplete="off">
       <div class="filters">
-        <div id="chips" class="chips" role="group" aria-label="Filter by tag"></div>
+        <button id="btn-filter" class="fbtn" type="button" aria-haspopup="dialog">Filters</button>
         <select id="sort" class="sort" aria-label="Sort recipes">
           <option value="title">A to Z</option>
           <option value="recent">Recently made</option>
           <option value="most">Most made</option>
           <option value="rating">Top rated</option>
+          <option value="added">Recently added</option>
         </select>
+        <button id="btn-view" class="vbtn" type="button" aria-label="Show as grid">Grid</button>
       </div>
+      <div id="active" class="active" hidden></div>
+      <section id="browse" class="browse" aria-labelledby="browse-h" hidden></section>
       <p id="count" class="count"></p>
       <ul id="list" class="list"></ul>
     </aside>
@@ -302,12 +404,28 @@ window.RECIPE_CONFIG = {
     <div class="field"><span class="lbl">Kind</span>
       <div class="seg" id="f-type"><button type="button" data-v="Full">Full recipe</button><button type="button" data-v="External">Link only</button></div>
     </div>
-    <div class="field"><label for="f-source">Source</label><input id="f-source" type="text" placeholder="Web address, or book and page number"></div>
+    <div class="field"><span class="lbl" id="f-srclbl">Source</span>
+      <button type="button" id="f-srcbtn" class="srcbtn" aria-expanded="false" aria-labelledby="f-srclbl f-srcbtn"></button>
+      <div id="f-srcpanel" class="srcpanel" hidden>
+        <input id="f-srcq" type="search" placeholder="Search sources" autocomplete="off" aria-label="Search sources">
+        <div id="f-srclist" class="srclist" role="listbox" aria-label="Sources"></div>
+      </div>
+      <div id="f-srcnew" class="srcnew" hidden>
+        <div class="field"><label for="f-sn-name">New source name</label><input id="f-sn-name" type="text" autocomplete="off"></div>
+        <div class="field"><span class="lbl">Kind</span><div class="seg" id="f-sn-kind"><button type="button" data-v="Book">Book</button><button type="button" data-v="Homemade">Homemade</button><button type="button" data-v="Other">Other</button></div></div>
+        <div class="field" id="f-sn-authwrap"><label for="f-sn-author">Author</label><input id="f-sn-author" type="text" autocomplete="off"></div>
+      </div>
+      <div id="f-bookwrap" class="field srcsub" hidden><label for="f-page">Page</label><input id="f-page" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 154"></div>
+      <div id="f-onlinewrap" class="row2 srcsub" hidden>
+        <div class="field"><label for="f-url">Web address</label><input id="f-url" type="url" placeholder="https://" autocapitalize="off" autocomplete="off"></div>
+        <div class="field"><label for="f-site">Website name</label><input id="f-site" type="text" autocapitalize="off" autocomplete="off"><p class="hint">Filled in from the address. You can change it.</p></div>
+      </div>
+    </div>
     <div class="row2">
       <div class="field"><label for="f-serves">Serves</label><input id="f-serves" type="text" placeholder="e.g. 4"></div>
       <div class="field"><label for="f-time">Time</label><input id="f-time" type="text" placeholder="e.g. 1 hr 15 min"></div>
     </div>
-    <div class="field"><label for="f-tags">Tags</label><input id="f-tags" type="text" placeholder="Separate with commas"><div id="f-quicktags" class="quicktags"></div></div>
+    <div class="field"><span class="lbl">Tags</span><div id="f-tagreview" class="tagreview" hidden></div><div id="f-taggroups" class="tgroups"></div><p class="hint">All optional. Tap a group to choose, or add a new value.</p></div>
     <div class="field full-only"><label for="f-ings">Ingredients</label><textarea id="f-ings" rows="8"></textarea><p class="hint">One per line. End a line with a colon to make a heading, e.g. "For the sauce:". Notes stay with a line when you reword it.</p></div>
     <div class="field full-only"><label for="f-method">Method</label><textarea id="f-method" rows="8"></textarea><p class="hint">One step per line.</p></div>
     <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" rows="4" placeholder="Tips, swaps, what to do differently"></textarea></div>
@@ -357,31 +475,82 @@ window.RECIPE_CONFIG = {
   <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="del-archive" class="btn" type="button">Archive this version</button><button id="del-all" class="btn danger" type="button">Delete all versions</button></div>
 </dialog>
 
-<!-- Import -->
+<!-- Import: paste ChatGPT's filled-in template (or any recipe text) -->
 <dialog id="dlg-import" aria-labelledby="imp-h">
   <div class="dlg-head"><h2 id="imp-h">Import a recipe</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
   <div class="dlg-body">
-    <div class="seg" id="imp-tabs"><button type="button" data-v="photo">Photo</button><button type="button" data-v="url">Website</button><button type="button" data-v="text">Paste text</button></div>
-    <div data-pane="photo" class="field">
-      <label for="imp-files">Photos of the recipe</label>
-      <input id="imp-files" type="file" accept="image/*" multiple>
-      <p class="hint">Take a photo or choose from your library. Add two photos if the recipe runs over two pages.</p>
-      <div id="imp-thumbs" class="thumbs" style="margin-top:10px"></div>
+    <div class="impstep">
+      <p><strong>1.</strong> Copy the prompt and paste it into ChatGPT, with your recipe photos or the recipe's web address.</p>
+      <div><button id="imp-copy" class="btn" type="button">Copy ChatGPT prompt</button></div>
+      <p id="imp-copied" class="msg ok" hidden></p>
+      <textarea id="imp-prompt" rows="6" readonly hidden aria-label="ChatGPT prompt"></textarea>
     </div>
-    <div data-pane="url" class="field">
-      <label for="imp-url">Recipe web address</label>
-      <input id="imp-url" type="url" placeholder="https://" autocapitalize="off">
-      <p class="hint">Tip: in Safari, tap Share, then Copy, then paste here.</p>
-    </div>
-    <div data-pane="text" class="field">
-      <label for="imp-text">Recipe text</label>
-      <textarea id="imp-text" rows="10" placeholder="Paste the recipe here"></textarea>
-      <p class="hint">Works without a Claude key. To copy text from a cookbook photo, open the photo, press and hold on the words, then Select All and Copy.</p>
+    <div class="field">
+      <label for="imp-text"><strong>2.</strong> Paste ChatGPT's reply here</label>
+      <textarea id="imp-text" rows="12" placeholder="Paste the filled-in template, or any recipe text" spellcheck="false"></textarea>
+      <p class="hint" id="imp-hint">Plain recipe text works too. If the reply has several recipes, you'll check them one after another.</p>
+      <p class="hint" id="imp-vernote" hidden>The pasted recipe becomes a new version. The current version and its cooking history stay as they are.</p>
     </div>
     <p id="imp-msg" class="msg err" hidden></p>
-    <p id="imp-nokey" class="msg err" hidden>Photo and website import need a Claude API key. Add one in Settings, or use Paste text.</p>
   </div>
   <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="imp-go" class="btn primary" type="button">Read recipe</button></div>
+</dialog>
+
+<!-- Filters -->
+<dialog id="dlg-filter" class="sheet" aria-labelledby="flt-h">
+  <div class="dlg-head"><h2 id="flt-h">Filters</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div id="flt-body" class="dlg-body"></div>
+  <div class="dlg-foot"><button id="flt-clear" class="btn ghost left" type="button">Clear all</button><button id="flt-done" class="btn primary" type="button">Show recipes</button></div>
+</dialog>
+
+<!-- Tag manager -->
+<dialog id="dlg-tags" aria-labelledby="tm-h">
+  <div class="dlg-head"><h2 id="tm-h">Manage tags</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div id="tm-body" class="dlg-body"></div>
+  <div class="dlg-foot"><button class="btn primary" data-close type="button">Done</button></div>
+</dialog>
+<dialog id="dlg-tagact" aria-labelledby="ta-h">
+  <div class="dlg-head"><h2 id="ta-h">Rename</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <p id="ta-text"></p>
+    <div id="ta-selwrap" class="field"><label id="ta-sellbl" for="ta-sel">Group</label><select id="ta-sel" class="field-select"></select></div>
+    <div id="ta-namewrap" class="field"><label for="ta-name">Name</label><input id="ta-name" type="text" autocomplete="off"></div>
+    <p id="ta-info" class="hint" hidden></p>
+    <p id="ta-msg" class="msg err" hidden></p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="ta-go" class="btn primary" type="button">Save</button></div>
+</dialog>
+
+<!-- Sources -->
+<dialog id="dlg-sources" aria-labelledby="sm-h">
+  <div class="dlg-head"><h2 id="sm-h">Manage sources</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body"><div><button id="sm-add" class="btn primary" type="button">Add a source</button></div><div id="sm-body"></div></div>
+  <div class="dlg-foot"><button class="btn primary" data-close type="button">Done</button></div>
+</dialog>
+<dialog id="dlg-srcedit" aria-labelledby="se-h">
+  <div class="dlg-head"><h2 id="se-h">Edit source</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <div class="field" id="se-namewrap"><label for="se-name">Name</label><input id="se-name" type="text" autocomplete="off"></div>
+    <div class="field" id="se-kindwrap"><span class="lbl">Kind</span><div class="seg" id="se-kind"><button type="button" data-v="Book">Book</button><button type="button" data-v="Homemade">Homemade</button><button type="button" data-v="Other">Other</button></div></div>
+    <div class="field" id="se-authwrap"><label for="se-author">Author</label><input id="se-author" type="text" autocomplete="off"></div>
+    <div class="field"><label for="se-notes">Notes</label><textarea id="se-notes" rows="3"></textarea></div>
+    <p id="se-builtin" class="hint" hidden>Online is built in. It covers every website, so it can't be renamed or deleted.</p>
+    <p id="se-msg" class="msg err" hidden></p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="se-save" class="btn primary" type="button">Save source</button></div>
+</dialog>
+<dialog id="dlg-srcdel" aria-labelledby="sd-h">
+  <div class="dlg-head"><h2 id="sd-h">Delete source</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <p id="sd-text"></p>
+    <div id="sd-movewrap" class="field"><label for="sd-to">Move its recipes to</label><select id="sd-to" class="field-select"></select></div>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="sd-go" class="btn danger" type="button">Delete source</button></div>
+</dialog>
+<dialog id="dlg-srcview" aria-labelledby="sv-h">
+  <div class="dlg-head"><h2 id="sv-h">Source</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div id="sv-body" class="dlg-body"></div>
+  <div class="dlg-foot"><button id="sv-filter" class="btn left" type="button">Show these in the list</button><button id="sv-edit" class="btn edit-only" type="button">Edit source</button><button class="btn primary" data-close type="button">Close</button></div>
 </dialog>
 
 <!-- Settings -->
@@ -389,14 +558,13 @@ window.RECIPE_CONFIG = {
   <div class="dlg-head"><h2 id="set-h">Settings</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
   <div class="dlg-body">
     <label class="check"><input id="s-viewonly" type="checkbox"><span><strong>View only on this device</strong><br><span class="muted">Hides adding, editing, notes and logging. Useful on your phone.</span></span></label>
-    <div class="field">
-      <label for="s-key">Claude API key (for photo and website import)</label>
-      <input id="s-key" type="password" autocomplete="off" placeholder="sk-ant-…">
-      <p class="hint">Stored only in this browser on this device. Set a monthly spend limit in the Claude Console.</p>
+    <div class="field edit-only"><span class="lbl">Tags</span>
+      <p class="hint" style="margin:0 0 10px">Rename, merge, reorder or delete tag values, and sort out Unsorted tags.</p>
+      <button id="s-tags" class="btn" type="button">Manage tags</button>
     </div>
-    <div class="field">
-      <label for="s-model">Model</label>
-      <input id="s-model" type="text" autocapitalize="off" spellcheck="false">
+    <div class="field edit-only"><span class="lbl">Sources</span>
+      <p class="hint" style="margin:0 0 10px">Books, homemade sources and others. Websites all come under Online.</p>
+      <button id="s-sources" class="btn" type="button">Manage sources</button>
     </div>
     <div class="field"><span class="lbl">Recipe file</span>
       <p id="s-file" class="hint" style="margin:0"></p>
@@ -417,14 +585,43 @@ window.RECIPE_CONFIG = {
 (function(){
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
-const APP_VERSION = '2.1';
-const BUILD = 'R0';
-const DATA_VERSION = 3;
+const APP_VERSION = '3.0';
+const BUILD = 'R1';
+const DATA_VERSION = 4;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
 const MAX_DATA_VERSION = DATA_VERSION;
-/* Cache and unsaved changes are kept separately for a test file, so testing never mixes with the real book */
-const DK = CONFIG.filePath === '/recipes.json' ? '' : ':' + CONFIG.filePath;
+/* Test mode: add ?test to the address to use /recipes-test.json in that tab only.
+   Cache and unsaved changes are kept separately for a test file, so testing never mixes with the real book. */
+/* DEV_BUILD: set to true for a test build kept in the /test/ folder, so it only ever uses the test file.
+   The live build has it false; adding ?test to the address still switches a single tab to the test file. */
+const DEV_BUILD = false;
+const TEST = DEV_BUILD || new URLSearchParams(location.search).has('test');
+const FILE = TEST ? '/recipes-test.json' : CONFIG.filePath;
+const DK = FILE === '/recipes.json' ? '' : ':' + FILE;
+
+/* ── Tag groups, sources and time (data format 4) ────── */
+const GROUPS = [['course','Course'],['mainIngredient','Main ingredient'],['cuisine','Cuisine'],['diet','Diet'],['effort','Effort'],['occasion','Occasion or season']];
+const GROUP_KEYS = GROUPS.map(g=>g[0]);
+const TAG_KEYS = GROUP_KEYS.concat('unsorted');
+const DEFAULT_TAXONOMY = {
+  course:['Breakfast','Lunch','Main','Side','Starter','Soup','Dessert','Baking','Snack','Drink','Sauces & Basics'],
+  cuisine:['British','Italian','French','Spanish','Greek','Middle Eastern','Indian','Thai','Chinese','Japanese','Korean','Mexican','American','Other'],
+  mainIngredient:['Chicken','Beef','Pork','Lamb','Fish','Seafood','Eggs','Vegetables','Pulses','Pasta','Rice & Grains','Cheese','Fruit','Chocolate'],
+  diet:['Vegetarian','Vegan','Gluten-free','Dairy-free'],
+  effort:['Weeknight','Weekend project','Make ahead'],
+  occasion:['Spring','Summer','Autumn','Winter','Christmas','Easter','Barbecue','Entertaining','Packed lunch']
+};
+/* Used by the Quick collection (Release 1, step 5) */
+const QUICK_MINUTES = 45;
+const SOURCE_KINDS = ['Book','Online','Homemade','Other'];
+const ONLINE_ID = 'src-online';
+const GROUP_LABEL = Object.assign({unsorted:'Unsorted',source:'Source'},Object.fromEntries(GROUPS));
+/* Order of groups in the filter panel (the edit dialog uses GROUPS order) */
+const FILTER_ORDER = ['source','course','cuisine','mainIngredient','diet','effort','occasion','unsorted'];
+const FILTER_KEYS = ['source'].concat(TAG_KEYS);
+const KIND_LABEL = {Book:'Books',Online:'Online',Homemade:'Homemade',Other:'Other'};
+const USER_KINDS = ['Book','Homemade','Other'];
 
 /* Starter content, used only if the recipe file doesn't exist in Dropbox yet */
 const STARTER = {version:2,recipes:[
@@ -471,6 +668,144 @@ function stripStep(s){ return String(s).replace(/^(step\s*)?\d+[.):]\s*/i,''); }
 function times(n){ return n===1?'once':n===2?'twice':n+' times'; }
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>{t.hidden=true;},2600); }
 function canEdit(){ return !state.locked && !ls.get('viewOnly',false); }
+
+/* Tag matching ignores case, brackets, punctuation and simple plurals */
+function tkey(s){ return String(s||'').toLowerCase().replace(/[’‘]/g,"'").replace(/\([^)]*\)/g,' ').replace(/[^a-z0-9&' -]+/g,' ').replace(/\s+/g,' ').trim(); }
+function singular(k){ return k.split(' ').map(w=>w.length>3?w.replace(/ies$/,'y').replace(/([^s])s$/,'$1'):w).join(' '); }
+function tagMatch(a,b){ return singular(tkey(a))===singular(tkey(b)); }
+/* Old free-text tags that need a nudge into the right group. Keys are matched like tags. */
+const TAG_ALIASES = {
+  'dinner':['course','Main'],'supper':['course','Main'],'main course':['course','Main'],'pudding':['course','Dessert'],
+  'stock':['course','Sauces & Basics'],'sauce':['course','Sauces & Basics'],'basic':['course','Sauces & Basics'],
+  'rice':['mainIngredient','Rice & Grains'],'grain':['mainIngredient','Rice & Grains'],'vegetable':['mainIngredient','Vegetables'],'egg':['mainIngredient','Eggs'],
+  'veggie':['diet','Vegetarian'],'gluten free':['diet','Gluten-free'],'dairy free':['diet','Dairy-free'],
+  'make ahead':['effort','Make ahead'],'make-ahead':['effort','Make ahead'],'bbq':['occasion','Barbecue']
+};
+/* Old tags with no place in the new groups: Quick comes from the time, the others from history and source */
+const TAG_DROP = ['quick','not tried yet','tiktok'];
+function emptyTags(){ const o={}; TAG_KEYS.forEach(k=>o[k]=[]); return o; }
+function addTag(tags,g,v){ if(!tags[g].some(x=>tagMatch(x,v))) tags[g].push(v); }
+function mapTag(t,tax){
+  const raw=String(t||'').trim(), k=singular(tkey(raw));
+  if(!k || TAG_DROP.some(x=>singular(tkey(x))===k)) return null;
+  for(const a in TAG_ALIASES) if(singular(tkey(a))===k) return TAG_ALIASES[a];
+  for(const g of GROUP_KEYS){ const hit=((tax&&tax[g])||[]).find(v=>tagMatch(v,raw)); if(hit) return [g,hit]; }
+  return ['unsorted',raw];
+}
+function groupTags(list,tax){ const o=emptyTags(); (list||[]).forEach(t=>{ const m=mapTag(t,tax); if(m) addTag(o,m[0],m[1]); }); return o; }
+function normTags(t){
+  const o=emptyTags();
+  if(t && typeof t==='object' && !Array.isArray(t)) TAG_KEYS.forEach(k=>{ if(Array.isArray(t[k])) t[k].forEach(v=>{ v=String(v==null?'':v).trim(); if(v) addTag(o,k,v); }); });
+  return o;
+}
+function flatTags(r){ const t=(r&&r.tags)||{}; return TAG_KEYS.reduce((a,k)=>a.concat(t[k]||[]),[]); }
+/* The edit dialog saves only what changed in the tags, so a rename or merge made on another
+   device at the same time isn't undone by this device's copy of the old tags. */
+function diffTags(a,b){
+  const out={};
+  TAG_KEYS.forEach(k=>{
+    const add=(b[k]||[]).filter(v=>!(a[k]||[]).some(x=>tagMatch(x,v)));
+    const remove=(a[k]||[]).filter(v=>!(b[k]||[]).some(x=>tagMatch(x,v)));
+    if(add.length||remove.length) out[k]={add,remove};
+  });
+  return out;
+}
+function applyTagDiff(tags,diff){
+  const t=normTags(tags);
+  TAG_KEYS.forEach(k=>{ const df=(diff||{})[k]; if(!df) return;
+    (df.remove||[]).forEach(v=>{ t[k]=t[k].filter(x=>!tagMatch(x,v)); });
+    (df.add||[]).forEach(v=>{ v=String(v||'').trim(); if(v) addTag(t,k,v); });
+  });
+  return t;
+}
+
+/* "1 hour 30 minutes" → 90, "1.5 Hours" → 90, "30 minutew" → 30, "45" → 45 */
+function parseMinutes(s){
+  s=String(s||'').toLowerCase().replace(/(\d),(\d)/g,'$1.$2');
+  if(!s.trim()) return null;
+  let total=0, found=false;
+  const h=s.match(/(\d+(?:\.\d+)?)\s*(?:hours?|hrs?|h)(?![a-z])/);
+  if(h){ total+=parseFloat(h[1])*60; found=true; }
+  const m=s.match(/(\d+)\s*m(?:in|ins|inute)?[a-z]*/);
+  if(m){ total+=parseInt(m[1],10); found=true; }
+  if(!found){ const b=s.match(/^\s*(\d+)\s*$/); if(b){ total=parseInt(b[1],10); found=true; } }
+  return found && total>0 ? Math.round(total) : null;
+}
+
+/* Source IDs come from the kind and name, so two devices migrating at once agree */
+function srcId(kind,name){ return kind==='Online'?ONLINE_ID:'src-'+String(kind).toLowerCase()+'-'+slug(name); }
+const HOMEMADE_ID = srcId('Homemade','Homemade');
+function siteFromUrl(u){ try{ return new URL(u.trim()).hostname.toLowerCase().replace(/^(www|m|mobile|vm|amp)\./,''); }catch(e){ return ''; } }
+/* Source text already in the recipe book, matched after curly apostrophes are straightened */
+const SOURCE_RULES = [
+  [/^old favourites? recipes? list$/i, ()=>({kind:'Homemade',name:'Old favourites'})],
+  [/^andrew'?s own recipe$|^made up from copying a restaurant meal$/i, ()=>({kind:'Homemade',name:'Andrew’s own'})],
+  [/^nahoko homemade recipe$/i, ()=>({kind:'Homemade',name:'Nahoko'})],
+  [/^man kin'?s recipe$/i, ()=>({kind:'Homemade',name:'Man Kin'})],
+  [/^chat ?gpt$/i, ()=>({kind:'Other',name:'ChatGPT'})],
+  [/^nigel slater'?s? the 30-minute cook,?\s+(?:page|p\.?)\s*(\d+)/i, m=>({kind:'Book',name:'The 30-Minute Cook',author:'Nigel Slater',ref:m[1]})],
+  [/^so easy so good by kylie sakaida,?\s+(?:page|p\.?)\s*(\d+)/i, m=>({kind:'Book',name:'So Easy So Good',author:'Kylie Sakaida',ref:m[1]})]
+];
+/* Turn a free-text source into {kind, name, author, ref, site}. d gives the sources that already exist. */
+function resolveSource(text,d){
+  const raw=String(text||'').trim(); if(!raw) return null;
+  if(isUrl(raw)) return {kind:'Online',name:'Online',ref:raw,site:siteFromUrl(raw)};
+  const t=raw.replace(/[’‘]/g,"'").replace(/\s+/g,' ');
+  for(const [re,fn] of SOURCE_RULES){ const m=t.match(re); if(m) return fn(m); }
+  const ex=((d&&d.sources)||[]).find(s=>tkey(s.name)===tkey(raw));
+  if(ex) return {id:ex.id,kind:ex.kind,name:ex.name};
+  if(/\b(family|handwritten|grandma|granny|nana?)\b/i.test(t)) return {kind:'Homemade',name:'Family'};
+  const pg=t.match(/^(.+?)[\s,–-]+(?:page|pg\.?|p\.)\s*(\d+)/i);
+  if(pg){
+    let name=pg[1].trim(), author='';
+    const exb=((d&&d.sources)||[]).find(s=>s.kind==='Book' && tkey(s.name)===tkey(name));
+    if(exb) return {id:exb.id,kind:'Book',name:exb.name,ref:pg[2]};
+    const by=name.match(/^(.+?)\s+by\s+(.+)$/i); if(by){ name=by[1].trim(); author=by[2].trim(); }
+    return {kind:'Book',name,author,ref:pg[2]};
+  }
+  if(/\b(homemade|home made|own recipe|my recipe)\b/i.test(t)) return {kind:'Homemade',name:'Homemade'};
+  return {kind:'Other',name:raw,review:true};
+}
+function ensureSource(d,spec){
+  if(!Array.isArray(d.sources)) d.sources=[];
+  if(spec.id && d.sources.some(s=>s.id===spec.id)) return spec.id;
+  const id=srcId(spec.kind,spec.name);
+  const s=d.sources.find(x=>x.id===id);
+  if(!s) d.sources.push({id,name:spec.name,kind:spec.kind,author:spec.author||'',notes:''});
+  else if(spec.author && !s.author) s.author=spec.author;
+  return id;
+}
+function fixSources(d,addHomemade){
+  const seen=new Set();
+  d.sources=(Array.isArray(d.sources)?d.sources:[]).filter(s=>s && s.id && !seen.has(String(s.id)) && seen.add(String(s.id)))
+    .map(s=>Object.assign({},s,{id:String(s.id),name:String(s.name||'Untitled source'),kind:SOURCE_KINDS.includes(s.kind)?s.kind:'Other',author:String(s.author||''),notes:String(s.notes||'')}));
+  const on=d.sources.find(s=>s.id===ONLINE_ID);
+  if(on) Object.assign(on,{name:'Online',kind:'Online',builtIn:true});
+  else d.sources.unshift({id:ONLINE_ID,name:'Online',kind:'Online',author:'',notes:'',builtIn:true});
+  if(addHomemade && !d.sources.some(s=>s.id===HOMEMADE_ID)) d.sources.push({id:HOMEMADE_ID,name:'Homemade',kind:'Homemade',author:'',notes:''});
+}
+function ensureTaxonomy(d){
+  const t=(d.taxonomy && typeof d.taxonomy==='object' && !Array.isArray(d.taxonomy))?d.taxonomy:{};
+  const out={};
+  GROUP_KEYS.forEach(g=>{
+    const list=Array.isArray(t[g])?t[g]:DEFAULT_TAXONOMY[g], vals=[];
+    list.forEach(v=>{ v=String(v==null?'':v).trim(); if(v && !vals.some(x=>tagMatch(x,v))) vals.push(v); });
+    out[g]=vals;
+  });
+  out.unsorted=Array.isArray(t.unsorted)?t.unsorted.map(String):[];
+  d.taxonomy=out;
+}
+/* Every tag used on a recipe is listed in its group; Unsorted lists only tags still in use */
+function fixTaxonomy(d){
+  ensureTaxonomy(d);
+  const tax=d.taxonomy, used=[];
+  d.recipes.forEach(r=>{
+    GROUP_KEYS.forEach(g=>((r.tags||{})[g]||[]).forEach(v=>{ if(!tax[g].some(x=>tagMatch(x,v))) tax[g].push(v); }));
+    ((r.tags||{}).unsorted||[]).forEach(v=>{ if(!used.some(x=>tagMatch(x,v))) used.push(v); });
+  });
+  tax.unsorted=tax.unsorted.filter(v=>used.some(x=>tagMatch(x,v))).concat(used.filter(v=>!tax.unsorted.some(x=>tagMatch(x,v))));
+}
+function emptyDb(){ return normalise({recipes:[]}).d; }
 
 /* ── Version guard ───────────────────────────────────── */
 /* The file format a raw Dropbox file declares. Old files with no number count as 1. */
@@ -524,13 +859,28 @@ function normItems(arr,prefix){
   });
   return {items:out,changed};
 }
-function normRecipe(r,i,seen){
+function normRecipe(r,i,seen,d){
   let changed=false; const o=Object.assign({},r);
   if(!o.id || (seen && seen.has(o.id))){ o.id='r-'+slug(o.title)+'-'+i; changed=true; }
   if(seen) seen.add(o.id);
   const ing=normItems(o.ingredients,'i'), st=normItems(o.instructions,'s');
   o.ingredients=ing.items; o.instructions=st.items; if(ing.changed||st.changed) changed=true;
-  if(!Array.isArray(o.tags)){ o.tags=lines(o.tags); changed=true; }
+  /* Old free-text tags (or tags typed in the edit box) are sorted into groups */
+  if(Array.isArray(o.tags) || typeof o.tags==='string'){ o.tags=groupTags(Array.isArray(o.tags)?o.tags:lines(o.tags),d.taxonomy); changed=true; }
+  else { const nt=normTags(o.tags); if(JSON.stringify(nt)!==JSON.stringify(o.tags)) changed=true; o.tags=nt; }
+  /* Old free-text source (or a source typed in the edit box) becomes a source plus page or web address.
+     The original text is kept in legacySource so nothing is lost. */
+  if(typeof o.source==='string' || o.source===null){
+    const text=String(o.source||'').trim(), spec=resolveSource(text,d);
+    if(text) o.legacySource=text;
+    if(spec){ o.sourceId=ensureSource(d,spec); o.sourceRef=spec.ref||''; o.siteName=spec.site||''; o.sourceReview=!!spec.review; }
+    else { o.sourceId=''; o.sourceRef=''; o.siteName=''; o.sourceReview=false; }
+    changed=true;
+  }
+  if('source' in o){ delete o.source; changed=true; }
+  ['sourceId','sourceRef','siteName','legacySource'].forEach(k=>{ if(typeof o[k]!=='string'){ o[k]=o[k]==null?'':String(o[k]); changed=true; } });
+  if(typeof o.sourceReview!=='boolean'){ o.sourceReview=!!o.sourceReview; changed=true; }
+  if(o.sourceId && !d.sources.some(s=>s.id===o.sourceId)){ o.sourceId=''; changed=true; }
   if(!Array.isArray(o.cookLog)){ o.cookLog=[]; changed=true; }
   if(o.dateMade){ if(!o.cookLog.some(e=>e.date===o.dateMade)) o.cookLog.push({id:'l-'+o.dateMade,date:o.dateMade,comment:''}); delete o.dateMade; changed=true; }
   if('dateMade' in o){ delete o.dateMade; changed=true; }
@@ -543,10 +893,11 @@ function normRecipe(r,i,seen){
   if(o.parentId===undefined){ o.parentId=null; changed=true; }
   if(typeof o.archived!=='boolean'){ o.archived=!!o.archived; changed=true; }
   if(o.changeNote==null){ o.changeNote=''; changed=true; }
-  if(!o.type){ o.type=(isUrl(o.source)&&!o.ingredients.length)?'External':'Full'; changed=true; }
+  if(!o.type){ o.type=(isUrl(o.sourceRef)&&!o.ingredients.length)?'External':'Full'; changed=true; }
   o.title=o.title||'Untitled recipe';
   o.rating=Number(o.rating)||0;
-  ['source','serves','time','notes'].forEach(k=>{ if(o[k]==null) o[k]=''; });
+  ['serves','time','notes'].forEach(k=>{ if(o[k]==null) o[k]=''; });
+  if(o.timeMinutes!==null && !(typeof o.timeMinutes==='number' && o.timeMinutes>0)){ o.timeMinutes=parseMinutes(o.time); changed=true; }
   return {r:o,changed};
 }
 /* Each family has one current version (the one shown in the list). */
@@ -570,12 +921,15 @@ function normalise(raw){
   if(Array.isArray(raw)){ d={version:DATA_VERSION,recipes:raw}; changed=true; }
   else if(raw && Array.isArray(raw.recipes)){ d=Object.assign({},raw); }
   else { d={version:DATA_VERSION,recipes:[]}; changed=true; }
+  const upgrading=fileVersion(raw)<4;
   if(d.version!==DATA_VERSION){ d.version=DATA_VERSION; changed=true; }
+  const snap=()=>JSON.stringify([d.families||null,d.sources||null,d.taxonomy||null]);
+  const before=snap();
+  fixSources(d,upgrading); ensureTaxonomy(d);
   const seen=new Set();
-  d.recipes=d.recipes.map((r,i)=>{ const x=normRecipe(r,i,seen); if(x.changed) changed=true; return x.r; });
-  const before=JSON.stringify(d.families||null);
-  fixFamilies(d);
-  if(JSON.stringify(d.families)!==before) changed=true;
+  d.recipes=d.recipes.map((r,i)=>{ const x=normRecipe(r,i,seen,d); if(x.changed) changed=true; return x.r; });
+  fixTaxonomy(d); fixFamilies(d);
+  if(snap()!==before) changed=true;
   return {d,changed};
 }
 /* When ingredients or steps are edited as a block of text, work out which line is which:
@@ -603,23 +957,29 @@ function matchItems(old,newLines,prefix){
 function applyOp(d,op){
   const find=id=>d.recipes.find(r=>r.id===id);
   switch(op.t){
-    case 'seed': if(!d.recipes.length) d.recipes=clone(op.recipes); break;
+    case 'seed': if(!d.recipes.length) d.recipes=clone(op.recipes).map((r,i)=>normRecipe(r,i,null,d).r); break;
     case 'upsert': {
-      const inc=normRecipe(clone(op.r),d.recipes.length).r;
       const i=d.recipes.findIndex(r=>r.id===op.r.id);
       if(i>=0){
-        const ex=d.recipes[i];
-        const keep={cookLog:ex.cookLog||[],annotations:ex.annotations||[],familyId:ex.familyId,parentId:ex.parentId,
-          versionNo:ex.versionNo,archived:ex.archived,created:ex.created||inc.created};
-        if(!op.r.versionLabel) keep.versionLabel=ex.versionLabel;
-        if(op.r.changeNote==null) keep.changeNote=ex.changeNote;
-        d.recipes[i]=Object.assign(inc,keep);
-      } else { inc.cookLog=[]; d.recipes.push(inc); }
+        /* Start from the stored recipe so fields this copy of the app doesn't know about are kept */
+        const ex=d.recipes[i], inc=clone(op.r), m=Object.assign(clone(ex),inc);
+        ['cookLog','annotations','familyId','parentId','versionNo','archived','photos'].forEach(k=>{ if(k in ex) m[k]=clone(ex[k]); });
+        m.created=ex.created||inc.created;
+        if(!inc.versionLabel) m.versionLabel=ex.versionLabel;
+        if(inc.changeNote==null) m.changeNote=ex.changeNote;
+        if(inc.time!=null && !('timeMinutes' in inc)) m.timeMinutes=parseMinutes(inc.time);
+        if(inc.tagDiff){ m.tags=applyTagDiff(ex.tags,inc.tagDiff); delete m.tagDiff; }
+        d.recipes[i]=normRecipe(m,i,null,d).r;
+      } else {
+        const raw=clone(op.r);
+        if(raw.tagDiff){ raw.tags=applyTagDiff(emptyTags(),raw.tagDiff); delete raw.tagDiff; }
+        const inc=normRecipe(raw,d.recipes.length,null,d).r; inc.cookLog=[]; d.recipes.push(inc);
+      }
       break;
     }
     case 'newVersion': {
       if(find(op.r.id)) break;
-      const inc=normRecipe(clone(op.r),d.recipes.length).r;
+      const inc=normRecipe(clone(op.r),d.recipes.length,null,d).r;
       const fam=d.recipes.filter(r=>r.familyId===inc.familyId);
       inc.versionNo=fam.reduce((mx,r)=>Math.max(mx,r.versionNo||1),0)+1;
       inc.cookLog=[]; inc.archived=false;
@@ -642,6 +1002,64 @@ function applyOp(d,op){
     case 'note': { const r=find(op.id); if(r && !r.annotations.some(a=>a.id===op.a.id)) r.annotations.push(clone(op.a)); break; }
     case 'noteEdit': { const r=find(op.id); const a=r&&r.annotations.find(x=>x.id===op.aid); if(a) Object.assign(a,op.f); break; }
     case 'noteDel': { const r=find(op.id); if(r) r.annotations=r.annotations.filter(a=>a.id!==op.aid); break; }
+    /* Tag manager changes: one queued change each, applied to every recipe when it's saved */
+    case 'addTag': { ensureTaxonomy(d); const v=String(op.v||'').trim(); if(GROUP_KEYS.includes(op.g) && v && !d.taxonomy[op.g].some(x=>tagMatch(x,v))) d.taxonomy[op.g].push(v); break; }
+    case 'renameTag': {
+      ensureTaxonomy(d); const g=op.g, from=op.from, to=String(op.to||'').trim(); if(!TAG_KEYS.includes(g) || !to) break;
+      const list=d.taxonomy[g], fi=list.findIndex(x=>tagMatch(x,from)), ti=list.findIndex((x,i)=>i!==fi && tagMatch(x,to));
+      if(fi>=0){ if(ti>=0) list.splice(fi,1); else list[fi]=to; }
+      else if(g!=='unsorted' && ti<0) list.push(to);
+      const target=list.find(x=>tagMatch(x,to))||to;
+      d.recipes.forEach(r=>{ const t=r.tags=r.tags||emptyTags(), cur=t[g]||[]; if(!cur.some(x=>tagMatch(x,from))) return;
+        const out=[]; cur.forEach(x=>{ const y=tagMatch(x,from)?target:x; if(!out.some(z=>tagMatch(z,y))) out.push(y); }); t[g]=out; });
+      break;
+    }
+    case 'moveTag': {
+      ensureTaxonomy(d); const from=op.from, to=op.to, v=op.v, name=String(op.as||op.v||'').trim();
+      if(!TAG_KEYS.includes(from) || !GROUP_KEYS.includes(to) || from===to || !name) break;
+      let target=d.taxonomy[to].find(x=>tagMatch(x,name)); if(!target){ target=name; d.taxonomy[to].push(name); }
+      if(from!=='unsorted') d.taxonomy[from]=d.taxonomy[from].filter(x=>!tagMatch(x,v));
+      d.recipes.forEach(r=>{ const t=r.tags=r.tags||emptyTags(); if(!(t[from]||[]).some(x=>tagMatch(x,v))) return;
+        t[from]=t[from].filter(x=>!tagMatch(x,v)); addTag(t,to,target); });
+      break;
+    }
+    case 'deleteTag': {
+      ensureTaxonomy(d); if(!TAG_KEYS.includes(op.g)) break;
+      d.taxonomy[op.g]=d.taxonomy[op.g].filter(x=>!tagMatch(x,op.v));
+      d.recipes.forEach(r=>{ const t=r.tags=r.tags||emptyTags(); t[op.g]=(t[op.g]||[]).filter(x=>!tagMatch(x,op.v)); });
+      break;
+    }
+    case 'orderTags': {
+      ensureTaxonomy(d); if(!GROUP_KEYS.includes(op.g)) break;
+      const cur=d.taxonomy[op.g], out=[];
+      (op.order||[]).forEach(v=>{ const x=cur.find(y=>tagMatch(y,v)); if(x && !out.includes(x)) out.push(x); });
+      cur.forEach(x=>{ if(!out.includes(x)) out.push(x); });
+      d.taxonomy[op.g]=out; break;
+    }
+    /* Sources: save (create or edit) and delete-with-reassign, each one queued change */
+    case 'sourceSave': {
+      fixSources(d,false); const s=op.s; if(!s || !s.id) break;
+      const kind=USER_KINDS.includes(s.kind)?s.kind:'Other', ex=d.sources.find(x=>x.id===s.id);
+      if(ex){ if(ex.id===ONLINE_ID) ex.notes=String(s.notes||''); else Object.assign(ex,{name:String(s.name||ex.name).trim()||ex.name,kind,author:kind==='Book'?String(s.author||''):'',notes:String(s.notes||'')}); }
+      else if(s.id!==ONLINE_ID) d.sources.push({id:String(s.id),name:String(s.name||'Untitled source').trim(),kind,author:kind==='Book'?String(s.author||''):'',notes:String(s.notes||'')});
+      break;
+    }
+    case 'sourceDelete': {
+      fixSources(d,false); if(op.id===ONLINE_ID) break;
+      const old=d.sources.find(x=>x.id===op.id); if(!old) break;
+      const to=op.to && op.to!==op.id ? d.sources.find(x=>x.id===op.to) : null;
+      d.recipes.forEach(r=>{
+        if(r.sourceId!==op.id) return;
+        if(to){
+          r.sourceId=to.id;
+          if(to.kind!==old.kind && !(to.kind==='Online' && isUrl(r.sourceRef))) r.sourceRef='';
+          if(to.kind!=='Online') r.siteName=''; else if(!r.siteName && isUrl(r.sourceRef)) r.siteName=siteFromUrl(r.sourceRef);
+        } else { r.sourceId=''; r.sourceRef=''; r.siteName=''; }
+        r.sourceReview=false;
+      });
+      d.sources=d.sources.filter(x=>x.id!==op.id);
+      break;
+    }
     case 'applyNote': {
       const r=find(op.id); if(!r) break;
       const it=r.ingredients.concat(r.instructions).find(x=>x.id===op.target);
@@ -651,12 +1069,12 @@ function applyOp(d,op){
       break;
     }
   }
-  fixFamilies(d);
+  fixTaxonomy(d); fixFamilies(d);
   return d;
 }
 
 /* ── State ───────────────────────────────────────────── */
-const state={ db:{version:DATA_VERSION,recipes:[],families:{}}, queue:ls.get('queue'+DK,[]), selected:null, search:'', tags:new Set(), sort:ls.get('sort','title'), ticks:{}, lastPull:0, locked:null };
+const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['source','course']), srcQuery:'', coll:null, view:ls.get('view','list'), sort:ls.get('sort','title'), ticks:{}, lastPull:0, locked:null };
 let pulling=false, flushing=false;
 function saveCache(){ ls.set('cache'+DK,{db:state.db}); }
 function queueOp(op){ state.queue.push(op); ls.set('queue'+DK,state.queue); }
@@ -691,7 +1109,7 @@ async function dbxFetch(url,opts,retried){
   return res;
 }
 async function dbxDownload(){
-  const res=await dbxFetch(DBX_CONTENT+'download',{method:'POST',headers:{'Dropbox-API-Arg':headerArg({path:CONFIG.filePath})}});
+  const res=await dbxFetch(DBX_CONTENT+'download',{method:'POST',headers:{'Dropbox-API-Arg':headerArg({path:FILE})}});
   if(res.status===409){
     const j=await res.json().catch(()=>({}));
     if(String(j.error_summary||'').indexOf('not_found')>=0) return {notFound:true};
@@ -715,12 +1133,12 @@ async function dbxPut(path,text,mode,autorename){
   if(!res.ok) throw new Error('Dropbox save failed ('+res.status+').');
   const j=await res.json(); return {rev:j.rev};
 }
-function dbxUpload(data,mode){ return dbxPut(CONFIG.filePath,JSON.stringify(data,null,2),mode,false); }
+function dbxUpload(data,mode){ return dbxPut(FILE,JSON.stringify(data,null,2),mode,false); }
 function needsBackup(raw){ return Array.isArray(raw) || !raw || raw.version!==DATA_VERSION; }
 function backupPath(raw){
   const v=Array.isArray(raw)?1:((raw&&raw.version)||1);
-  const dir=CONFIG.filePath.replace(/[^/]*$/,'');
-  const base=CONFIG.filePath.replace(/^.*\//,'').replace(/\.json$/i,'');
+  const dir=FILE.replace(/[^/]*$/,'');
+  const base=FILE.replace(/^.*\//,'').replace(/\.json$/i,'');
   return dir+base+'-backup-v'+v+'-'+today()+'.json';
 }
 
@@ -733,7 +1151,7 @@ async function pull(){
     unlock();
     if(r.notFound){
       if(!state.queue.some(o=>o.t==='seed')) queueOp({t:'seed',recipes:normalise(clone(STARTER)).d.recipes});
-      const local={version:DATA_VERSION,recipes:[],families:{}}; state.queue.forEach(o=>applyOp(local,o));
+      const local=emptyDb(); state.queue.forEach(o=>applyOp(local,o));
       state.db=local;
     } else {
       const {d,changed}=normalise(clone(r.data));
@@ -765,7 +1183,7 @@ async function flush(){
         await dbxPut(backupPath(r.data),r.text,'add',true);
         backedUp=true; toast('Saved a backup of your recipe file before upgrading it');
       }
-      const base=r.notFound?{version:DATA_VERSION,recipes:[],families:{}}:normalise(r.data).d;
+      const base=r.notFound?emptyDb():normalise(r.data).d;
       const n=state.queue.length;
       state.queue.slice(0,n).forEach(op=>applyOp(base,op));
       const mode=r.notFound?'add':(r.rev?{'.tag':'update',update:r.rev}:'overwrite');
@@ -879,27 +1297,162 @@ function versionTree(fam){
 }
 
 /* ── Rendering ───────────────────────────────────────── */
-function searchText(r){
-  return [r.title,r.source,r.notes,r.versionLabel,r.changeNote].concat(r.tags,r.ingredients.map(itemText),
-    r.cookLog.map(e=>e.comment),r.annotations.map(a=>a.text)).join(' ');
+function srcOf(r){ return (state.db.sources||[]).find(s=>s.id===r.sourceId)||null; }
+function recipeUrl(r){ return isUrl(r.sourceRef)?r.sourceRef.trim():''; }
+function sourcesByKind(kind){ return (state.db.sources||[]).filter(s=>s.kind===kind).sort((a,b)=>a.name.localeCompare(b.name,'en-GB',{sensitivity:'base'})); }
+function srcUse(id){ return groups().filter(g=>g.members.some(m=>m.sourceId===id)).length; }
+/* Website names in use, with the number of recipes (current versions) from each */
+function siteList(gs){
+  const out=[];
+  (gs||groups()).forEach(g=>{ const r=g.def; if(r.sourceId!==ONLINE_ID || !r.siteName) return;
+    const hit=out.find(x=>tkey(x.name)===tkey(r.siteName)); if(hit) hit.n++; else out.push({name:r.siteName,n:1}); });
+  return out.sort((a,b)=>a.name.localeCompare(b.name));
+}
+function srcLine(r,ed){
+  const s=srcOf(r); if(!s) return '';
+  let h;
+  if(s.kind==='Online'){ const u=recipeUrl(r); h=u?'From <a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(r.siteName||host(u))+'</a>':esc(r.siteName||'Online'); }
+  else h='<button type="button" class="srclink" data-act="srcpage" data-sid="'+esc(s.id)+'">'+esc(s.name)+'</button>'+(s.kind==='Book'&&s.author?' by '+esc(s.author):'')+(s.kind==='Book'&&r.sourceRef?', page '+esc(r.sourceRef):'')+(s.kind==='Homemade'?' <span class="muted">(homemade)</span>':'');
+  if(ed && r.sourceReview) h+='<span class="badge review" title="Was: '+esc(r.legacySource)+'">Check source</span>';
+  return h;
+}
+/* ── Search: ranked, with one-letter typo tolerance for words of five letters or more ── */
+function normText(s){ return String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’‘]/g,"'"); }
+function tokens(s){ return normText(s).split(/[^a-z0-9]+/).filter(Boolean); }
+/* True if a and b differ by at most one letter added, removed, changed, or two letters swapped */
+function within1(a,b){
+  if(a===b) return true;
+  const la=a.length, lb=b.length; if(Math.abs(la-lb)>1) return false;
+  if(la>lb) return within1(b,a);
+  let i=0; while(i<la && a[i]===b[i]) i++;
+  if(la===lb) return a.slice(i+1)===b.slice(i+1) || (i+1<la && a[i]===b[i+1] && a[i+1]===b[i] && a.slice(i+2)===b.slice(i+2));
+  return a.slice(i)===b.slice(i+1);
+}
+/* Where a match counts most: title, then tags, then source and website, then ingredients, then notes and comments */
+const SEARCH_WEIGHTS=[['title',100],['tags',60],['source',40],['ingredients',20],['notes',10]];
+function searchIndex(r){
+  const s=srcOf(r), f={
+    title:r.title,
+    tags:flatTags(r).join(' ')+' '+(r.versionLabel||''),
+    source:[s&&s.id!==ONLINE_ID?s.name:'',s?s.author:'',r.siteName,s&&s.kind==='Online'?'online':''].join(' '),
+    ingredients:r.ingredients.map(itemText).join(' '),
+    notes:[r.notes,r.changeNote,r.legacySource].concat(r.cookLog.map(e=>e.comment),r.annotations.map(a=>a.text)).join(' ')
+  }, o={};
+  for(const k in f){ const t=normText(f[k]); o[k]={text:t,toks:tokens(t)}; }
+  return o;
+}
+function wordScore(idx,w){
+  let best=0;
+  SEARCH_WEIGHTS.forEach(([k,wt])=>{
+    const f=idx[k]; let sc=0;
+    if(f.toks.includes(w)) sc=wt;
+    else if(f.toks.some(t=>t.indexOf(w)===0)) sc=wt*.9;
+    else if(f.text.indexOf(w)>=0) sc=wt*.75;
+    else if(w.length>=5 && f.toks.some(t=>within1(w,t) || (t.length>w.length && within1(w,t.slice(0,w.length))))) sc=wt*.5;
+    if(sc>best) best=sc;
+  });
+  return best;
+}
+function searchWords(){
+  const w=normText(state.search).split(/[^a-z0-9]+/).filter(Boolean);
+  return w.length>1?w.filter(x=>x.length>1):w;
+}
+let scoreCache=null;
+/* Best score across a recipe's versions; every word has to match within one version. 0 means no match. */
+function searchScore(g,words){
+  if(!words.length) return 1;
+  const key=words.join(' ');
+  if(!scoreCache || scoreCache.q!==key) scoreCache={q:key,map:new Map()};
+  if(scoreCache.map.has(g.fid)) return scoreCache.map.get(g.fid);
+  let best=0;
+  (g.active.length?g.active:[g.def]).forEach(r=>{
+    const idx=searchIndex(r); let tot=0;
+    for(const w of words){ const sc=wordScore(idx,w); if(!sc) return; tot+=sc; }
+    if(idx.title.text.indexOf(key)===0) tot+=50;
+    if(r===g.def) tot+=1;
+    if(tot>best) best=tot;
+  });
+  scoreCache.map.set(g.fid,best);
+  return best;
+}
+function passSearch(g,words){ return searchScore(g,words)>0; }
+
+/* ── Browse home: collections that apply as a filter ── */
+function monthsAgo(n){ const d=new Date(); d.setHours(0,0,0,0); d.setMonth(d.getMonth()-n); return d; }
+const COLLECTIONS=[
+  {k:'fav',name:'Favourites',sub:'Rated 4 or 5 stars',test:g=>g.def.rating>=4,sort:'rating'},
+  {k:'recent',name:'Recently made',sub:'Made in the last month',test:g=>!!g.logs[0] && parseIso(g.logs[0].date)>=monthsAgo(1),sort:'recent'},
+  {k:'while',name:'Not made in a while',sub:'Last made over 3 months ago',test:g=>!!g.logs[0] && parseIso(g.logs[0].date)<monthsAgo(3),sort:'recent'},
+  {k:'quick',name:'Quick',sub:QUICK_MINUTES+' minutes or less',test:g=>!!g.def.timeMinutes && g.def.timeMinutes<=QUICK_MINUTES},
+  {k:'books',name:'Bookshelf',sub:'From your cookbooks',test:g=>{ const x=srcOf(g.def); return !!x && x.kind==='Book'; }}
+];
+function collOf(k){ return COLLECTIONS.find(c=>c.k===k)||null; }
+/* A collection can pick its own sort; your saved sort comes back when it's removed */
+function clearColl(){ if(state.coll){ state.coll=null; state.sort=ls.get('sort','title'); } }
+function passColl(g){ const c=collOf(state.coll); return !c || c.test(g); }
+function setColl(k){
+  clearColl();
+  const c=collOf(k); state.coll=c?k:null;
+  if(c && c.sort) state.sort=c.sort;
+  $('#search').value=''; state.search='';
+  render(); $('.list-pane').scrollTop=0;
+}
+function renderBrowse(gs){
+  const el=$('#browse'), show=!state.search.trim() && !filterCount() && !state.coll && gs.length>0;
+  el.hidden=!show; if(!show){ el.innerHTML=''; return; }
+  const cards=COLLECTIONS.map(c=>({c,n:gs.filter(c.test).length})).filter(x=>x.n);
+  if(!cards.length){ el.hidden=true; return; }
+  el.innerHTML='<h2 id="browse-h">Browse</h2><div class="colls">'+cards.map(({c,n})=>
+    '<button type="button" class="coll" data-coll="'+c.k+'"><span class="cn">'+esc(c.name)+'</span><span class="cs">'+esc(c.sub)+'</span><span class="cc">'+n+' recipe'+(n>1?'s':'')+'</span></button>').join('')+'</div>';
+}
+/* Grid tiles use a plain coloured title tile until photos arrive in Release 2 */
+const TILE_COLOURS=['#E3EEE7','#F3E9D7','#E6EBF1','#F1E4E1','#ECE8F2','#E8EFE0','#F4EBDD','#E2EDEE'];
+function tileColour(id){ let h=0; String(id).split('').forEach(c=>{ h=(h*31+c.charCodeAt(0))>>>0; }); return TILE_COLOURS[h%TILE_COLOURS.length]; }
+/* Filters: OR within a group, AND across groups. Diet is AND within the group too,
+   so Vegetarian + Gluten-free means recipes that are both. Filters use the current version. */
+function fsel(g){ return state.filters[g]||(state.filters[g]=new Set()); }
+function filterCount(){ return FILTER_KEYS.reduce((n,k)=>n+fsel(k).size,0); }
+/* Source filter keys: "id:<sourceId>" for a source, "site:<website>" for one website under Online */
+function srcKeyMatch(r,k){
+  if(k.indexOf('id:')===0) return r.sourceId===k.slice(3);
+  if(k.indexOf('site:')===0) return r.sourceId===ONLINE_ID && tkey(r.siteName)===tkey(k.slice(5));
+  return false;
+}
+function srcKeyLabel(k){
+  if(k.indexOf('site:')===0) return k.slice(5);
+  const s=(state.db.sources||[]).find(x=>x.id===k.slice(3)); return s?s.name:'Unknown source';
+}
+function groupPass(r,g,sel){
+  if(!sel || !sel.size) return true;
+  if(g==='source') return Array.from(sel).some(k=>srcKeyMatch(r,k));
+  const vals=(r.tags&&r.tags[g])||[], has=v=>vals.some(x=>tagMatch(x,v));
+  return g==='diet'?Array.from(sel).every(has):Array.from(sel).some(has);
+}
+function passFilters(r,excl){ return FILTER_KEYS.every(g=>g===excl || groupPass(r,g,state.filters[g])); }
+function groupValues(g){ const t=state.db.taxonomy||{}; return (t[g]||[]).slice(); }
+/* Drop filter values that no longer exist (renamed, merged or deleted) */
+function pruneFilters(){
+  const ss=fsel('source'), sites=siteList();
+  Array.from(ss).forEach(k=>{ if(k.indexOf('id:')===0 ? !(state.db.sources||[]).some(x=>x.id===k.slice(3)) : !sites.some(x=>tkey(x.name)===tkey(k.slice(5)))) ss.delete(k); });
+  TAG_KEYS.forEach(g=>{ const vals=groupValues(g), sel=fsel(g);
+    Array.from(sel).forEach(v=>{ const hit=vals.find(x=>tagMatch(x,v)); sel.delete(v); if(hit) sel.add(hit); }); });
 }
 function filtered(gs){
-  const words=state.search.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const out=gs.filter(g=>{
-    for(const t of state.tags) if(!g.def.tags.includes(t)) return false;
-    if(!words.length) return true;
-    const hay=(g.active.length?g.active:[g.def]).map(searchText).join(' ').toLowerCase();
-    return words.every(w=>hay.indexOf(w)>=0);
-  });
+  const words=searchWords();
+  const out=gs.filter(g=>passFilters(g.def) && passColl(g) && passSearch(g,words));
   const last=g=>g.logs[0]?g.logs[0].date:'';
+  const added=g=>g.members.reduce((mn,m)=>{ const c=String(m.created||''); return c && (!mn || c<mn)?c:mn; },'');
   const byTitle=(a,b)=>a.def.title.localeCompare(b.def.title,'en-GB',{sensitivity:'base'});
   const sorters={
     title:byTitle,
     recent:(a,b)=>last(b).localeCompare(last(a))||byTitle(a,b),
     most:(a,b)=>b.logs.length-a.logs.length||byTitle(a,b),
-    rating:(a,b)=>b.def.rating-a.def.rating||byTitle(a,b)
+    rating:(a,b)=>b.def.rating-a.def.rating||byTitle(a,b),
+    added:(a,b)=>added(b).localeCompare(added(a))||byTitle(a,b)
   };
-  return out.sort(sorters[state.sort]||byTitle);
+  const by=sorters[state.sort]||byTitle;
+  /* While searching, best matches come first; the chosen sort breaks ties */
+  return out.sort(words.length?(a,b)=>searchScore(b,words)-searchScore(a,words)||by(a,b):by);
 }
 function monthStrip(logs){
   const now=new Date(); let cells='', on=0;
@@ -911,34 +1464,107 @@ function monthStrip(logs){
   }
   return '<span class="months" role="img" aria-label="Made in '+on+' of the last 12 months" title="Made in '+on+' of the last 12 months">'+cells+'</span>';
 }
-function allTags(gs){
-  const counts={}; (gs||groups()).forEach(g=>g.def.tags.forEach(t=>counts[t]=(counts[t]||0)+1));
-  return Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||a.localeCompare(b));
-}
 function render(){
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
-  document.title=CONFIG.bookTitle;
+  document.title=(TEST?'TEST: ':'')+CONFIG.bookTitle;
+  $('#testflag').hidden=!TEST;
   renderLock();
   $$('.edit-only').forEach(el=>el.hidden=!canEdit());
-  const gs=groups(), tags=allTags(gs);
-  for(const t of Array.from(state.tags)) if(!tags.includes(t)) state.tags.delete(t);
-  $('#chips').innerHTML=tags.map(t=>'<button type="button" class="chip" data-tag="'+esc(t)+'" aria-pressed="'+state.tags.has(t)+'">'+esc(t)+'</button>').join('');
+  const gs=groups();
+  scoreCache=null;
+  pruneFilters(); renderFilterButton(); renderActive(); renderBrowse(gs);
+  if($('#dlg-filter').open) renderFilterPanel(gs);
   $('#sort').value=state.sort;
   const sel=state.db.recipes.find(x=>x.id===state.selected);
   const rs=filtered(gs), total=gs.length;
-  $('#count').textContent=rs.length===total?total+' recipe'+(total===1?'':'s'):rs.length+' of '+total+' recipes';
+  const searching=searchWords().length>0, grid=state.view==='grid';
+  $('#count').textContent=(rs.length===total?total+' recipe'+(total===1?'':'s'):rs.length+' of '+total+' recipes')+(searching&&rs.length>1?', best match first':'');
+  const vb=$('#btn-view'); vb.textContent=grid?'List':'Grid'; vb.setAttribute('aria-label',grid?'Show as a list':'Show as a grid');
+  $('#list').classList.toggle('grid',grid);
   $('#list').innerHTML=rs.length?rs.map(g=>{
     const r=g.def, n=g.logs.length;
     const meta=n?'Made '+times(n)+', last '+fmtDate(g.logs[0].date):'Not made yet';
+    if(grid) return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
+      '<span class="tile" style="background:'+tileColour(g.fid)+'"><span class="tile-t">'+esc(r.title)+'</span></span>'+
+      '<span class="tile-meta">'+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+
+        (r.type==='External'?'<span class="badge">Link</span>':'')+(g.active.length>1?'<span class="badge ver-badge">'+g.active.length+' versions</span>':'')+
+        esc(n?'Made '+times(n):'Not made yet')+'</span></button></li>';
     return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
       '<span class="item-title">'+esc(r.title)+(r.type==='External'?'<span class="badge">Link</span>':'')+
         (g.active.length>1?'<span class="badge ver-badge">'+g.active.length+' versions</span>':'')+'</span>'+
       monthStrip(g.logs)+
       '<span class="item-meta">'+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+esc(meta)+'</span>'+
       '</button></li>';
-  }).join(''):'<li class="empty">'+(total?'No recipes match. Try fewer words or clear a tag.':(canEdit()?'No recipes yet. Tap Add or Import to start.':'No recipes yet.'))+'</li>';
+  }).join(''):'<li class="empty">'+(total?'No recipes match. Try fewer words or remove a filter.':(canEdit()?'No recipes yet. Tap Add or Import to start.':'No recipes yet.'))+'</li>';
   renderDetail();
 }
+
+function renderFilterButton(){
+  const n=filterCount(), b=$('#btn-filter');
+  b.innerHTML='Filters'+(n?'<span class="n">'+n+'</span>':'');
+  b.classList.toggle('on',!!n);
+  b.setAttribute('aria-label',n?'Filters, '+n+' selected':'Filters');
+}
+function renderActive(){
+  const el=$('#active'), items=[];
+  FILTER_ORDER.forEach(g=>fsel(g).forEach(v=>{ const lab=g==='source'?srcKeyLabel(v):v, gl=g==='source'&&v.indexOf('site:')===0?'Website':GROUP_LABEL[g]; items.push('<button type="button" class="achip" data-g="'+g+'" data-v="'+esc(v)+'" aria-label="Remove filter '+esc(gl+': '+lab)+'"><span class="g">'+esc(gl)+'</span>'+esc(lab)+'<span class="x" aria-hidden="true">✕</span></button>'); }));
+  const c=collOf(state.coll);
+  if(c) items.unshift('<button type="button" class="achip coll-chip" data-coll-x aria-label="Remove collection '+esc(c.name)+'"><span class="g">Collection</span>'+esc(c.name)+'<span class="x" aria-hidden="true">✕</span></button>');
+  el.hidden=!items.length;
+  el.innerHTML=items.join('')+(items.length>1?'<button type="button" class="aclear" data-clear>Clear all</button>':'');
+}
+function renderFilterPanel(gs){
+  gs=gs||groups();
+  const words=searchWords(), pool=gs.filter(g=>passSearch(g,words) && passColl(g));
+  const groupsToShow=FILTER_ORDER.filter(g=>g!=='unsorted' || groupValues('unsorted').length);
+  const scroll=$('#flt-body').scrollTop;
+  $('#flt-body').innerHTML=groupsToShow.map(g=>{
+    const sel=fsel(g), base=pool.filter(x=>passFilters(x.def,g==='diet'?null:g));
+    if(g==='source') return sourceFilterGroup(sel,base,gs);
+    const chips=groupValues(g).map(v=>{
+      const on=sel.has(v), n=base.filter(x=>groupPass(x.def,g,new Set([v]))).length;
+      return '<button type="button" class="fchip" data-g="'+g+'" data-v="'+esc(v)+'" aria-pressed="'+on+'"'+(!n&&!on?' disabled':'')+'>'+esc(v)+'<span class="n">'+n+'</span></button>';
+    }).join('');
+    return '<details class="fgroup" data-g="'+g+'"'+(state.fOpen.has(g)?' open':'')+'><summary>'+esc(GROUP_LABEL[g])+(sel.size?'<span class="fsel">'+sel.size+'</span>':'')+'</summary>'+
+      (g==='diet'?'<p class="fhint">Shows recipes that match every diet you tick.</p>':'')+
+      (g==='unsorted'?'<p class="fhint">Tags not yet in a group. Sort them out in Settings › Manage tags.</p>':'')+
+      '<div class="fvals">'+chips+'</div></details>';
+  }).join('');
+  applySrcQuery();
+  $('#flt-body').scrollTop=scroll;
+  const n=filtered(gs).length;
+  $('#flt-done').textContent=n===1?'Show 1 recipe':'Show '+n+' recipes';
+  $('#flt-clear').disabled=!filterCount();
+}
+function srcChip(key,label,sel,base,extra){
+  const on=sel.has(key), n=base.filter(x=>srcKeyMatch(x.def,key)).length;
+  return '<button type="button" class="fchip" data-g="source" data-v="'+esc(key)+'" data-name="'+esc((label+' '+(extra||'')).toLowerCase())+'" aria-pressed="'+on+'"'+(!n&&!on?' disabled':'')+'>'+esc(label)+'<span class="n">'+n+'</span></button>';
+}
+function sourceFilterGroup(sel,base,gs){
+  const subs=['Book','Online','Homemade','Other'].map(kind=>{
+    if(kind==='Online'){
+      const sites=siteList(gs);
+      return '<div class="fsub" data-kind="Online"><p class="fsubh">Online</p><div class="fvals">'+srcChip('id:'+ONLINE_ID,'All websites',sel,base,sites.map(x=>x.name).join(' '))+'</div>'+
+        (sites.length?'<div class="fvals fsites">'+sites.map(x=>srcChip('site:'+x.name,x.name,sel,base)).join('')+'</div>':'')+'</div>';
+    }
+    const list=sourcesByKind(kind); if(!list.length) return '';
+    return '<div class="fsub" data-kind="'+kind+'"><p class="fsubh">'+KIND_LABEL[kind]+'</p><div class="fvals">'+list.map(x=>srcChip('id:'+x.id,x.name,sel,base,x.author)).join('')+'</div></div>';
+  }).join('');
+  return '<details class="fgroup" data-g="source"'+(state.fOpen.has('source')?' open':'')+'><summary>Source'+(sel.size?'<span class="fsel">'+sel.size+'</span>':'')+'</summary>'+
+    '<input type="search" class="fsearch" id="flt-srcq" placeholder="Search sources and websites" aria-label="Search sources" autocomplete="off" value="'+esc(state.srcQuery||'')+'">'+subs+'</details>';
+}
+/* Filter the source chips as you type, without redrawing the panel */
+function applySrcQuery(){
+  const q=(state.srcQuery||'').trim().toLowerCase();
+  $$('#flt-body .fchip[data-g="source"]').forEach(b=>{ b.hidden=!!q && b.dataset.name.indexOf(q)<0; });
+  $$('#flt-body .fsub').forEach(d=>{ d.hidden=!!q && !d.querySelector('.fchip:not([hidden])'); });
+}
+function openFilters(){
+  FILTER_KEYS.forEach(g=>{ if(fsel(g).size) state.fOpen.add(g); });
+  renderFilterPanel(); $('#dlg-filter').showModal();
+}
+function toggleFilter(g,v){ const sel=fsel(g); sel.has(v)?sel.delete(v):sel.add(v); render(); }
+function clearFilters(){ FILTER_KEYS.forEach(g=>fsel(g).clear()); clearColl(); render(); }
 
 function noteBtn(id){ return '<button type="button" class="anno-add" data-act="note" data-target="'+esc(id)+'" aria-label="Add a note to this line" title="Add a note">✎</button>'; }
 function annoList(list,ed){
@@ -979,13 +1605,15 @@ function renderDetail(){
   }
   h+='<h2>'+esc(r.title)+'</h2>';
   if(multi) h+='<p class="verline"><strong>'+esc(vName(r))+'</strong>'+(r.changeNote?'<br>'+esc(r.changeNote):'')+'</p>';
-  if(r.source) h+='<p class="source">'+(isUrl(r.source)?'From <a href="'+esc(r.source)+'" target="_blank" rel="noopener">'+esc(host(r.source))+'</a>':esc(r.source))+'</p>';
+  const sl=srcLine(r,ed), url=recipeUrl(r);
+  if(sl) h+='<p class="source">'+sl+'</p>';
   const facts=[]; if(r.serves) facts.push('Serves '+esc(r.serves)); if(r.time) facts.push(esc(r.time));
   if(facts.length) h+='<div class="facts">'+facts.map(f=>'<span>'+f+'</span>').join('')+'</div>';
   if(ed){ h+='<div class="rate" role="group" aria-label="Rating">'; for(let i=1;i<=5;i++) h+='<button type="button" data-act="rate" data-v="'+i+'" aria-label="Rate '+i+' out of 5" aria-pressed="'+(i<=r.rating)+'">'+(i<=r.rating?'★':'☆')+'</button>'; h+='</div>'; }
   else if(r.rating) h+='<div class="rate"><span class="stars" aria-label="'+r.rating+' out of 5 stars">'+stars(r.rating)+'</span></div>';
-  if(r.tags.length) h+='<div class="tags">'+r.tags.map(t=>'<span class="tag">'+esc(t)+'</span>').join('')+'</div>';
-  if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="newver">New version</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
+  const tl=TAG_KEYS.reduce((a,k)=>a.concat((r.tags[k]||[]).map(v=>({v,u:k==='unsorted'}))),[]);
+  if(tl.length) h+='<div class="tags">'+tl.map(t=>'<span class="tag'+(t.u?' unsorted':'')+'"'+(t.u?' title="Unsorted"':'')+'>'+esc(t.v)+'</span>').join('')+'</div>';
+  if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="newver">New version</button><button type="button" class="btn" data-act="paste-version">Paste as new version</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
 
   if(ed){
     h+='<section class="logbox" aria-labelledby="log-h"><h3 id="log-h">Made it?</h3><div class="logrow">'+
@@ -995,9 +1623,9 @@ function renderDetail(){
   }
 
   if(r.type==='External' && !r.ingredients.length && !r.instructions.length){
-    h+='<section class="section"><div class="linkout"><p>The full recipe is on '+(isUrl(r.source)?esc(host(r.source)):'the original source')+'.</p><div class="stack">'+
-      (isUrl(r.source)?'<a class="btn primary" href="'+esc(r.source)+'" target="_blank" rel="noopener">Open recipe</a>':'')+
-      (ed&&isUrl(r.source)?'<button type="button" class="btn" data-act="import-link">Import the full recipe</button>':'')+
+    h+='<section class="section"><div class="linkout"><p>The full recipe is on '+(url?esc(r.siteName||host(url)):'the original source')+'.</p><div class="stack">'+
+      (url?'<a class="btn primary" href="'+esc(url)+'" target="_blank" rel="noopener">Open recipe</a>':'')+
+      (ed?'<button type="button" class="btn" data-act="paste-version">Paste the full recipe</button>':'')+
       '</div></div></section>';
   } else {
     h+='<div class="cols">';
@@ -1015,7 +1643,7 @@ function renderDetail(){
         '<li><div class="line-row"><span class="step-t">'+esc(stripStep(x.text))+'</span>'+(ed?noteBtn(x.id):'')+'</div>'+annoList(byT[x.id],ed)+'</li>').join('')+'</ol></section>';
     }
     h+='</div>';
-    if(r.type==='External' && isUrl(r.source)) h+='<p class="source" style="margin-top:14px"><a href="'+esc(r.source)+'" target="_blank" rel="noopener">Open the original recipe</a></p>';
+    if(r.type==='External' && url) h+='<p class="source" style="margin-top:14px"><a href="'+esc(url)+'" target="_blank" rel="noopener">Open the original recipe</a></p>';
   }
 
   const recipeNotes=byT['recipe']||[];
@@ -1078,40 +1706,194 @@ let editing=null;
 function setSeg(sel,v){ $$(sel+' button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v))); }
 function segVal(sel){ const b=$$(sel+' button').find(b=>b.getAttribute('aria-pressed')==='true'); return b?b.dataset.v:null; }
 function syncTypeFields(){ const full=segVal('#f-type')!=='External'; $$('#dlg-edit .full-only').forEach(el=>el.hidden=!full); }
-function renderQuickTags(){
-  const cur=$('#f-tags').value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
-  $('#f-quicktags').innerHTML=allTags().slice(0,24).map(t=>'<button type="button" class="chip" data-qt="'+esc(t)+'" aria-pressed="'+cur.includes(t.toLowerCase())+'">'+esc(t)+'</button>').join('');
+function renderTagPickers(){
+  const ed=editing; if(!ed) return;
+  const keys=GROUP_KEYS.concat(ed.tags.unsorted.length||ed.origTags.unsorted.length?['unsorted']:[]);
+  $('#f-taggroups').innerHTML=keys.map(g=>{
+    const sel=ed.tags[g], open=ed.open.has(g), tax=groupValues(g);
+    const has=v=>sel.some(x=>tagMatch(x,v)), isNew=v=>g!=='unsorted' && !tax.some(x=>tagMatch(x,v));
+    let vals=g==='unsorted'?ed.origTags.unsorted.slice():tax;
+    sel.forEach(v=>{ if(!vals.some(x=>tagMatch(x,v))) vals=vals.concat(v); });
+    const body=!open?'':'<div class="tg-body"><div class="fvals">'+vals.map(v=>'<button type="button" class="fchip" data-g="'+g+'" data-v="'+esc(v)+'" aria-pressed="'+has(v)+'">'+esc(v)+(isNew(v)?'<span class="n">new</span>':'')+'</button>').join('')+'</div>'+
+      (g==='unsorted'?'<p class="hint">Tap a tag to remove it from this recipe. To move one into a group, use Settings › Manage tags.</p>'
+        :'<div class="tg-add"><input type="text" data-add="'+g+'" placeholder="Add a new value" aria-label="Add a new '+esc(GROUP_LABEL[g])+' value" autocomplete="off"><button type="button" class="btn" data-addbtn="'+g+'">Add</button></div>')+'</div>';
+    return '<div class="tg'+(open?' open':'')+'"><button type="button" class="tg-head" data-tg="'+g+'" aria-expanded="'+open+'"><span class="tg-name">'+esc(GROUP_LABEL[g])+'</span><span class="tg-sum">'+(sel.length?esc(sel.join(', ')):'<span class="muted">None</span>')+'</span></button>'+body+'</div>';
+  }).join('');
+  renderTagReview();
 }
-function openEdit(r,isNew){
+/* Tags from an import that aren't in your lists: add, swap for an existing value, or drop */
+function renderTagReview(){
+  const e=editing, box=$('#f-tagreview');
+  if(!e){ box.hidden=true; return; }
+  e.importNew=(e.importNew||[]).filter(x=>e.tags[x.g].some(y=>tagMatch(y,x.v)) && !groupValues(x.g).some(y=>tagMatch(y,x.v)));
+  box.hidden=!e.importNew.length; if(!e.importNew.length){ box.innerHTML=''; return; }
+  box.innerHTML='<p><strong>New tags from the import.</strong> These aren\'t in your lists yet. Add each one, swap it for a value you already have, or drop it. Any left here are added when you save.</p>'+
+    e.importNew.map((x,i)=>'<div class="trrow"><span class="trv">'+esc(x.v)+'</span><span class="muted">'+esc(GROUP_LABEL[x.g])+'</span><span class="tracts">'+
+      '<button type="button" class="btn" data-tr="add" data-i="'+i+'">Add</button>'+
+      '<select class="trmap" data-i="'+i+'" aria-label="Use an existing '+esc(GROUP_LABEL[x.g])+' value instead"><option value="">Use existing…</option>'+groupValues(x.g).map(v=>'<option>'+esc(v)+'</option>').join('')+'</select>'+
+      '<button type="button" class="btn" data-tr="drop" data-i="'+i+'">Drop</button></span></div>').join('');
+}
+function pickerAdd(g){
+  const inp=document.querySelector('#f-taggroups [data-add="'+g+'"]'); if(!inp||!editing) return;
+  const v=inp.value.trim(); if(!v) return;
+  const canon=groupValues(g).find(x=>tagMatch(x,v))||editing.tags[g].find(x=>tagMatch(x,v))||v;
+  addTag(editing.tags,g,canon); renderTagPickers();
+  const again=document.querySelector('#f-taggroups [data-add="'+g+'"]'); if(again) again.focus();
+}
+/* ── Source picker in the edit dialog ─────────────────── */
+/* An imported or typed source ("Book name page 12", a web address) becomes a picker choice */
+function srcFromDraft(text){
+  const spec=resolveSource(text,state.db), out={id:'',ref:'',url:'',site:'',newSrc:null};
+  if(!spec) return out;
+  if(spec.kind==='Online'){ Object.assign(out,{id:ONLINE_ID,url:spec.ref||'',site:spec.site||''}); return out; }
+  const id=spec.id||srcId(spec.kind,spec.name);
+  if((state.db.sources||[]).some(x=>x.id===id)) out.id=id;
+  else { out.id='__new'; out.newSrc={name:spec.name,kind:USER_KINDS.includes(spec.kind)?spec.kind:'Other',author:spec.author||''}; }
+  out.ref=spec.ref||''; return out;
+}
+/* Source from the import template: Online plus a web address, or a source name matched to yours */
+function srcFromSpec(sp){
+  const out={id:'',ref:sp.ref||'',url:'',site:'',newSrc:null}, kind=sp.kind, list=state.db.sources||[];
+  if(kind==='Online' || (!kind && !sp.name && sp.url)) return Object.assign(out,{id:ONLINE_ID,ref:'',url:sp.url||'',site:sp.site||siteFromUrl(sp.url||'')});
+  if(!sp.name){ if(kind==='Homemade' && list.some(x=>x.id===HOMEMADE_ID)) out.id=HOMEMADE_ID; return out; }
+  const same=list.find(x=>x.id!==ONLINE_ID && tkey(x.name)===tkey(sp.name) && (!kind || x.kind===kind)) || list.find(x=>x.id!==ONLINE_ID && tkey(x.name)===tkey(sp.name));
+  if(same){ out.id=same.id; return out; }
+  out.id='__new';
+  out.newSrc={name:sp.name.replace(/\s+/g,' ').trim(),kind:USER_KINDS.includes(kind)?kind:(sp.ref||sp.author?'Book':'Other'),author:sp.author||''};
+  return out;
+}
+function srcKind(){
+  const e=editing; if(!e) return '';
+  if(e.src.id==='__new') return segVal('#f-sn-kind')||'Other';
+  const s=(state.db.sources||[]).find(x=>x.id===e.src.id); return s?s.kind:'';
+}
+function renderSrcPicker(){
+  const e=editing; if(!e) return;
+  const id=e.src.id, s=(state.db.sources||[]).find(x=>x.id===id);
+  const btn=$('#f-srcbtn');
+  btn.innerHTML=id==='__new'?'<span>New source</span><span class="k">created when you save</span>':s?'<span>'+esc(s.name)+'</span><span class="k">'+esc(s.kind==='Online'?'any website':s.kind+(s.author?', '+s.author:''))+'</span>':'<span class="muted">No source</span>';
+  $('#f-srcnew').hidden=id!=='__new';
+  $('#f-sn-authwrap').hidden=segVal('#f-sn-kind')!=='Book';
+  const k=srcKind();
+  $('#f-bookwrap').hidden=k!=='Book';
+  $('#f-onlinewrap').hidden=k!=='Online';
+}
+function renderSrcList(){
+  const e=editing; if(!e) return;
+  const q=$('#f-srcq').value.trim().toLowerCase(), hit=x=>!q || (x.name+' '+(x.author||'')).toLowerCase().indexOf(q)>=0;
+  let h='<button type="button" class="srcopt" role="option" data-sid="" aria-selected="'+(e.src.id==='')+'">No source</button>';
+  ['Online','Book','Homemade','Other'].forEach(kind=>{
+    const list=sourcesByKind(kind).filter(hit); if(!list.length) return;
+    h+='<p class="srcsubh">'+KIND_LABEL[kind]+'</p>'+list.map(x=>'<button type="button" class="srcopt" role="option" data-sid="'+esc(x.id)+'" aria-selected="'+(e.src.id===x.id)+'">'+esc(kind==='Online'?'Online (any website)':x.name)+(x.author?'<span class="a">'+esc(x.author)+'</span>':'')+'</button>').join('');
+  });
+  const typed=$('#f-srcq').value.trim();
+  h+='<button type="button" class="srcopt new" role="option" data-sid="__new">＋ New source'+(typed?': '+esc(typed):'…')+'</button>';
+  $('#f-srclist').innerHTML=h;
+}
+function toggleSrcPanel(open){
+  const p=$('#f-srcpanel'); open=open==null?p.hidden:open;
+  p.hidden=!open; $('#f-srcbtn').setAttribute('aria-expanded',String(open));
+  if(open){ $('#f-srcq').value=''; renderSrcList(); setTimeout(()=>$('#f-srcq').focus(),40); }
+}
+function pickSource(sid){
+  const e=editing; if(!e) return;
+  if(sid==='__new'){
+    const typed=$('#f-srcq').value.trim();
+    e.src.id='__new';
+    if(typed || !$('#f-sn-name').value) $('#f-sn-name').value=typed;
+    if(!segVal('#f-sn-kind')) setSeg('#f-sn-kind','Book');
+  } else e.src.id=sid;
+  toggleSrcPanel(false); renderSrcPicker();
+  if(sid==='__new') setTimeout(()=>$('#f-sn-name').focus(),40);
+}
+function setupSrcFields(r){
+  const e=editing;
+  e.src=r.srcSpec?srcFromSpec(r.srcSpec):typeof r.source==='string'?srcFromDraft(r.source):{id:r.sourceId||'',ref:r.sourceRef||'',url:'',site:r.siteName||'',newSrc:null};
+  const s=(state.db.sources||[]).find(x=>x.id===e.src.id);
+  if(s && s.kind==='Online' && !e.src.url) e.src.url=isUrl(r.sourceRef)?r.sourceRef:'';
+  $('#f-page').value=(s&&s.kind==='Book')||e.src.newSrc?e.src.ref:'';
+  $('#f-url').value=e.src.url||''; $('#f-site').value=e.src.site||'';
+  e.siteTouched=!!e.src.site && e.src.site!==siteFromUrl(e.src.url||'');
+  const ns=e.src.newSrc||{name:'',kind:'Book',author:''};
+  $('#f-sn-name').value=ns.name; setSeg('#f-sn-kind',ns.kind); $('#f-sn-author').value=ns.author;
+  toggleSrcPanel(false); renderSrcPicker();
+}
+/* Source fields for saving, plus a sourceSave change if a new source is being created */
+function readSrcFields(){
+  const e=editing, out={ops:[],f:{sourceId:'',sourceRef:'',siteName:'',sourceReview:false}};
+  let id=e.src.id;
+  if(id==='__new'){
+    const name=$('#f-sn-name').value.replace(/\s+/g,' ').trim(), kind=segVal('#f-sn-kind')||'Other';
+    if(!name) return {error:'Give the new source a name, or choose an existing one.'};
+    const same=(state.db.sources||[]).find(x=>x.kind===kind && tkey(x.name)===tkey(name));
+    if(same) id=same.id;
+    else { id=srcId(kind,name); out.ops.push({t:'sourceSave',s:{id,name,kind,author:kind==='Book'?$('#f-sn-author').value.trim():'',notes:''}}); }
+  }
+  out.f.sourceId=id;
+  const k=id===ONLINE_ID?'Online':(id?((state.db.sources||[]).find(x=>x.id===id)||{}).kind||(e.src.id==='__new'?segVal('#f-sn-kind'):''):'');
+  if(k==='Book') out.f.sourceRef=$('#f-page').value.trim();
+  if(k==='Online'){
+    const url=$('#f-url').value.trim();
+    if(url && !isUrl(url)) return {error:'The web address needs to start with https://'};
+    out.f.sourceRef=url; out.f.siteName=$('#f-site').value.trim()||siteFromUrl(url);
+  }
+  return out;
+}
+function mergeTags(a,b){ const t=normTags(a); TAG_KEYS.forEach(k=>(b[k]||[]).forEach(v=>addTag(t,k,v))); return t; }
+/* opts.versionOf: the recipe is a pasted new version of that recipe, created only when saved */
+function openEdit(r,isNew,opts){
   if(state.locked){ toast('Update this app before editing'); return; }
-  editing={id:r.id||uid('r-'),isNew:!!isNew,created:r.created||new Date().toISOString()};
-  $('#edit-h').textContent=isNew?'New recipe':'Edit recipe';
-  $('#f-title').value=r.title||''; $('#f-source').value=r.source||'';
+  opts=opts||{};
+  const base=opts.versionOf?state.db.recipes.find(x=>x.id===opts.versionOf):null;
+  editing={id:base?uid('r-'):(r.id||uid('r-')),isNew:!!isNew,created:base?new Date().toISOString():(r.created||new Date().toISOString()),
+    pv:base?{baseId:base.id}:null,importTime:r.time||'',importMinutes:r.timeMinutes||null};
+  $('#edit-h').textContent=base?'New version':isNew?(opts.title||'New recipe'):'Edit recipe';
+  $('#f-title').value=r.title||''; setupSrcFields(r);
   $('#f-serves').value=r.serves||''; $('#f-time').value=r.time||'';
-  $('#f-tags').value=(r.tags||[]).join(', ');
   $('#f-ings').value=(r.ingredients||[]).map(itemText).join('\n'); $('#f-method').value=(r.instructions||[]).map(itemText).join('\n');
   $('#f-notes').value=r.notes||''; $('#f-rating').value=String(Math.round(r.rating)||0);
-  const ex=!isNew && state.db.recipes.find(x=>x.id===editing.id);
-  const showVer=!!ex && (familyOf(ex).length>1 || ex.versionNo>1);
+  const ex=base||(!isNew && state.db.recipes.find(x=>x.id===editing.id));
+  const showVer=!!base || (!!ex && (familyOf(ex).length>1 || ex.versionNo>1));
   $('#f-verwrap').hidden=!showVer;
-  $('#f-vlabel').value=ex?ex.versionLabel:''; $('#f-vnote').value=ex?ex.changeNote:'';
+  $('#f-vlabel').value=base?(opts.label||''):ex?ex.versionLabel:''; $('#f-vnote').value=base?(opts.note||''):ex?ex.changeNote:'';
   setSeg('#f-type',r.type==='External'?'External':'Full'); syncTypeFields();
-  $('#edit-msg').hidden=true; renderQuickTags();
+  editing.origTags=ex?normTags(ex.tags):emptyTags();
+  if(r.importTags){ const res=resolveImportTags(r.importTags); editing.tags=base?mergeTags(base.tags,res.tags):res.tags; editing.importNew=res.fresh; }
+  else { editing.tags=Array.isArray(r.tags)?groupTags(r.tags,state.db.taxonomy):normTags(r.tags); editing.importNew=[]; }
+  editing.open=new Set();
+  $('#edit-msg').hidden=true; renderTagPickers();
   $('#dlg-edit').showModal(); $('#dlg-edit').scrollTop=0;
 }
 function saveEdit(){
   if(!editing || state.locked){ $('#dlg-edit').close(); editing=null; toast('Update this app before editing'); return; }
   const title=$('#f-title').value.trim();
   if(!title){ const m=$('#edit-msg'); m.textContent='Give the recipe a title.'; m.hidden=false; $('#f-title').focus(); return; }
-  const seenTag=new Set();
-  const tags=$('#f-tags').value.split(',').map(s=>s.trim()).filter(t=>t && !seenTag.has(t.toLowerCase()) && seenTag.add(t.toLowerCase()));
   const type=segVal('#f-type')||'Full';
   const ex=state.db.recipes.find(x=>x.id===editing.id);
-  const r={id:editing.id,title,type,source:$('#f-source').value.trim(),serves:$('#f-serves').value.trim(),time:$('#f-time').value.trim(),
-    tags,
+  const time=$('#f-time').value.trim(), src=readSrcFields();
+  if(src.error){ const m=$('#edit-msg'); m.textContent=src.error; m.hidden=false; return; }
+  const r={id:editing.id,title,type,serves:$('#f-serves').value.trim(),time,timeMinutes:parseMinutes(time)||(time&&time===editing.importTime?editing.importMinutes:null),
+    tagDiff:diffTags(editing.origTags,editing.tags),
     ingredients:matchItems(ex?ex.ingredients:[],lines($('#f-ings').value),'i'),
     instructions:matchItems(ex?ex.instructions:[],lines($('#f-method').value).map(stripStep),'s'),
     notes:$('#f-notes').value.trim(),rating:Number($('#f-rating').value)||0,created:editing.created,updated:new Date().toISOString()};
+  Object.assign(r,src.f);
+  if(editing.pv){
+    const base=state.db.recipes.find(x=>x.id===editing.pv.baseId);
+    if(!base){ $('#dlg-edit').close(); editing=null; toast('That recipe has been deleted'); return; }
+    const label=$('#f-vlabel').value.trim();
+    if(!label){ const m=$('#edit-msg'); m.textContent='Give the new version a name, for example "Full recipe".'; m.hidden=false; $('#f-vlabel').focus(); return; }
+    const now=new Date().toISOString(), nr=clone(base);
+    Object.assign(nr,r,{familyId:base.familyId,parentId:base.id,versionLabel:label,changeNote:$('#f-vnote').value.trim(),
+      cookLog:[],archived:false,created:now,updated:now,annotations:[],tags:applyTagDiff(base.tags,r.tagDiff)});
+    delete nr.tagDiff; delete nr.versionNo;
+    $('#dlg-edit').close(); editing=null;
+    commitMany(src.ops.concat([{t:'newVersion',r:nr}]));
+    select(nr.id);
+    const made=state.db.recipes.find(x=>x.id===nr.id);
+    toast(made?'Created '+vName(made):'New version created');
+    return;
+  }
   if(ex){
     const showVer=!$('#f-verwrap').hidden;
     r.versionLabel=(showVer&&$('#f-vlabel').value.trim())||ex.versionLabel;
@@ -1121,7 +1903,7 @@ function saveEdit(){
   }
   const wasNew=!ex;
   $('#dlg-edit').close(); editing=null;
-  commit({t:'upsert',r});
+  commitMany(src.ops.concat([{t:'upsert',r}]));
   select(r.id);
   toast(wasNew?'Recipe added':'Recipe saved');
 }
@@ -1211,44 +1993,151 @@ function openDelete(r){
   $('#dlg-delete').showModal();
 }
 
-/* ── Import ──────────────────────────────────────────── */
-let impImages=[], impMerge=null;
-const SYSTEM='You extract recipes for a personal family recipe book. Reply with ONLY one JSON object, with no markdown fences and no commentary, in exactly this shape:\n'+
- '{"title": string, "source": string, "serves": string, "time": string, "ingredients": [string], "instructions": [string], "tags": [string], "notes": string}\n'+
- 'Rules: "source" is the web address, or the cookbook title (and page number) if visible, otherwise "". Keep quantities and wording faithful to the original. One ingredient per item; if the recipe groups ingredients, add the group heading as its own item ending with a colon, e.g. "For the sauce:". One step per instructions item, without step numbers. Give 2 to 5 short tags in Title Case, such as cuisine, course and main ingredient. Put tips, variations and storage advice in "notes". Use "" or [] for anything not present. If there is no recipe, reply {"error": "short reason"}.';
-
-async function callClaude(content,tools){
-  const key=ls.get('apiKey','');
-  if(!key) throw new Error('Add your Claude API key in Settings first.');
-  const body={model:ls.get('model','')||CONFIG.defaultModel,max_tokens:4096,system:SYSTEM,messages:[{role:'user',content}]};
-  if(tools) body.tools=tools;
-  let res;
-  try{
-    res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
-  }catch(e){ throw new Error('Couldn\'t reach the Claude API. Check your connection.'); }
-  const j=await res.json().catch(()=>null);
-  if(!res.ok) throw new Error((j&&j.error&&j.error.message)||('Claude API error '+res.status));
-  const blocks=j.content||[];
-  let lastNonText=-1; blocks.forEach((b,i)=>{ if(b.type!=='text') lastNonText=i; });
-  const text=blocks.slice(lastNonText+1).filter(b=>b.type==='text').map(b=>b.text).join('\n') || blocks.filter(b=>b.type==='text').map(b=>b.text).join('\n');
-  const s=text.indexOf('{'), e=text.lastIndexOf('}');
-  if(s<0||e<s) throw new Error(j.stop_reason==='pause_turn'?'The page took too long to read. Try again.':'No recipe came back. Try a clearer photo or a different page.');
-  let o; try{ o=JSON.parse(text.slice(s,e+1)); }catch(err){ throw new Error('The reply couldn\'t be read as a recipe. Try again.'); }
-  if(o.error) throw new Error(o.error);
-  return o;
+/* ── Import (paste box and ChatGPT template, no API) ── */
+let impMode=null, impQueue=[], impTotal=0;
+function buildPrompt(){
+  const t=state.db.taxonomy||{}, list=g=>(t[g]||[]).join(', ');
+  const names=sourcesByKind('Book').concat(sourcesByKind('Homemade')).map(x=>x.name);
+  return [
+    'Convert the recipe in the attached photo(s) / at this web address into EXACTLY the template below. Reply with only the filled-in template inside one code block.',
+    '',
+    'Rules:',
+    '- Keep quantities and wording faithful to the original; use UK spelling.',
+    '- Don\'t invent anything – leave a field blank if it isn\'t shown.',
+    '- One ingredient per line. If ingredients are grouped, put the group heading on its own line ending with a colon (e.g. "For the sauce:").',
+    '- One method step per line, no numbers.',
+    '- Separate multiple values with commas.',
+    '- For Course, Cuisine, Main ingredient, Diet, Effort and Occasion, choose only from the allowed values listed; leave blank if none fit.',
+    '- Source type is Online for any website, with the site\'s name in Website name.',
+    '- Put tips, swaps and storage advice under NOTES.',
+    '- If there is more than one recipe, repeat the whole template, from === RECIPE === to === END ===, for each one.',
+    '',
+    'Allowed values:',
+    'Course: '+list('course'),
+    'Cuisine: '+list('cuisine'),
+    'Main ingredient: '+list('mainIngredient'),
+    'Diet: '+list('diet'),
+    'Effort: '+list('effort'),
+    'Occasion or season: '+list('occasion'),
+    'Existing book and homemade sources (reuse the exact name if it matches): '+(names.join(', ')||'none yet'),
+    '',
+    '=== RECIPE ===',
+    'Title:',
+    'Source type: Book / Online / Homemade / Other',
+    'Source name: (book title or homemade name; leave blank for Online)',
+    'Author:',
+    'Page:',
+    'Website name:',
+    'Web address:',
+    'Serves:',
+    'Total time (minutes):',
+    'Time as written:',
+    'Course:',
+    'Cuisine:',
+    'Main ingredient:',
+    'Diet:',
+    'Effort:',
+    'Occasion or season:',
+    '=== INGREDIENTS ===',
+    '=== METHOD ===',
+    '=== NOTES ===',
+    '=== END ==='
+  ].join('\n');
 }
-function prepImage(file){
-  return new Promise((resolve,reject)=>{
-    const url=URL.createObjectURL(file), img=new Image();
-    img.onload=()=>{
-      const max=1568, sc=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
-      const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*sc); c.height=Math.round(img.naturalHeight*sc);
-      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      URL.revokeObjectURL(url); resolve(c.toDataURL('image/jpeg',0.85));
-    };
-    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('Couldn\'t read that image.')); };
-    img.src=url;
+async function copyPrompt(){
+  const t=buildPrompt(), ok=$('#imp-copied'), ta=$('#imp-prompt');
+  try{
+    await navigator.clipboard.writeText(t);
+    ok.textContent='Copied. It includes your current tag lists and sources.'; ok.hidden=false; ta.hidden=true;
+  }catch(e){
+    ta.value=t; ta.hidden=false; ok.textContent='Copying was blocked. Select all the text below and copy it.'; ok.hidden=false;
+    ta.focus(); ta.select();
+  }
+}
+/* ── Template parser ── */
+const IMPORT_FIELDS={'title':'title','recipe title':'title','recipe name':'title','name':'title',
+  'source type':'stype','type':'stype','source name':'sname','source':'sname','book':'sname','book title':'sname',
+  'author':'author','page':'page','page number':'page','website name':'site','website':'site','site':'site','site name':'site',
+  'web address':'url','url':'url','link':'url','address':'url','serves':'serves','servings':'serves','serves makes':'serves','makes':'serves',
+  'total time':'mins','total time minutes':'mins','minutes':'mins','time as written':'time','time':'time',
+  'course':'course','cuisine':'cuisine','main ingredient':'mainIngredient','main ingredients':'mainIngredient','diet':'diet','dietary':'diet',
+  'effort':'effort','occasion or season':'occasion','occasion':'occasion','season':'occasion','occasion season':'occasion'};
+const SECTION_WORDS={'recipe':'recipe','ingredients':'ing','ingredient':'ing','method':'method','instructions':'method','steps':'method','directions':'method','notes':'notes','note':'notes','end':'end'};
+/* Strips Markdown bold, headings, bullets, numbering and quote marks that ChatGPT sometimes adds */
+function cleanLine(l){
+  return String(l).replace(/\*\*|__/g,'').replace(/^\s*#{1,6}\s*/,'').replace(/^\s*>\s*/,'').replace(/^\s*(?:[-•*–·]|\d+[.)])\s+/,'').replace(/\s+$/,'').trim();
+}
+function markerOf(l,inTemplate){
+  const m=l.match(/^=+\s*([a-z ]+?)\s*=*\s*:?$/i);
+  if(m) return SECTION_WORDS[m[1].toLowerCase().trim()]||null;
+  if(inTemplate){ const b=l.match(/^(ingredients?|method|instructions|notes?)\s*:?$/i); if(b) return SECTION_WORDS[b[1].toLowerCase()]; }
+  return null;
+}
+function blankish(v){
+  v=String(v||'').trim();
+  if(/^\(.*\)$/.test(v)) return '';
+  if(/^book\s*\/\s*online/i.test(v)) return '';
+  if(/^(n\/?a|none|not (shown|given|stated|specified)|unknown|blank|-+|–|—)\.?$/i.test(v)) return '';
+  return v;
+}
+function splitVals(v){ return blankish(v).split(/[,;]/).map(x=>x.replace(/\s*\([^)]*\)\s*/g,' ').replace(/\s+/g,' ').trim()).filter(x=>x && blankish(x)); }
+function parseTemplate(text){
+  const raw=String(text||'').replace(/\r/g,'').split('\n').filter(l=>!/^\s*```/.test(l));
+  const cleaned=raw.map(cleanLine);
+  const inTemplate=cleaned.some(l=>{ const k=markerOf(l,false); return k==='recipe'||k==='ing'; }) && cleaned.some(l=>/^title\s*:/i.test(l));
+  if(!inTemplate) return null;
+  const out=[]; let cur=null;
+  const start=()=>{ cur={head:{},ing:[],method:[],notes:[],sec:'head'}; };
+  const finish=()=>{ if(cur && (cur.head.title||cur.ing.length||cur.method.length)) out.push(cur); cur=null; };
+  cleaned.forEach(l=>{
+    if(!l) return;
+    const mk=markerOf(l,true);
+    if(mk==='recipe'){ finish(); start(); return; }
+    if(mk==='end'){ finish(); return; }
+    if(mk){ if(!cur) start(); cur.sec=mk; return; }
+    if(!cur){ if(/^title\s*:/i.test(l)) start(); else return; }
+    if(cur.sec==='head'){
+      const m=l.match(/^([^:]{1,40}):\s*(.*)$/); if(!m) return;
+      const key=IMPORT_FIELDS[m[1].toLowerCase().replace(/\([^)]*\)/g,' ').replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim()];
+      if(!key) return;
+      if(key==='title' && cur.head.title){ finish(); start(); }
+      const v=m[2].trim();
+      if(GROUP_KEYS.includes(key)) cur.head[key]=(cur.head[key]||[]).concat(splitVals(v));
+      else if(key==='stype'){ const k=tkey(blankish(v)); cur.head.stype=/^book/.test(k)?'Book':/^online|^web/.test(k)?'Online':/^home/.test(k)?'Homemade':k?'Other':''; }
+      else if(key==='mins'){ const n=blankish(v); cur.head.mins=/^\d+$/.test(n)?parseInt(n,10):parseMinutes(n); }
+      else if(key==='url'){ const u=(blankish(v).match(/https?:\/\/\S+/)||[''])[0].replace(/[)>.,]+$/,''); cur.head.url=u; }
+      else cur.head[key]=blankish(v);
+      return;
+    }
+    if(cur.sec==='ing') cur.ing.push(l);
+    else if(cur.sec==='method'){ const t=stripStep(l); if(t) cur.method.push(t); }
+    else if(cur.sec==='notes') cur.notes.push(l);
   });
+  finish();
+  return out.map(b=>{
+    const h=b.head, tags=emptyTags();
+    GROUP_KEYS.forEach(g=>(h[g]||[]).forEach(v=>tags[g].push(v)));
+    const mins=h.mins||null, time=h.time||(mins?mins+' minutes':''), url=isUrl(h.url)?h.url.trim():'';
+    let kind=h.stype||''; if(!kind && url && !h.sname) kind='Online';
+    return {title:h.title||'',type:(!b.ing.length && !b.method.length && url)?'External':'Full',serves:h.serves||'',time,timeMinutes:mins||parseMinutes(time),
+      ingredients:b.ing,instructions:b.method,notes:b.notes.join('\n'),rating:0,importTags:tags,
+      srcSpec:{kind,name:h.sname||'',author:h.author||'',ref:h.page||'',url,site:h.site||''}};
+  });
+}
+/* Tags from the template: matched to your values loosely (case, plurals, brackets), then to any group,
+   then through the old-tag rules; anything else is kept in its group and flagged as new */
+function resolveImportTags(grouped){
+  const tax=state.db.taxonomy||{}, out=emptyTags(), fresh=[];
+  GROUP_KEYS.forEach(g=>((grouped||{})[g]||[]).forEach(raw=>{
+    const v=String(raw).replace(/\s*\([^)]*\)\s*/g,' ').replace(/\s+/g,' ').trim(); if(!v) return;
+    const hit=(tax[g]||[]).find(x=>tagMatch(x,v));
+    if(hit){ addTag(out,g,hit); return; }
+    const m=mapTag(v,tax);
+    if(!m) return;
+    if(m[0]!=='unsorted'){ addTag(out,m[0],m[1]); return; }
+    if(!out[g].some(x=>tagMatch(x,v))){ addTag(out,g,v); fresh.push({g,v}); }
+  }));
+  return {tags:out,fresh};
 }
 function parsePlain(t){
   const ls_=lines(t); const out={title:ls_[0]||'',source:'',serves:'',time:'',ingredients:[],instructions:[],tags:[],notes:''};
@@ -1267,72 +2156,235 @@ function parsePlain(t){
   if(intro.length) out.notes=intro.join('\n')+(out.notes?'\n'+out.notes:'');
   return out;
 }
-function impTab(v){
-  setSeg('#imp-tabs',v);
-  $$('#dlg-import [data-pane]').forEach(p=>p.hidden=p.dataset.pane!==v);
-  $('#imp-nokey').hidden=v==='text'||!!ls.get('apiKey','');
-  $('#imp-go').textContent=v==='url'?'Fetch recipe':v==='text'?'Tidy into a recipe':'Read recipe';
-  $('#imp-msg').hidden=true;
+/* A pasted recipe as a new version: the pasted lines replace the old ones, blanks fall back to the current version */
+function versionDraft(base,d){
+  const sp=d.srcSpec||{}, hasSrc=!!(sp.kind||sp.name||sp.url), full=(d.ingredients||[]).length||(d.instructions||[]).length;
+  const out={title:d.title||base.title,type:full?'Full':base.type,serves:d.serves||base.serves,time:d.time||base.time,timeMinutes:d.timeMinutes||base.timeMinutes,
+    ingredients:d.ingredients||[],instructions:d.instructions||[],notes:d.notes||base.notes,rating:0,importTags:d.importTags||emptyTags()};
+  if(hasSrc) out.srcSpec=sp; else Object.assign(out,{sourceId:base.sourceId,sourceRef:base.sourceRef,siteName:base.siteName});
+  return out;
 }
-function openImport(tab,url){
-  impMerge=null; impImages=[];
-  $('#imp-files').value=''; $('#imp-thumbs').innerHTML=''; $('#imp-url').value=url||''; $('#imp-text').value='';
-  impTab(tab||'photo'); $('#dlg-import').showModal();
+function openImport(mode){
+  if(state.locked){ toast('Update this app before editing'); return; }
+  impMode=mode||null;
+  const base=impMode?state.db.recipes.find(x=>x.id===impMode.versionOf):null;
+  $('#imp-h').textContent=base?'Paste as new version':'Import a recipe';
+  $('#imp-vernote').hidden=!base; $('#imp-hint').hidden=!!base;
+  $('#imp-text').value=''; $('#imp-msg').hidden=true; $('#imp-copied').hidden=true; $('#imp-prompt').hidden=true;
+  $('#dlg-import').showModal();
 }
-async function runImport(){
-  const tab=segVal('#imp-tabs'), btn=$('#imp-go'), msg=$('#imp-msg'), label=btn.textContent;
-  msg.hidden=true;
-  try{
-    let result;
-    if(tab==='photo'){
-      if(!impImages.length) throw new Error('Choose at least one photo.');
-      btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Reading…';
-      result=await callClaude(impImages.map(d=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:d.split(',')[1]}}))
-        .concat([{type:'text',text:'These photos show one recipe, probably from a cookbook. Extract it.'}]));
-      if(!result.source) result.source='Cookbook photo';
-    } else if(tab==='url'){
-      const u=$('#imp-url').value.trim();
-      if(!isUrl(u)) throw new Error('Enter a full web address starting with https://');
-      btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Fetching…';
-      result=await callClaude([{type:'text',text:'Fetch this web page with the web_fetch tool and extract the recipe on it: '+u}],[{type:'web_fetch_20250910',name:'web_fetch',max_uses:3}]);
-      result.source=u;
-    } else {
-      const t=$('#imp-text').value.trim();
-      if(!t) throw new Error('Paste some recipe text first.');
-      if(ls.get('apiKey','')){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Tidying…'; result=await callClaude([{type:'text',text:'Tidy this recipe text into the structure:\n\n'+t}]); }
-      else result=parsePlain(t);
-    }
-    $('#dlg-import').close();
-    let draft=Object.assign({type:'Full',rating:0},result);
-    let isNew=true;
-    if(impMerge){
-      const ex=state.db.recipes.find(r=>r.id===impMerge);
-      if(ex){
-        isNew=false;
-        const tags=ex.tags.slice(); (result.tags||[]).forEach(t=>{ if(!tags.some(x=>x.toLowerCase()===String(t).toLowerCase())) tags.push(t); });
-        draft=Object.assign({},ex,{type:'Full',ingredients:result.ingredients||[],instructions:result.instructions||[],serves:ex.serves||result.serves||'',time:ex.time||result.time||'',tags,
-          notes:[ex.notes,result.notes].filter(Boolean).join('\n\n')});
-      }
-    }
-    openEdit(draft,isNew);
-  }catch(e){ msg.textContent=e.message; msg.hidden=false; }
-  finally{ btn.disabled=false; btn.textContent=label; }
+function impMsg(m){ const el=$('#imp-msg'); el.textContent=m||''; el.hidden=!m; }
+function runImport(){
+  const t=$('#imp-text').value;
+  if(!t.trim()){ impMsg('Paste ChatGPT\'s reply, or some recipe text, first.'); return; }
+  let drafts=parseTemplate(t);
+  if(!drafts) drafts=[parsePlain(t.replace(/^\s*```.*$/gm,''))];
+  drafts=drafts.filter(d=>d.title || d.ingredients.length || d.instructions.length);
+  if(!drafts.length){ impMsg('Couldn\'t find a recipe in that text. Check it\'s the whole reply.'); return; }
+  $('#dlg-import').close();
+  const base=impMode?state.db.recipes.find(x=>x.id===impMode.versionOf):null;
+  if(base){
+    const linkOnly=base.type==='External' && !base.ingredients.length;
+    openEdit(versionDraft(base,drafts[0]),false,{versionOf:base.id,label:linkOnly?'Full recipe':'',note:'Pasted from ChatGPT'});
+    if(drafts.length>1) toast('Only the first recipe was used');
+    return;
+  }
+  impQueue=drafts.slice(1); impTotal=drafts.length;
+  openEdit(drafts[0],true,{title:impTotal>1?'New recipe (1 of '+impTotal+')':'New recipe'});
+}
+function openNextImport(){
+  if(!impQueue.length || state.locked) return;
+  const d=impQueue.shift(), n=impTotal-impQueue.length;
+  openEdit(d,true,{title:'New recipe ('+n+' of '+impTotal+')'});
+}
+
+/* ── Tag manager ─────────────────────────────────────── */
+let taCtx=null;
+function tagUse(g,v){ return groups().filter(x=>x.members.some(m=>((m.tags||{})[g]||[]).some(y=>tagMatch(y,v)))).length; }
+function renderTagManager(){
+  if(!$('#dlg-tags').open) return;
+  const keys=GROUP_KEYS.concat(groupValues('unsorted').length?['unsorted']:[]);
+  const open=new Set($$('#tm-body details[open]').map(d=>d.dataset.g));
+  const first=!$('#tm-body').children.length, scroll=$('#tm-body').scrollTop;
+  $('#tm-body').innerHTML='<p class="hint" style="margin:0">Renames, merges and deletes change every recipe that uses the tag, including older versions.</p>'+keys.map(g=>{
+    const vals=groupValues(g), un=g==='unsorted';
+    const rows=vals.map((v,i)=>{ const n=tagUse(g,v);
+      return '<li class="tmrow"><span class="tm-name">'+esc(v)+'</span><span class="tm-n">'+(n?n+' recipe'+(n>1?'s':''):'not used')+'</span><span class="tm-acts">'+
+        (un?'<button type="button" class="btn primary" data-tm="move" data-g="'+g+'" data-v="'+esc(v)+'">Move to group</button>'
+          :'<button type="button" class="btn icon" data-tm="up" data-g="'+g+'" data-i="'+i+'" aria-label="Move '+esc(v)+' up"'+(i?'':' disabled')+'>↑</button><button type="button" class="btn icon" data-tm="down" data-g="'+g+'" data-i="'+i+'" aria-label="Move '+esc(v)+' down"'+(i<vals.length-1?'':' disabled')+'>↓</button>')+
+        '<button type="button" class="btn" data-tm="rename" data-g="'+g+'" data-v="'+esc(v)+'">Rename</button>'+
+        (!un&&vals.length>1?'<button type="button" class="btn" data-tm="merge" data-g="'+g+'" data-v="'+esc(v)+'">Merge</button>':'')+
+        '<button type="button" class="btn danger" data-tm="delete" data-g="'+g+'" data-v="'+esc(v)+'">Delete</button></span></li>';
+    }).join('');
+    return '<details class="fgroup" data-g="'+g+'"'+(open.has(g)||(first&&un)?' open':'')+'><summary>'+esc(GROUP_LABEL[g])+'<span class="muted" style="font:400 .85rem var(--sans)">'+vals.length+'</span></summary>'+
+      '<ul class="tmlist">'+rows+'</ul>'+
+      (un?'':'<div class="tg-add"><input type="text" data-tmadd="'+g+'" placeholder="Add a new '+esc(GROUP_LABEL[g].toLowerCase())+' value" aria-label="Add a new '+esc(GROUP_LABEL[g])+' value" autocomplete="off"><button type="button" class="btn" data-tm="add" data-g="'+g+'">Add</button></div>')+'</details>';
+  }).join('');
+  $('#tm-body').scrollTop=scroll;
+}
+function openTagManager(){ $('#tm-body').innerHTML=''; $('#dlg-tags').showModal(); renderTagManager(); }
+function taMsg(m){ const el=$('#ta-msg'); el.textContent=m||''; el.hidden=!m; }
+function openTagAction(mode,g,v){
+  taCtx={mode,g,v}; taMsg(''); $('#ta-info').hidden=true;
+  const n=tagUse(g,v), used=n?' It\'s used on '+n+' recipe'+(n>1?'s':'')+'.':'';
+  $('#ta-namewrap').hidden=mode==='merge'; $('#ta-selwrap').hidden=mode==='rename';
+  $('#ta-name').value=v;
+  if(mode==='rename'){ $('#ta-h').textContent='Rename tag'; $('#ta-text').textContent='Rename "'+v+'" in '+GROUP_LABEL[g]+'.'+used; $('#ta-go').textContent='Rename'; }
+  if(mode==='merge'){
+    $('#ta-h').textContent='Merge tag'; $('#ta-text').textContent='Every recipe tagged "'+v+'" gets the tag you choose instead, and "'+v+'" is removed.'+used;
+    $('#ta-sellbl').textContent='Merge into'; $('#ta-sel').innerHTML=groupValues(g).filter(x=>x!==v).map(x=>'<option>'+esc(x)+'</option>').join('');
+    $('#ta-go').textContent='Merge';
+  }
+  if(mode==='move'){
+    $('#ta-h').textContent='Move to a group'; $('#ta-text').textContent='Move "'+v+'" out of Unsorted.'+used+' You can also change its name.';
+    $('#ta-sellbl').textContent='Group'; $('#ta-sel').innerHTML=GROUP_KEYS.map(k=>'<option value="'+k+'">'+esc(GROUP_LABEL[k])+'</option>').join('');
+    $('#ta-go').textContent='Move';
+  }
+  taInfo();
+  $('#dlg-tagact').showModal();
+  if(mode!=='merge') setTimeout(()=>{ $('#ta-name').focus(); $('#ta-name').select(); },60);
+}
+/* Warn when a rename or move lands on a value that already exists, because that's a merge */
+function taInfo(){
+  const c=taCtx; if(!c) return;
+  const name=$('#ta-name').value.trim(), g=c.mode==='move'?$('#ta-sel').value:c.g;
+  const hit=c.mode==='merge'?null:groupValues(g).find(x=>tagMatch(x,name) && !(g===c.g && x===c.v));
+  const el=$('#ta-info'); el.hidden=!hit;
+  if(hit) el.textContent='"'+hit+'" already exists in '+GROUP_LABEL[g]+', so the two will be merged.';
+}
+function runTagAction(){
+  const c=taCtx; if(!c) return;
+  const name=$('#ta-name').value.replace(/\s+/g,' ').trim();
+  if(c.mode==='rename'){
+    if(!name){ taMsg('Enter a name.'); return; }
+    if(name===c.v){ $('#dlg-tagact').close(); return; }
+    commit({t:'renameTag',g:c.g,from:c.v,to:name}); toast('Renamed to '+name);
+  }
+  if(c.mode==='merge'){ const to=$('#ta-sel').value; if(!to) return; commit({t:'renameTag',g:c.g,from:c.v,to}); toast('Merged into '+to); }
+  if(c.mode==='move'){
+    if(!name){ taMsg('Enter a name.'); return; }
+    const to=$('#ta-sel').value; commit({t:'moveTag',from:c.g,v:c.v,to,as:name}); toast('Moved to '+GROUP_LABEL[to]);
+  }
+  $('#dlg-tagact').close(); taCtx=null; renderTagManager();
+}
+function tagManagerClick(e){
+  const b=e.target.closest('[data-tm]'); if(!b) return;
+  const act=b.dataset.tm, g=b.dataset.g, v=b.dataset.v;
+  if(act==='add'){
+    const inp=document.querySelector('#tm-body [data-tmadd="'+g+'"]'), val=inp?inp.value.replace(/\s+/g,' ').trim():'';
+    if(!val) return;
+    if(groupValues(g).some(x=>tagMatch(x,val))){ toast('"'+val+'" is already in '+GROUP_LABEL[g]); return; }
+    commit({t:'addTag',g,v:val}); renderTagManager();
+    const again=document.querySelector('#tm-body [data-tmadd="'+g+'"]'); if(again) again.focus();
+  }
+  if(act==='up'||act==='down'){
+    const vals=groupValues(g), i=Number(b.dataset.i), j=act==='up'?i-1:i+1;
+    if(j<0||j>=vals.length) return;
+    [vals[i],vals[j]]=[vals[j],vals[i]];
+    commit({t:'orderTags',g,order:vals}); renderTagManager();
+  }
+  if(act==='rename'||act==='merge'||act==='move') openTagAction(act,g,v);
+  if(act==='delete'){
+    const n=tagUse(g,v);
+    if(!confirm('Delete "'+v+'"?'+(n?' It will be removed from '+n+' recipe'+(n>1?'s':'')+'.':''))) return;
+    commit({t:'deleteTag',g,v}); toast('Deleted '+v); renderTagManager();
+  }
+}
+
+/* ── Sources ─────────────────────────────────────────── */
+let seCtx=null, sdCtx=null, svCtx=null;
+function renderSourceManager(){
+  if(!$('#dlg-sources').open) return;
+  $('#sm-body').innerHTML=['Book','Online','Homemade','Other'].map(kind=>{
+    const list=sourcesByKind(kind); if(!list.length) return '';
+    return '<section class="section" style="margin-top:14px"><h3>'+KIND_LABEL[kind]+'</h3><ul class="tmlist">'+list.map(x=>{
+      const n=srcUse(x.id);
+      return '<li class="tmrow"><span class="tm-name">'+esc(x.id===ONLINE_ID?'Online (all websites)':x.name)+(x.author?' <span class="muted" style="font-weight:400">'+esc(x.author)+'</span>':'')+'</span>'+
+        '<span class="tm-n">'+(n?n+' recipe'+(n>1?'s':''):'not used')+'</span><span class="tm-acts">'+
+        '<button type="button" class="btn" data-sm="view" data-sid="'+esc(x.id)+'">View</button>'+
+        '<button type="button" class="btn" data-sm="edit" data-sid="'+esc(x.id)+'">Edit</button>'+
+        (x.id===ONLINE_ID?'':'<button type="button" class="btn danger" data-sm="delete" data-sid="'+esc(x.id)+'">Delete</button>')+'</span></li>';
+    }).join('')+'</ul></section>';
+  }).join('');
+}
+function openSourceManager(){ $('#dlg-sources').showModal(); renderSourceManager(); }
+function seMsg(m){ const el=$('#se-msg'); el.textContent=m||''; el.hidden=!m; }
+function openSourceEdit(id){
+  const x=id?(state.db.sources||[]).find(s=>s.id===id):null; if(id && !x) return;
+  seCtx={id:x?x.id:null}; seMsg('');
+  const online=!!x && x.id===ONLINE_ID;
+  $('#se-h').textContent=x?'Edit source':'Add a source';
+  $('#se-name').value=x?x.name:''; $('#se-author').value=x?x.author:''; $('#se-notes').value=x?x.notes:'';
+  setSeg('#se-kind',x?x.kind:'Book');
+  $('#se-namewrap').hidden=online; $('#se-kindwrap').hidden=online; $('#se-builtin').hidden=!online;
+  syncSeKind();
+  $('#dlg-srcedit').showModal();
+  if(!online) setTimeout(()=>$('#se-name').focus(),60);
+}
+function syncSeKind(){ $('#se-authwrap').hidden=segVal('#se-kind')!=='Book' || (seCtx&&seCtx.id===ONLINE_ID); }
+function saveSourceEdit(){
+  const c=seCtx; if(!c) return;
+  const online=c.id===ONLINE_ID, name=$('#se-name').value.replace(/\s+/g,' ').trim(), kind=segVal('#se-kind')||'Other';
+  if(!online && !name){ seMsg('Give the source a name.'); return; }
+  const clash=!online && (state.db.sources||[]).find(x=>x.id!==c.id && x.kind===kind && tkey(x.name)===tkey(name));
+  if(clash){ seMsg('There\'s already a '+kind.toLowerCase()+' source called "'+clash.name+'".'); return; }
+  const id=c.id||srcId(kind,name);
+  if(!c.id && (state.db.sources||[]).some(x=>x.id===id)){ seMsg('That source already exists.'); return; }
+  commit({t:'sourceSave',s:{id,name,kind,author:$('#se-author').value.trim(),notes:$('#se-notes').value.trim()}});
+  $('#dlg-srcedit').close(); seCtx=null; toast(c.id?'Source saved':'Source added');
+  renderSourceManager(); if($('#dlg-srcview').open) renderSourceView();
+  if(editing && $('#dlg-edit').open){ renderSrcPicker(); }
+}
+function openSourceDelete(id){
+  const x=(state.db.sources||[]).find(s=>s.id===id); if(!x || x.id===ONLINE_ID) return;
+  sdCtx={id}; const n=srcUse(id);
+  $('#sd-text').textContent=n?'"'+x.name+'" is used by '+n+' recipe'+(n>1?'s':'')+'. Choose where those recipes should go, then delete it.':'Delete "'+x.name+'"? No recipes use it.';
+  $('#sd-movewrap').hidden=!n;
+  $('#sd-to').innerHTML='<option value="">Choose a source…</option>'+['Book','Online','Homemade','Other'].map(kind=>{
+    const list=sourcesByKind(kind).filter(s=>s.id!==id); if(!list.length) return '';
+    return '<optgroup label="'+KIND_LABEL[kind]+'">'+list.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.id===ONLINE_ID?'Online':s.name)+'</option>').join('')+'</optgroup>';
+  }).join('')+'<option value="__none">No source</option>';
+  $('#dlg-srcdel').showModal();
+}
+function runSourceDelete(){
+  const c=sdCtx; if(!c) return;
+  const n=srcUse(c.id), to=$('#sd-to').value;
+  if(n && !to){ toast('Choose where the recipes should go first'); return; }
+  commit({t:'sourceDelete',id:c.id,to:to==='__none'?'':to});
+  $('#dlg-srcdel').close(); sdCtx=null; toast('Source deleted'); renderSourceManager();
+  if($('#dlg-srcview').open) $('#dlg-srcview').close();
+}
+/* Source page: details and every recipe whose current version uses it */
+function openSourceView(id){ svCtx={id}; $('#dlg-srcview').showModal(); renderSourceView(); }
+function renderSourceView(){
+  const c=svCtx; if(!c) return;
+  const x=(state.db.sources||[]).find(s=>s.id===c.id);
+  if(!x){ $('#dlg-srcview').close(); return; }
+  const gs=groups().filter(g=>g.def.sourceId===x.id).sort((a,b)=>a.def.title.localeCompare(b.def.title,'en-GB',{sensitivity:'base'}));
+  $('#sv-h').textContent=x.id===ONLINE_ID?'Online':x.name;
+  let h='<p class="muted" style="margin:0">'+esc(x.id===ONLINE_ID?'Recipes from websites':x.kind+(x.author?' by '+x.author:''))+'</p>';
+  if(x.notes) h+='<p class="notes" style="margin:0">'+esc(x.notes)+'</p>';
+  h+=gs.length?'<ul class="srcrecipes">'+gs.map(g=>{
+    const r=g.def, bits=[];
+    if(x.kind==='Book' && r.sourceRef) bits.push('page '+r.sourceRef);
+    if(x.kind==='Online' && r.siteName) bits.push(r.siteName);
+    bits.push(g.logs.length?'made '+times(g.logs.length):'not made yet');
+    return '<li><button type="button" data-svopen="'+esc(r.id)+'">'+esc(r.title)+'<span class="m">'+esc(bits.join(', '))+'</span></button></li>';
+  }).join('')+'</ul>':'<p class="muted" style="margin:0">No recipes use this source yet.</p>';
+  $('#sv-body').innerHTML=h;
+  $('#sv-edit').hidden=!canEdit();
 }
 
 /* ── Settings ────────────────────────────────────────── */
 function openSettings(){
   $('#s-viewonly').checked=!!ls.get('viewOnly',false);
-  $('#s-key').value=ls.get('apiKey','');
-  $('#s-model').value=ls.get('model','')||CONFIG.defaultModel;
-  $('#s-file').innerHTML='Dropbox › Apps › <em>your app name</em> › '+esc(CONFIG.filePath.replace(/^\//,''));
-  $('#s-ver').textContent='App version '+APP_VERSION+', build '+BUILD+', data format '+DATA_VERSION+
+  $('#s-file').innerHTML='Dropbox › Apps › <em>your app name</em> › '+esc(FILE.replace(/^\//,''))+(TEST?' (test mode: remove ?test from the address to use your real book)':'');
+  $('#s-ver').textContent='App version '+APP_VERSION+', build '+BUILD+', data format '+DATA_VERSION+(TEST?', using the test file':'')+
     (state.locked?'. The recipe file is format '+state.locked+', so this copy needs updating.':'');
   $('#dlg-settings').showModal();
 }
 function saveSettings(){
   ls.set('viewOnly',$('#s-viewonly').checked);
-  ls.set('apiKey',$('#s-key').value.trim());
-  const m=$('#s-model').value.trim(); ls.set('model',m===CONFIG.defaultModel?'':m);
   $('#dlg-settings').close(); render();
 }
 function downloadBackup(){
@@ -1354,12 +2406,24 @@ function bind(){
 
   $('#search').addEventListener('input',e=>{ state.search=e.target.value; clearTimeout(bind._t); bind._t=setTimeout(render,120); });
   $('#sort').addEventListener('change',e=>{ state.sort=e.target.value; ls.set('sort',state.sort); render(); });
-  $('#chips').addEventListener('click',e=>{ const b=e.target.closest('[data-tag]'); if(!b) return; const t=b.dataset.tag; state.tags.has(t)?state.tags.delete(t):state.tags.add(t); render(); });
+  $('#btn-filter').addEventListener('click',openFilters);
+  $('#browse').addEventListener('click',e=>{ const b=e.target.closest('[data-coll]'); if(b) setColl(b.dataset.coll); });
+  $('#btn-view').addEventListener('click',()=>{ state.view=state.view==='grid'?'list':'grid'; ls.set('view',state.view); render(); });
+  $('#active').addEventListener('click',e=>{
+    if(e.target.closest('[data-clear]')){ clearFilters(); return; }
+    if(e.target.closest('[data-coll-x]')){ clearColl(); render(); return; }
+    const b=e.target.closest('.achip'); if(b){ fsel(b.dataset.g).delete(b.dataset.v); render(); }
+  });
+  $('#flt-body').addEventListener('click',e=>{ const b=e.target.closest('.fchip'); if(b && !b.disabled) toggleFilter(b.dataset.g,b.dataset.v); });
+  $('#flt-body').addEventListener('toggle',e=>{ const d=e.target; if(d.matches && d.matches('details[data-g]')) d.open?state.fOpen.add(d.dataset.g):state.fOpen.delete(d.dataset.g); },true);
+  $('#flt-body').addEventListener('input',e=>{ if(e.target.id==='flt-srcq'){ state.srcQuery=e.target.value; applySrcQuery(); } });
+  $('#flt-clear').addEventListener('click',clearFilters);
+  $('#flt-done').addEventListener('click',()=>$('#dlg-filter').close());
   $('#list').addEventListener('click',e=>{ const b=e.target.closest('.item'); if(b) select(b.dataset.id); });
   $('#sync').addEventListener('click',syncNow);
   $('#lock-retry').addEventListener('click',()=>location.reload());
   $('#btn-add').addEventListener('click',()=>openEdit({type:'Full'},true));
-  $('#btn-import').addEventListener('click',()=>openImport('photo'));
+  $('#btn-import').addEventListener('click',()=>openImport(null));
   $('#btn-settings').addEventListener('click',openSettings);
 
   $('#detail').addEventListener('click',e=>{
@@ -1384,7 +2448,8 @@ function bind(){
       toast('Recorded for '+fmtDate(date));
     }
     if(act==='unlog'){ if(confirm('Remove this entry from the cooking history?')) commit({t:'unlog',id:r.id,eid:el.dataset.eid}); }
-    if(act==='import-link'){ openImport('url',r.source); impMerge=r.id; }
+    if(act==='paste-version'){ openImport({versionOf:r.id}); return; }
+    if(act==='srcpage'){ openSourceView(el.dataset.sid); return; }
     if(act==='note') openNote(r,el.dataset.target,null);
     if(act==='note-edit') openNote(r,null,el.dataset.aid);
     if(act==='note-recipe') openNote(r,'recipe',null);
@@ -1397,13 +2462,37 @@ function bind(){
 
   $$('dialog [data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
   $('#f-type').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ setSeg('#f-type',b.dataset.v); syncTypeFields(); } });
-  $('#f-tags').addEventListener('input',renderQuickTags);
-  $('#f-quicktags').addEventListener('click',e=>{
-    const b=e.target.closest('[data-qt]'); if(!b) return;
-    const t=b.dataset.qt; let cur=$('#f-tags').value.split(',').map(s=>s.trim()).filter(Boolean);
-    cur=cur.some(x=>x.toLowerCase()===t.toLowerCase())?cur.filter(x=>x.toLowerCase()!==t.toLowerCase()):cur.concat(t);
-    $('#f-tags').value=cur.join(', '); renderQuickTags();
+  $('#f-srcbtn').addEventListener('click',()=>toggleSrcPanel());
+  $('#f-srcq').addEventListener('input',renderSrcList);
+  $('#f-srcq').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); const first=$('#f-srclist .srcopt:not([data-sid=""])'); if(first) pickSource(first.dataset.sid); } if(e.key==='Escape'){ e.preventDefault(); toggleSrcPanel(false); } });
+  $('#f-srclist').addEventListener('click',e=>{ const b=e.target.closest('[data-sid]'); if(b) pickSource(b.dataset.sid); });
+  $('#f-sn-kind').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ setSeg('#f-sn-kind',b.dataset.v); renderSrcPicker(); } });
+  $('#f-url').addEventListener('input',()=>{ if(editing && !editing.siteTouched) $('#f-site').value=siteFromUrl($('#f-url').value); });
+  $('#f-site').addEventListener('input',()=>{ if(editing) editing.siteTouched=!!$('#f-site').value.trim(); });
+  $('#f-taggroups').addEventListener('click',e=>{
+    if(!editing) return;
+    const h=e.target.closest('[data-tg]');
+    if(h){ const g=h.dataset.tg; editing.open.has(g)?editing.open.delete(g):editing.open.add(g); renderTagPickers(); return; }
+    const c=e.target.closest('.fchip');
+    if(c){ const g=c.dataset.g, v=c.dataset.v, sel=editing.tags[g];
+      editing.tags[g]=sel.some(x=>tagMatch(x,v))?sel.filter(x=>!tagMatch(x,v)):sel.concat(v); renderTagPickers(); return; }
+    const a=e.target.closest('[data-addbtn]'); if(a) pickerAdd(a.dataset.addbtn);
   });
+  $('#f-tagreview').addEventListener('click',e=>{
+    const b=e.target.closest('[data-tr]'); if(!b || !editing) return;
+    const x=editing.importNew[Number(b.dataset.i)]; if(!x) return;
+    if(b.dataset.tr==='drop') editing.tags[x.g]=editing.tags[x.g].filter(y=>!tagMatch(y,x.v));
+    editing.importNew.splice(Number(b.dataset.i),1); renderTagPickers();
+  });
+  $('#f-tagreview').addEventListener('change',e=>{
+    const s=e.target.closest('.trmap'); if(!s || !s.value || !editing) return;
+    const x=editing.importNew[Number(s.dataset.i)]; if(!x) return;
+    editing.tags[x.g]=editing.tags[x.g].filter(y=>!tagMatch(y,x.v)); addTag(editing.tags,x.g,s.value);
+    editing.importNew.splice(Number(s.dataset.i),1); renderTagPickers();
+  });
+  /* Several recipes in one paste: the next one opens when this one is saved or cancelled */
+  $('#dlg-edit').addEventListener('close',()=>{ if(impQueue.length) setTimeout(openNextImport,250); });
+  $('#f-taggroups').addEventListener('keydown',e=>{ const i=e.target.closest('[data-add]'); if(i && e.key==='Enter'){ e.preventDefault(); pickerAdd(i.dataset.add); } });
   $('#edit-save').addEventListener('click',saveEdit);
 
   $('#note-save').addEventListener('click',saveNote);
@@ -1423,20 +2512,36 @@ function bind(){
     commit({t:'delete',id:r.id}); state.selected=null; render(); toast('Recipe deleted');
   });
 
-  $('#imp-tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) impTab(b.dataset.v); });
-  $('#imp-files').addEventListener('change',async e=>{
-    const files=Array.from(e.target.files||[]).slice(0,4); impImages=[]; $('#imp-thumbs').innerHTML='';
-    for(const f of files){ try{ const d=await prepImage(f); impImages.push(d); $('#imp-thumbs').insertAdjacentHTML('beforeend','<img alt="" src="'+d+'">'); }catch(err){ $('#imp-msg').textContent=err.message; $('#imp-msg').hidden=false; } }
-  });
+  $('#imp-copy').addEventListener('click',copyPrompt);
   $('#imp-go').addEventListener('click',runImport);
 
   $('#s-save').addEventListener('click',saveSettings);
+  $('#s-tags').addEventListener('click',()=>{ saveSettings(); openTagManager(); });
+  $('#s-sources').addEventListener('click',()=>{ saveSettings(); openSourceManager(); });
+  $('#sm-add').addEventListener('click',()=>openSourceEdit(null));
+  $('#sm-body').addEventListener('click',e=>{ const b=e.target.closest('[data-sm]'); if(!b) return;
+    if(b.dataset.sm==='view') openSourceView(b.dataset.sid);
+    if(b.dataset.sm==='edit') openSourceEdit(b.dataset.sid);
+    if(b.dataset.sm==='delete') openSourceDelete(b.dataset.sid); });
+  $('#se-kind').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ setSeg('#se-kind',b.dataset.v); syncSeKind(); } });
+  $('#se-save').addEventListener('click',saveSourceEdit);
+  $('#sd-go').addEventListener('click',runSourceDelete);
+  $('#sv-edit').addEventListener('click',()=>{ if(svCtx) openSourceEdit(svCtx.id); });
+  $('#sv-filter').addEventListener('click',()=>{ if(!svCtx) return; FILTER_KEYS.forEach(g=>fsel(g).clear()); clearColl(); fsel('source').add('id:'+svCtx.id);
+    $$('dialog[open]').forEach(d=>d.close()); document.body.classList.remove('show-detail'); render(); });
+  $('#sv-body').addEventListener('click',e=>{ const b=e.target.closest('[data-svopen]'); if(!b) return; $$('dialog[open]').forEach(d=>d.close()); select(b.dataset.svopen); });
+  $('#tm-body').addEventListener('click',tagManagerClick);
+  $('#tm-body').addEventListener('keydown',e=>{ const i=e.target.closest('[data-tmadd]'); if(i && e.key==='Enter'){ e.preventDefault(); const b=i.parentNode.querySelector('[data-tm="add"]'); if(b) b.click(); } });
+  $('#ta-go').addEventListener('click',runTagAction);
+  $('#ta-name').addEventListener('input',taInfo);
+  $('#ta-sel').addEventListener('change',taInfo);
+  $('#ta-name').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); runTagAction(); } });
   $('#s-reload').addEventListener('click',()=>{ $('#dlg-settings').close(); pull(); });
   $('#s-backup').addEventListener('click',downloadBackup);
   $('#s-disconnect').addEventListener('click',()=>{
     const warn=state.queue.length?' You have '+state.queue.length+' unsaved change(s) that will be lost.':'';
     if(!confirm('Disconnect Dropbox on this device?'+warn)) return;
-    ls.del('token'); ls.del('queue'+DK); ls.del('cache'+DK); state.queue=[]; state.db={version:DATA_VERSION,recipes:[],families:{}}; state.selected=null; state.locked=null;
+    ls.del('token'); ls.del('queue'+DK); ls.del('cache'+DK); state.queue=[]; state.db=emptyDb(); state.selected=null; state.locked=null;
     $('#dlg-settings').close(); showConnect();
   });
 
@@ -1448,6 +2553,8 @@ function bind(){
 
 /* ── Start ───────────────────────────────────────────── */
 async function init(){
+  /* Release 1 removed Claude API import: clear any saved key and model */
+  ls.del('apiKey'); ls.del('model');
   if(ls.get('viewOnly',null)===null) ls.set('viewOnly',window.matchMedia('(max-width: 600px)').matches);
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
   bind();
