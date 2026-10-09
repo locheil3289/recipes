@@ -14,8 +14,10 @@
   --paper:#F3F4F0; --card:#FFFFFF; --ink:#1F2622; --muted:#5E6A63; --line:#D9DED8;
   --basil:#2F6B4F; --basil-soft:#E3EEE7; --basil-edge:#C9DCCF;
   --saffron:#B97F0F; --danger:#A33B2B; --link-bg:#E6EBF1; --link-ink:#36506E;
+  --pencil:#2D5B86; --pencil-edge:#9DB6CF; --pencil-soft:#E8EFF6;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --hand:"Noteworthy","Bradley Hand","Segoe Print","Chalkboard SE",var(--serif);
   --r-sm:6px; --r:10px; --tap:44px;
   --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
 }
@@ -62,6 +64,7 @@ a{color:var(--basil)}
 .item-meta{font-size:.82rem;color:var(--muted)}
 .item-meta .stars{margin-right:6px}
 .badge{display:inline-block;font:600 .7rem/1 var(--sans);padding:3px 6px;border-radius:4px;background:var(--link-bg);color:var(--link-ink);margin-left:6px;vertical-align:2px}
+.badge.ver-badge{background:var(--basil-soft);color:var(--basil)}
 .months{grid-row:1/span 2;grid-column:2;display:grid;grid-template-columns:repeat(12,6px);gap:2px}
 .months i{display:block;width:6px;height:16px;border-radius:2px;background:var(--line)}
 .months i.on{background:var(--basil)}
@@ -74,6 +77,8 @@ a{color:var(--basil)}
 .detail{max-width:780px;margin:0 auto;padding:16px 22px calc(48px + var(--sb))}
 .back{margin-left:-10px}
 .detail h2{font:600 2.1rem/1.12 var(--serif);margin:6px 0 6px;letter-spacing:-.01em;overflow-wrap:break-word}
+.verline{margin:0 0 6px;color:var(--muted)}
+.verline strong{color:var(--basil);font-weight:600}
 .source{color:var(--muted);font-size:.92rem;overflow-wrap:anywhere;margin:0}
 .facts{display:flex;flex-wrap:wrap;gap:4px 18px;color:var(--muted);font-size:.9rem;margin:8px 0 0}
 .rate{display:flex;align-items:center;margin:4px 0 0 -4px}
@@ -82,6 +87,8 @@ a{color:var(--basil)}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
 .tag{font-size:.8rem;padding:3px 10px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--muted)}
 .actions{display:flex;gap:8px;margin:16px 0 0;flex-wrap:wrap}
+.banner{margin:6px 0 12px;padding:12px 14px;border-radius:var(--r);background:#FBF4E4;border:1px solid #EAD8AC}
+.banner p{margin:0 0 10px}
 
 .logbox{margin:24px 0 0;padding:16px;border-radius:var(--r);background:var(--basil-soft);border:1px solid var(--basil-edge)}
 .logbox h3{font:600 1.15rem/1.3 var(--serif);margin:0 0 10px}
@@ -92,14 +99,49 @@ a{color:var(--basil)}
 .section{margin-top:30px}
 .section h3{font:600 1.3rem/1.3 var(--serif);margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .ing{list-style:none;padding:0;margin:0}
-.ing label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer}
+.line-row{display:flex;align-items:flex-start;gap:2px}
+.ing label{display:flex;gap:10px;align-items:flex-start;padding:5px 0;cursor:pointer;flex:1;min-width:0}
 .ing input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--basil);flex:none}
 .ing input:checked+span{color:var(--muted);text-decoration:line-through}
-.ing .sub{font-weight:700;padding:10px 0 2px}
+.ing .sub .line-row{font-weight:700;padding:10px 0 2px}
+.ing .sub-t{flex:1;min-width:0}
 .method{padding-left:1.5em;margin:0}
 .method li{padding:2px 0 10px;line-height:1.62}
 .method li::marker{font-family:var(--serif);font-weight:700;color:var(--basil)}
-.notes{white-space:pre-wrap;line-height:1.62;margin:0}
+.method .step-t{flex:1;min-width:0}
+.notes{white-space:pre-wrap;line-height:1.62;margin:0 0 8px}
+
+/* Margin notes */
+.anno-add{flex:none;border:none;background:none;color:var(--pencil);opacity:.55;width:38px;min-height:34px;font-size:1.05rem;border-radius:var(--r-sm);margin-top:-2px}
+.anno-add:hover,.anno-add:focus-visible{opacity:1;background:var(--pencil-soft)}
+.annos{list-style:none;margin:0 0 8px 30px;padding:0}
+.method .annos,.section>.annos,.orphan .annos{margin-left:0}
+.anno+.anno{margin-top:6px}
+.anno-body{display:block;width:100%;text-align:left;border:none;background:none;padding:1px 0 3px 10px;border-left:2px solid var(--pencil-edge);color:var(--pencil);font:1.02rem/1.35 var(--hand)}
+button.anno-body{cursor:pointer}
+button.anno-body:hover{background:var(--pencil-soft)}
+.anno-text{white-space:pre-wrap;overflow-wrap:break-word}
+.anno-meta{display:block;font:.74rem/1.4 var(--sans);color:var(--muted);margin-top:1px}
+.anno.applied .anno-body{border-left-style:dotted}
+.addnote{margin:4px 0 0 -10px;color:var(--pencil)}
+.quote{margin:0 0 6px;padding:8px 12px;background:var(--paper);border-radius:var(--r-sm);color:var(--muted);font-size:.92rem;overflow-wrap:break-word}
+.orphan+.orphan{margin-top:14px}
+
+/* Versions */
+.vers{list-style:none;margin:0;padding:0}
+.ver{padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:8px}
+.ver[aria-current="true"]{border-color:var(--basil-edge);background:var(--basil-soft)}
+.ver.archived{opacity:.7}
+.ver-h{font-weight:600}
+.branch{color:var(--muted);margin-right:6px;font-weight:400}
+.ver-note{margin:4px 0 0}
+.ver-meta{margin:2px 0 0;font-size:.82rem;color:var(--muted)}
+.ver .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.ver .btn{min-height:36px;font-size:.85rem}
+.pill{display:inline-block;font:600 .7rem/1 var(--sans);padding:3px 6px;border-radius:4px;background:var(--basil);color:#fff;margin-left:8px;vertical-align:2px}
+.pill.muted-pill{background:var(--line);color:var(--muted)}
+.pill.here-pill{background:var(--ink)}
+
 .linkout{padding:16px;border-radius:var(--r);background:var(--paper);border:1px solid var(--line)}
 .linkout p{margin:0 0 10px}
 .history{list-style:none;margin:0 0 0 6px;padding:0;border-left:2px solid var(--basil-edge)}
@@ -109,6 +151,9 @@ a{color:var(--basil)}
 .history .ago{font-weight:400;color:var(--muted);font-size:.85rem}
 .history .c{white-space:pre-wrap;margin:2px 0 0}
 .history .rm{border:none;background:none;color:var(--muted);font-size:.8rem;text-decoration:underline;padding:4px;min-height:32px}
+.allhist{margin-top:4px}
+.allhist summary{cursor:pointer;color:var(--basil);font-weight:600;min-height:var(--tap);display:flex;align-items:center}
+.allhist .history{margin-top:8px}
 .muted{color:var(--muted)}
 
 /* Inputs */
@@ -122,7 +167,9 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 .dlg-head{display:flex;align-items:center;gap:8px;padding:10px 10px 10px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:2}
 .dlg-head h2{font:600 1.25rem/1.2 var(--serif);margin:0;flex:1}
 .dlg-body{padding:16px 18px 20px;display:grid;gap:16px}
-.dlg-foot{display:flex;gap:8px;justify-content:flex-end;padding:12px 18px calc(14px + var(--sb));border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--card)}
+.dlg-body>p{margin:0}
+.dlg-foot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:12px 18px calc(14px + var(--sb));border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--card)}
+.dlg-foot .left{margin-right:auto}
 .field>label,.field>.lbl{display:block;font-weight:600;font-size:.88rem;margin-bottom:5px}
 .hint{font-size:.82rem;color:var(--muted);margin:5px 0 0}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -165,7 +212,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 @media (max-width:520px){.row2{grid-template-columns:1fr}.detail h2{font-size:1.8rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{
-  .topbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast{display:none!important}
+  .topbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
   .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
@@ -178,6 +225,8 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 <!-- ═══════════════════════════════════════════════════════════════
      SETUP: paste your Dropbox App key between the quotes below.
      (Dropbox App Console → your app → Settings → "App key")
+     filePath is the recipe file inside your Dropbox app folder.
+     For a test copy, use e.g. '/recipes-test.json'.
      ═══════════════════════════════════════════════════════════════ -->
 <script>
 window.RECIPE_CONFIG = {
@@ -214,7 +263,7 @@ window.RECIPE_CONFIG = {
   </header>
   <div class="layout">
     <aside class="list-pane">
-      <input id="search" class="search" type="search" placeholder="Search recipes, ingredients, comments" autocomplete="off">
+      <input id="search" class="search" type="search" placeholder="Search recipes, ingredients, notes" autocomplete="off">
       <div class="filters">
         <div id="chips" class="chips" role="group" aria-label="Filter by tag"></div>
         <select id="sort" class="sort" aria-label="Sort recipes">
@@ -236,6 +285,10 @@ window.RECIPE_CONFIG = {
   <div class="dlg-head"><h2 id="edit-h">Edit recipe</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
   <div class="dlg-body">
     <div class="field"><label for="f-title">Title</label><input id="f-title" type="text"></div>
+    <div id="f-verwrap" class="row2" hidden>
+      <div class="field"><label for="f-vlabel">Version name</label><input id="f-vlabel" type="text" placeholder="e.g. With chicken thighs"></div>
+      <div class="field"><label for="f-vnote">What changed</label><input id="f-vnote" type="text" placeholder="One line, optional"></div>
+    </div>
     <div class="field"><span class="lbl">Kind</span>
       <div class="seg" id="f-type"><button type="button" data-v="Full">Full recipe</button><button type="button" data-v="External">Link only</button></div>
     </div>
@@ -245,7 +298,7 @@ window.RECIPE_CONFIG = {
       <div class="field"><label for="f-time">Time</label><input id="f-time" type="text" placeholder="e.g. 1 hr 15 min"></div>
     </div>
     <div class="field"><label for="f-tags">Tags</label><input id="f-tags" type="text" placeholder="Separate with commas"><div id="f-quicktags" class="quicktags"></div></div>
-    <div class="field full-only"><label for="f-ings">Ingredients</label><textarea id="f-ings" rows="8"></textarea><p class="hint">One per line. End a line with a colon to make a heading, e.g. "For the sauce:"</p></div>
+    <div class="field full-only"><label for="f-ings">Ingredients</label><textarea id="f-ings" rows="8"></textarea><p class="hint">One per line. End a line with a colon to make a heading, e.g. "For the sauce:". Notes stay with a line when you reword it.</p></div>
     <div class="field full-only"><label for="f-method">Method</label><textarea id="f-method" rows="8"></textarea><p class="hint">One step per line.</p></div>
     <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" rows="4" placeholder="Tips, swaps, what to do differently"></textarea></div>
     <div class="field"><label for="f-rating">Rating</label>
@@ -254,6 +307,44 @@ window.RECIPE_CONFIG = {
     <p id="edit-msg" class="msg err" hidden></p>
   </div>
   <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="edit-save" class="btn primary" type="button">Save recipe</button></div>
+</dialog>
+
+<!-- Margin note -->
+<dialog id="dlg-note" aria-labelledby="note-h">
+  <div class="dlg-head"><h2 id="note-h">Add a note</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <p id="note-quote" class="quote"></p>
+    <div class="field"><label for="note-text">Note</label><textarea id="note-text" rows="3" placeholder="e.g. Used 3 cloves, could take more"></textarea></div>
+    <div id="note-applywrap">
+      <label class="check"><input id="note-apply" type="checkbox"><span><strong>Also change this line in the recipe</strong><br><span class="muted">For a change you'll keep. The note stays as a record of what it used to say.</span></span></label>
+      <div id="note-linewrap" class="field" style="margin-top:12px" hidden><label for="note-line">Recipe line</label><textarea id="note-line" rows="2"></textarea></div>
+    </div>
+    <p id="note-msg" class="msg err" hidden></p>
+  </div>
+  <div class="dlg-foot"><button id="note-del" class="btn danger left" type="button">Delete note</button><button class="btn" data-close type="button">Cancel</button><button id="note-save" class="btn primary" type="button">Save note</button></div>
+</dialog>
+
+<!-- New version -->
+<dialog id="dlg-version" aria-labelledby="ver-h">
+  <div class="dlg-head"><h2 id="ver-h">New version</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <p id="v-from" class="muted"></p>
+    <div class="field"><label for="v-label">Version name</label><input id="v-label" type="text" placeholder="e.g. With chicken thighs"></div>
+    <div class="field"><label for="v-note">What's changing</label><input id="v-note" type="text" placeholder="One line, optional"></div>
+    <label id="v-copywrap" class="check"><input id="v-copynotes" type="checkbox" checked><span><strong>Bring the margin notes across</strong></span></label>
+    <p id="v-msg" class="msg err" hidden></p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="v-go" class="btn primary" type="button">Create and edit</button></div>
+</dialog>
+
+<!-- Delete or archive -->
+<dialog id="dlg-delete" aria-labelledby="del-h">
+  <div class="dlg-head"><h2 id="del-h">Delete or archive</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <p id="del-text"></p>
+    <p id="del-hint" class="hint" hidden></p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="del-archive" class="btn" type="button">Archive this version</button><button id="del-all" class="btn danger" type="button">Delete all versions</button></div>
 </dialog>
 
 <!-- Import -->
@@ -287,7 +378,7 @@ window.RECIPE_CONFIG = {
 <dialog id="dlg-settings" aria-labelledby="set-h">
   <div class="dlg-head"><h2 id="set-h">Settings</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
   <div class="dlg-body">
-    <label class="check"><input id="s-viewonly" type="checkbox"><span><strong>View only on this device</strong><br><span class="muted">Hides adding, editing and logging. Useful on your phone.</span></span></label>
+    <label class="check"><input id="s-viewonly" type="checkbox"><span><strong>View only on this device</strong><br><span class="muted">Hides adding, editing, notes and logging. Useful on your phone.</span></span></label>
     <div class="field">
       <label for="s-key">Claude API key (for photo and website import)</label>
       <input id="s-key" type="password" autocomplete="off" placeholder="sk-ant-…">
@@ -298,13 +389,14 @@ window.RECIPE_CONFIG = {
       <input id="s-model" type="text" autocapitalize="off" spellcheck="false">
     </div>
     <div class="field"><span class="lbl">Recipe file</span>
-      <p class="hint" style="margin:0">Dropbox › Apps › <em>your app name</em> › recipes.json</p>
+      <p id="s-file" class="hint" style="margin:0"></p>
       <div class="stack" style="margin-top:10px">
         <button id="s-reload" class="btn" type="button">Reload from Dropbox</button>
         <button id="s-backup" class="btn" type="button">Download a backup</button>
         <button id="s-disconnect" class="btn danger" type="button">Disconnect Dropbox</button>
       </div>
     </div>
+    <p id="s-ver" class="hint"></p>
   </div>
   <div class="dlg-foot"><button id="s-save" class="btn primary" type="button">Done</button></div>
 </dialog>
@@ -315,8 +407,12 @@ window.RECIPE_CONFIG = {
 (function(){
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
+const APP_VERSION = '2.0';
+const DATA_VERSION = 3;
+/* Cache and unsaved changes are kept separately for a test file, so testing never mixes with the real book */
+const DK = CONFIG.filePath === '/recipes.json' ? '' : ':' + CONFIG.filePath;
 
-/* Starter content, used only if recipes.json doesn't exist in Dropbox yet */
+/* Starter content, used only if the recipe file doesn't exist in Dropbox yet */
 const STARTER = {version:2,recipes:[
  {id:"r-grandmas-tomato-sauce",title:"Grandma's Tomato Sauce",type:"Full",source:"Family handwritten card",serves:"",time:"",
   ingredients:["2 cans (28 oz each) crushed San Marzano tomatoes","1/4 cup extra-virgin olive oil","6 cloves garlic, thinly sliced","1 tsp crushed red pepper flakes","1 tsp sugar","1 tsp kosher salt, plus more to taste","1/2 tsp freshly ground black pepper","Large handful fresh basil leaves","2 tbsp unsalted butter (optional, for richness)"],
@@ -341,6 +437,7 @@ const ls = {
 };
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function uid(p){ return p + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function shortId(p){ return p + '-' + Math.random().toString(36).slice(2,8) + Date.now().toString(36).slice(-3); }
 function isUrl(s){ return /^https?:\/\/\S+$/i.test(String(s||'').trim()); }
 function host(u){ try{ return new URL(u).hostname.replace(/^www\./,''); }catch(e){ return u; } }
 function slug(s){ return (String(s||'recipe').toLowerCase().replace(/['’]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)) || 'recipe'; }
@@ -355,58 +452,173 @@ function ago(iso){
 }
 function stars(n){ n=Math.round(n)||0; return '★'.repeat(n)+'☆'.repeat(5-n); }
 function lines(t){ return String(t||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean); }
+function itemText(x){ return typeof x==='string'?x:(x&&x.text!=null?String(x.text):''); }
+function stripStep(s){ return String(s).replace(/^(step\s*)?\d+[.):]\s*/i,''); }
+function times(n){ return n===1?'once':n===2?'twice':n+' times'; }
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>{t.hidden=true;},2600); }
 function canEdit(){ return !ls.get('viewOnly',false); }
 
 /* ── Data model ──────────────────────────────────────── */
+/* Ingredients and steps are stored as {id, text}. Plain-text lines from older files get
+   IDs from their position (i-1, i-2…, s-1, s-2…), so every device upgrades identically.
+   Lines that already have an ID are left alone, so running this twice changes nothing. */
+function normItems(arr,prefix){
+  let changed=false; const used=new Set(), out=[];
+  let src=arr;
+  if(!Array.isArray(src)){ src=lines(src); changed=true; }
+  src.forEach((x,i)=>{
+    let o;
+    if(typeof x==='string'){ o={id:prefix+'-'+(i+1),text:x}; changed=true; }
+    else if(x && typeof x==='object'){
+      o={id:String(x.id||''),text:itemText(x)};
+      if(!x.id){ o.id=prefix+'-'+(i+1); changed=true; }
+      if(Object.keys(x).some(k=>k!=='id'&&k!=='text')) changed=true;
+    }
+    else { changed=true; return; }
+    if(!o.text.trim()){ changed=true; return; }
+    while(used.has(o.id)){ o.id+='b'; changed=true; }
+    used.add(o.id); out.push(o);
+  });
+  return {items:out,changed};
+}
+function normRecipe(r,i,seen){
+  let changed=false; const o=Object.assign({},r);
+  if(!o.id || (seen && seen.has(o.id))){ o.id='r-'+slug(o.title)+'-'+i; changed=true; }
+  if(seen) seen.add(o.id);
+  const ing=normItems(o.ingredients,'i'), st=normItems(o.instructions,'s');
+  o.ingredients=ing.items; o.instructions=st.items; if(ing.changed||st.changed) changed=true;
+  if(!Array.isArray(o.tags)){ o.tags=lines(o.tags); changed=true; }
+  if(!Array.isArray(o.cookLog)){ o.cookLog=[]; changed=true; }
+  if(o.dateMade){ if(!o.cookLog.some(e=>e.date===o.dateMade)) o.cookLog.push({id:'l-'+o.dateMade,date:o.dateMade,comment:''}); delete o.dateMade; changed=true; }
+  if('dateMade' in o){ delete o.dateMade; changed=true; }
+  o.cookLog=o.cookLog.filter(e=>e&&e.date).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!Array.isArray(o.annotations)){ o.annotations=[]; changed=true; }
+  o.annotations=o.annotations.filter(a=>a&&a.id&&a.target&&a.text!=null);
+  if(!o.familyId){ o.familyId=o.id; o.parentId=null; o.versionNo=1; changed=true; }
+  if(!o.versionNo){ o.versionNo=1; changed=true; }
+  if(!o.versionLabel){ o.versionLabel=o.versionNo===1?'Original':'Version '+o.versionNo; changed=true; }
+  if(o.parentId===undefined){ o.parentId=null; changed=true; }
+  if(typeof o.archived!=='boolean'){ o.archived=!!o.archived; changed=true; }
+  if(o.changeNote==null){ o.changeNote=''; changed=true; }
+  if(!o.type){ o.type=(isUrl(o.source)&&!o.ingredients.length)?'External':'Full'; changed=true; }
+  o.title=o.title||'Untitled recipe';
+  o.rating=Number(o.rating)||0;
+  ['source','serves','time','notes'].forEach(k=>{ if(o[k]==null) o[k]=''; });
+  return {r:o,changed};
+}
+/* Each family has one current version (the one shown in the list). */
+function fixFamilies(d){
+  if(!d.families || typeof d.families!=='object' || Array.isArray(d.families)) d.families={};
+  const by={}; d.recipes.forEach(r=>(by[r.familyId]=by[r.familyId]||[]).push(r));
+  Object.keys(d.families).forEach(k=>{ if(!by[k]) delete d.families[k]; });
+  Object.keys(by).forEach(fid=>{
+    const members=by[fid], f=d.families[fid];
+    const ok=f && members.some(r=>r.id===f.defaultId && !r.archived);
+    if(!ok){
+      const active=members.filter(r=>!r.archived);
+      const pick=(active.length?active:members).slice().sort((a,b)=>b.versionNo-a.versionNo)[0];
+      d.families[fid]={defaultId:pick.id};
+    }
+  });
+  return d;
+}
 function normalise(raw){
   let changed=false, d;
-  if(Array.isArray(raw)){ d={version:2,recipes:raw}; changed=true; }
-  else if(raw && Array.isArray(raw.recipes)){ d=raw; }
-  else { d={version:2,recipes:[]}; changed=true; }
-  if(d.version!==2){ d.version=2; changed=true; }
+  if(Array.isArray(raw)){ d={version:DATA_VERSION,recipes:raw}; changed=true; }
+  else if(raw && Array.isArray(raw.recipes)){ d=Object.assign({},raw); }
+  else { d={version:DATA_VERSION,recipes:[]}; changed=true; }
+  if(d.version!==DATA_VERSION){ d.version=DATA_VERSION; changed=true; }
   const seen=new Set();
-  d.recipes=d.recipes.map((r,i)=>{
-    const o=Object.assign({},r);
-    if(!o.id || seen.has(o.id)){ o.id='r-'+slug(o.title)+'-'+i; changed=true; }
-    seen.add(o.id);
-    ['ingredients','instructions','tags'].forEach(k=>{ if(!Array.isArray(o[k])){ o[k]=lines(o[k]); changed=true; } });
-    if(!Array.isArray(o.cookLog)){ o.cookLog=[]; changed=true; }
-    if(o.dateMade){ if(!o.cookLog.some(e=>e.date===o.dateMade)) o.cookLog.push({id:'l-'+o.dateMade,date:o.dateMade,comment:''}); delete o.dateMade; changed=true; }
-    if('dateMade' in o){ delete o.dateMade; changed=true; }
-    o.cookLog=o.cookLog.filter(e=>e&&e.date).sort((a,b)=>b.date.localeCompare(a.date));
-    if(!o.type){ o.type=(isUrl(o.source)&&!o.ingredients.length)?'External':'Full'; changed=true; }
-    o.title=o.title||'Untitled recipe';
-    o.rating=Number(o.rating)||0;
-    ['source','serves','time','notes'].forEach(k=>{ if(o[k]==null) o[k]=''; });
-    return o;
-  });
+  d.recipes=d.recipes.map((r,i)=>{ const x=normRecipe(r,i,seen); if(x.changed) changed=true; return x.r; });
+  const before=JSON.stringify(d.families||null);
+  fixFamilies(d);
+  if(JSON.stringify(d.families)!==before) changed=true;
   return {d,changed};
+}
+/* When ingredients or steps are edited as a block of text, work out which line is which:
+   identical lines keep their ID, a line reworded in the same place keeps its ID,
+   anything else gets a new ID. Notes on lines that disappear are kept as "removed lines". */
+function matchItems(old,newLines,prefix){
+  old=old||[]; const n=old.length, m=newLines.length, key=s=>String(s).trim().toLowerCase();
+  const L=Array.from({length:n+1},()=>new Array(m+1).fill(0));
+  for(let i=n-1;i>=0;i--) for(let j=m-1;j>=0;j--)
+    L[i][j]=key(itemText(old[i]))===key(newLines[j])?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+  const out=new Array(m); let i=0,j=0,oi=[],nj=[];
+  const settle=()=>{ nj.forEach((jj,t)=>{ out[jj]={id:t<oi.length&&old[oi[t]].id?old[oi[t]].id:null,text:newLines[jj]}; }); oi=[]; nj=[]; };
+  while(i<n && j<m){
+    if(key(itemText(old[i]))===key(newLines[j])){ settle(); out[j]={id:old[i].id||null,text:newLines[j]}; i++; j++; }
+    else if(L[i+1][j]>=L[i][j+1]){ oi.push(i); i++; }
+    else { nj.push(j); j++; }
+  }
+  while(i<n){ oi.push(i); i++; } while(j<m){ nj.push(j); j++; }
+  settle();
+  const ids=new Set();
+  out.forEach(o=>{ if(o.id && !ids.has(o.id)) ids.add(o.id); else o.id=null; });
+  out.forEach(o=>{ if(!o.id){ let id; do{ id=shortId(prefix); }while(ids.has(id)); o.id=id; ids.add(id); } });
+  return out;
 }
 function applyOp(d,op){
   const find=id=>d.recipes.find(r=>r.id===id);
   switch(op.t){
     case 'seed': if(!d.recipes.length) d.recipes=clone(op.recipes); break;
     case 'upsert': {
+      const inc=normRecipe(clone(op.r),d.recipes.length).r;
       const i=d.recipes.findIndex(r=>r.id===op.r.id);
-      if(i>=0){ const keepLog=d.recipes[i].cookLog||[]; d.recipes[i]=Object.assign(clone(op.r),{cookLog:keepLog}); }
-      else d.recipes.push(Object.assign({cookLog:[]},clone(op.r)));
+      if(i>=0){
+        const ex=d.recipes[i];
+        const keep={cookLog:ex.cookLog||[],annotations:ex.annotations||[],familyId:ex.familyId,parentId:ex.parentId,
+          versionNo:ex.versionNo,archived:ex.archived,created:ex.created||inc.created};
+        if(!op.r.versionLabel) keep.versionLabel=ex.versionLabel;
+        if(op.r.changeNote==null) keep.changeNote=ex.changeNote;
+        d.recipes[i]=Object.assign(inc,keep);
+      } else { inc.cookLog=[]; d.recipes.push(inc); }
+      break;
+    }
+    case 'newVersion': {
+      if(find(op.r.id)) break;
+      const inc=normRecipe(clone(op.r),d.recipes.length).r;
+      const fam=d.recipes.filter(r=>r.familyId===inc.familyId);
+      inc.versionNo=fam.reduce((mx,r)=>Math.max(mx,r.versionNo||1),0)+1;
+      inc.cookLog=[]; inc.archived=false;
+      d.recipes.push(inc);
+      if(!d.families||typeof d.families!=='object') d.families={};
+      d.families[inc.familyId]={defaultId:inc.id};
+      break;
+    }
+    case 'setDefault': { const r=find(op.id); if(r && !r.archived){ if(!d.families||typeof d.families!=='object') d.families={}; d.families[r.familyId]={defaultId:r.id}; } break; }
+    case 'archive': {
+      const r=find(op.id); if(!r) break;
+      if(op.v){ const others=d.recipes.filter(x=>x.familyId===r.familyId && !x.archived && x.id!==r.id); if(others.length) r.archived=true; }
+      else r.archived=false;
       break;
     }
     case 'patch': { const r=find(op.id); if(r) Object.assign(r,op.f,{updated:op.at}); break; }
-    case 'delete': d.recipes=d.recipes.filter(r=>r.id!==op.id); break;
+    case 'delete': { const r=find(op.id); const fid=r?r.familyId:null; d.recipes=d.recipes.filter(x=>x.id!==op.id && (!fid || x.familyId!==fid)); break; }
     case 'log': { const r=find(op.id); if(r && !r.cookLog.some(e=>e.id===op.e.id)){ r.cookLog.push(clone(op.e)); r.cookLog.sort((a,b)=>b.date.localeCompare(a.date)); } break; }
     case 'unlog': { const r=find(op.id); if(r) r.cookLog=r.cookLog.filter(e=>e.id!==op.eid); break; }
+    case 'note': { const r=find(op.id); if(r && !r.annotations.some(a=>a.id===op.a.id)) r.annotations.push(clone(op.a)); break; }
+    case 'noteEdit': { const r=find(op.id); const a=r&&r.annotations.find(x=>x.id===op.aid); if(a) Object.assign(a,op.f); break; }
+    case 'noteDel': { const r=find(op.id); if(r) r.annotations=r.annotations.filter(a=>a.id!==op.aid); break; }
+    case 'applyNote': {
+      const r=find(op.id); if(!r) break;
+      const it=r.ingredients.concat(r.instructions).find(x=>x.id===op.target);
+      const a=r.annotations.find(x=>x.id===op.aid);
+      if(it && it.text!==op.text){ if(a && a.was==null) a.was=it.text; it.text=op.text; }
+      if(a){ a.applied=true; a.appliedAt=op.at; }
+      break;
+    }
   }
+  fixFamilies(d);
   return d;
 }
 
 /* ── State ───────────────────────────────────────────── */
-const state={ db:{version:2,recipes:[]}, queue:ls.get('queue',[]), selected:null, search:'', tags:new Set(), sort:ls.get('sort','title'), ticks:{}, lastPull:0 };
+const state={ db:{version:DATA_VERSION,recipes:[],families:{}}, queue:ls.get('queue'+DK,[]), selected:null, search:'', tags:new Set(), sort:ls.get('sort','title'), ticks:{}, lastPull:0 };
 let pulling=false, flushing=false;
-function saveCache(){ ls.set('cache',{db:state.db}); }
-function queueOp(op){ state.queue.push(op); ls.set('queue',state.queue); }
-function commit(op){ applyOp(state.db,op); queueOp(op); saveCache(); render(); flush(); }
+function saveCache(){ ls.set('cache'+DK,{db:state.db}); }
+function queueOp(op){ state.queue.push(op); ls.set('queue'+DK,state.queue); }
+function commit(op){ commitMany([op]); }
+function commitMany(ops){ ops.forEach(op=>{ applyOp(state.db,op); queueOp(op); }); saveCache(); render(); flush(); }
 
 /* ── Dropbox ─────────────────────────────────────────── */
 const DBX_CONTENT='https://content.dropboxapi.com/2/files/';
@@ -442,13 +654,13 @@ async function dbxDownload(){
   if(!res.ok) throw new Error('Dropbox download failed ('+res.status+').');
   let rev=null; try{ rev=JSON.parse(res.headers.get('Dropbox-API-Result')||'{}').rev||null; }catch(e){}
   const text=await res.text();
-  let data; try{ data=JSON.parse(text); }catch(e){ throw new Error('recipes.json in Dropbox isn\'t valid JSON. Fix or replace it, then reload.'); }
-  return {data,rev};
+  let data; try{ data=JSON.parse(text); }catch(e){ throw new Error('The recipe file in Dropbox isn\'t valid JSON. Fix or replace it, then reload.'); }
+  return {data,rev,text};
 }
-async function dbxUpload(data,mode){
+async function dbxPut(path,text,mode,autorename){
   const res=await dbxFetch(DBX_CONTENT+'upload',{method:'POST',
-    headers:{'Dropbox-API-Arg':headerArg({path:CONFIG.filePath,mode,autorename:false,mute:true}),'Content-Type':'application/octet-stream'},
-    body:JSON.stringify(data,null,2)});
+    headers:{'Dropbox-API-Arg':headerArg({path,mode,autorename:!!autorename,mute:true}),'Content-Type':'application/octet-stream'},
+    body:text});
   if(res.status===409){
     const j=await res.json().catch(()=>({}));
     if(/conflict/.test(j.error_summary||'')) return {conflict:true};
@@ -457,6 +669,14 @@ async function dbxUpload(data,mode){
   if(!res.ok) throw new Error('Dropbox save failed ('+res.status+').');
   const j=await res.json(); return {rev:j.rev};
 }
+function dbxUpload(data,mode){ return dbxPut(CONFIG.filePath,JSON.stringify(data,null,2),mode,false); }
+function needsBackup(raw){ return Array.isArray(raw) || !raw || raw.version!==DATA_VERSION; }
+function backupPath(raw){
+  const v=Array.isArray(raw)?1:((raw&&raw.version)||1);
+  const dir=CONFIG.filePath.replace(/[^/]*$/,'');
+  const base=CONFIG.filePath.replace(/^.*\//,'').replace(/\.json$/i,'');
+  return dir+base+'-backup-v'+v+'-'+today()+'.json';
+}
 
 async function pull(){
   if(pulling||flushing) return; pulling=true; setStatus('loading');
@@ -464,10 +684,10 @@ async function pull(){
     const r=await dbxDownload();
     if(r.notFound){
       if(!state.queue.some(o=>o.t==='seed')) queueOp({t:'seed',recipes:normalise(clone(STARTER)).d.recipes});
-      const local={version:2,recipes:[]}; state.queue.forEach(o=>applyOp(local,o));
+      const local={version:DATA_VERSION,recipes:[],families:{}}; state.queue.forEach(o=>applyOp(local,o));
       state.db=local;
     } else {
-      const {d,changed}=normalise(r.data);
+      const {d,changed}=normalise(clone(r.data));
       if(changed && !state.queue.length) queueOp({t:'noop'});
       const local=clone(d); state.queue.forEach(o=>applyOp(local,o));
       state.db=local;
@@ -482,18 +702,23 @@ async function pull(){
 async function flush(){
   if(flushing||!state.queue.length) return;
   flushing=true; setStatus('saving');
-  let again=false;
+  let again=false, backedUp=false;
   try{
     let done=false;
     for(let attempt=0; attempt<4 && !done; attempt++){
       const r=await dbxDownload();
-      const base=r.notFound?{version:2,recipes:[]}:normalise(r.data).d;
+      /* Before the first save in a new data format, keep an untouched copy of the old file */
+      if(!r.notFound && !backedUp && needsBackup(r.data)){
+        await dbxPut(backupPath(r.data),r.text,'add',true);
+        backedUp=true; toast('Saved a backup of your recipe file before upgrading it');
+      }
+      const base=r.notFound?{version:DATA_VERSION,recipes:[],families:{}}:normalise(r.data).d;
       const n=state.queue.length;
       state.queue.slice(0,n).forEach(op=>applyOp(base,op));
       const mode=r.notFound?'add':(r.rev?{'.tag':'update',update:r.rev}:'overwrite');
       const up=await dbxUpload(base,mode);
       if(up.conflict) continue;
-      state.queue=state.queue.slice(n); ls.set('queue',state.queue);
+      state.queue=state.queue.slice(n); ls.set('queue'+DK,state.queue);
       const local=clone(base); state.queue.forEach(op=>applyOp(local,op));
       state.db=local; saveCache(); render(); state.lastPull=Date.now();
       done=true; again=state.queue.length>0;
@@ -569,63 +794,104 @@ function showConnect(msg){
 }
 function showApp(){
   $('#connect').hidden=true; $('#app').hidden=false;
-  const c=ls.get('cache',null);
+  const c=ls.get('cache'+DK,null);
   if(c&&c.db){ state.db=normalise(c.db).d; state.queue.forEach(op=>applyOp(state.db,op)); }
   render(); pull();
 }
 
+/* ── Families and versions ───────────────────────────── */
+function familyOf(r){ return state.db.recipes.filter(x=>x.familyId===r.familyId).sort((a,b)=>a.versionNo-b.versionNo); }
+function isCurrent(r){ const f=(state.db.families||{})[r.familyId]; return !!f && f.defaultId===r.id; }
+function vName(r){ return 'v'+r.versionNo+', '+r.versionLabel; }
+function groups(){
+  const by={}, fams=state.db.families||{};
+  state.db.recipes.forEach(r=>(by[r.familyId]=by[r.familyId]||[]).push(r));
+  return Object.keys(by).map(fid=>{
+    const members=by[fid].slice().sort((a,b)=>a.versionNo-b.versionNo);
+    const def=members.find(r=>r.id===(fams[fid]||{}).defaultId)||members[members.length-1];
+    const logs=[]; members.forEach(m=>m.cookLog.forEach(e=>logs.push(e)));
+    logs.sort((a,b)=>b.date.localeCompare(a.date));
+    return {fid,def,members,active:members.filter(m=>!m.archived),logs};
+  });
+}
+function versionTree(fam){
+  const ids=new Set(fam.map(x=>x.id)), kids={};
+  fam.forEach(x=>{ const p=ids.has(x.parentId)?x.parentId:'_root'; (kids[p]=kids[p]||[]).push(x); });
+  Object.keys(kids).forEach(k=>kids[k].sort((a,b)=>a.versionNo-b.versionNo));
+  const out=[];
+  (function walk(p,depth){ (kids[p]||[]).forEach(x=>{ out.push({r:x,depth}); walk(x.id,depth+1); }); })('_root',0);
+  return out;
+}
+
 /* ── Rendering ───────────────────────────────────────── */
-function lastMade(r){ return r.cookLog[0]?r.cookLog[0].date:''; }
-function filtered(){
+function searchText(r){
+  return [r.title,r.source,r.notes,r.versionLabel,r.changeNote].concat(r.tags,r.ingredients.map(itemText),
+    r.cookLog.map(e=>e.comment),r.annotations.map(a=>a.text)).join(' ');
+}
+function filtered(gs){
   const words=state.search.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const rs=state.db.recipes.filter(r=>{
-    for(const t of state.tags) if(!r.tags.includes(t)) return false;
+  const out=gs.filter(g=>{
+    for(const t of state.tags) if(!g.def.tags.includes(t)) return false;
     if(!words.length) return true;
-    const hay=[r.title,r.source,r.notes].concat(r.tags,r.ingredients,r.cookLog.map(e=>e.comment)).join(' ').toLowerCase();
+    const hay=(g.active.length?g.active:[g.def]).map(searchText).join(' ').toLowerCase();
     return words.every(w=>hay.indexOf(w)>=0);
   });
-  const byTitle=(a,b)=>a.title.localeCompare(b.title,'en-GB',{sensitivity:'base'});
+  const last=g=>g.logs[0]?g.logs[0].date:'';
+  const byTitle=(a,b)=>a.def.title.localeCompare(b.def.title,'en-GB',{sensitivity:'base'});
   const sorters={
     title:byTitle,
-    recent:(a,b)=>lastMade(b).localeCompare(lastMade(a))||byTitle(a,b),
-    most:(a,b)=>b.cookLog.length-a.cookLog.length||byTitle(a,b),
-    rating:(a,b)=>b.rating-a.rating||byTitle(a,b)
+    recent:(a,b)=>last(b).localeCompare(last(a))||byTitle(a,b),
+    most:(a,b)=>b.logs.length-a.logs.length||byTitle(a,b),
+    rating:(a,b)=>b.def.rating-a.def.rating||byTitle(a,b)
   };
-  return rs.sort(sorters[state.sort]||byTitle);
+  return out.sort(sorters[state.sort]||byTitle);
 }
-function monthStrip(r){
+function monthStrip(logs){
   const now=new Date(); let cells='', on=0;
   for(let i=11;i>=0;i--){
     const d=new Date(now.getFullYear(),now.getMonth()-i,1);
     const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-    const hit=r.cookLog.some(e=>e.date.slice(0,7)===key); if(hit) on++;
+    const hit=logs.some(e=>e.date.slice(0,7)===key); if(hit) on++;
     cells+='<i class="'+(hit?'on':'')+'"></i>';
   }
   return '<span class="months" role="img" aria-label="Made in '+on+' of the last 12 months" title="Made in '+on+' of the last 12 months">'+cells+'</span>';
 }
-function allTags(){
-  const counts={}; state.db.recipes.forEach(r=>r.tags.forEach(t=>counts[t]=(counts[t]||0)+1));
+function allTags(gs){
+  const counts={}; (gs||groups()).forEach(g=>g.def.tags.forEach(t=>counts[t]=(counts[t]||0)+1));
   return Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||a.localeCompare(b));
 }
 function render(){
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
   document.title=CONFIG.bookTitle;
   $$('.edit-only').forEach(el=>el.hidden=!canEdit());
-  for(const t of Array.from(state.tags)) if(!allTags().includes(t)) state.tags.delete(t);
-  $('#chips').innerHTML=allTags().map(t=>'<button type="button" class="chip" data-tag="'+esc(t)+'" aria-pressed="'+state.tags.has(t)+'">'+esc(t)+'</button>').join('');
+  const gs=groups(), tags=allTags(gs);
+  for(const t of Array.from(state.tags)) if(!tags.includes(t)) state.tags.delete(t);
+  $('#chips').innerHTML=tags.map(t=>'<button type="button" class="chip" data-tag="'+esc(t)+'" aria-pressed="'+state.tags.has(t)+'">'+esc(t)+'</button>').join('');
   $('#sort').value=state.sort;
-  const rs=filtered(), total=state.db.recipes.length;
+  const sel=state.db.recipes.find(x=>x.id===state.selected);
+  const rs=filtered(gs), total=gs.length;
   $('#count').textContent=rs.length===total?total+' recipe'+(total===1?'':'s'):rs.length+' of '+total+' recipes';
-  $('#list').innerHTML=rs.length?rs.map(r=>{
-    const n=r.cookLog.length;
-    const meta=n?'Made '+(n===1?'once':n+' times')+', last '+fmtDate(lastMade(r)):'Not made yet';
-    return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(r.id===state.selected)+'">'+
-      '<span class="item-title">'+esc(r.title)+(r.type==='External'?'<span class="badge">Link</span>':'')+'</span>'+
-      monthStrip(r)+
+  $('#list').innerHTML=rs.length?rs.map(g=>{
+    const r=g.def, n=g.logs.length;
+    const meta=n?'Made '+times(n)+', last '+fmtDate(g.logs[0].date):'Not made yet';
+    return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
+      '<span class="item-title">'+esc(r.title)+(r.type==='External'?'<span class="badge">Link</span>':'')+
+        (g.active.length>1?'<span class="badge ver-badge">'+g.active.length+' versions</span>':'')+'</span>'+
+      monthStrip(g.logs)+
       '<span class="item-meta">'+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+esc(meta)+'</span>'+
       '</button></li>';
   }).join(''):'<li class="empty">'+(total?'No recipes match. Try fewer words or clear a tag.':(canEdit()?'No recipes yet. Tap Add or Import to start.':'No recipes yet.'))+'</li>';
   renderDetail();
+}
+
+function noteBtn(id){ return '<button type="button" class="anno-add" data-act="note" data-target="'+esc(id)+'" aria-label="Add a note to this line" title="Add a note">✎</button>'; }
+function annoList(list,ed){
+  if(!list||!list.length) return '';
+  return '<ul class="annos">'+list.map(a=>{
+    const meta=fmtDate(a.date||today())+(a.applied?', written into the recipe'+(a.was?' (it used to say "'+a.was+'")':''):'');
+    const inner='<span class="anno-text">'+esc(a.text)+'</span><span class="anno-meta">'+esc(meta)+'</span>';
+    return '<li class="anno'+(a.applied?' applied':'')+'">'+(ed?'<button type="button" class="anno-body" data-act="note-edit" data-aid="'+esc(a.id)+'" aria-label="Edit note">'+inner+'</button>':'<div class="anno-body">'+inner+'</div>')+'</li>';
+  }).join('')+'</ul>';
 }
 
 function renderDetail(){
@@ -640,16 +906,30 @@ function renderDetail(){
   const keepCom=(oldCom&&oldCom.dataset.rid===r.id)?oldCom.value:'';
   const scrollTop=pane.dataset.rid===r.id?pane.scrollTop:0;
   const ed=canEdit(), ticks=state.ticks[r.id]||{};
+  const fam=familyOf(r), multi=fam.length>1, current=isCurrent(r);
+  const byT={};
+  r.annotations.slice().sort((a,b)=>String(a.at||a.date).localeCompare(String(b.at||b.date))).forEach(a=>(byT[a.target]=byT[a.target]||[]).push(a));
+  const itemIds=new Set(r.ingredients.concat(r.instructions).map(x=>x.id));
+  const orphans=r.annotations.filter(a=>a.target!=='recipe' && !itemIds.has(a.target));
+
   let h='<article class="detail">';
   h+='<button type="button" class="btn ghost back" data-act="back">‹ All recipes</button>';
+  if(!current){
+    h+='<div class="banner"><p>'+(r.archived?'<strong>'+esc(vName(r))+'</strong> is archived. It\'s hidden from your list but kept here.':'You\'re looking at <strong>'+esc(vName(r))+'</strong>, which isn\'t the current version.')+'</p><div class="stack">'+
+      '<button type="button" class="btn" data-act="gocurrent">Show current version</button>'+
+      (ed&&!r.archived?'<button type="button" class="btn" data-act="makecurrent" data-id="'+esc(r.id)+'">Make this the current version</button>':'')+
+      (ed&&r.archived?'<button type="button" class="btn" data-act="restore" data-id="'+esc(r.id)+'">Restore this version</button>':'')+
+      '</div></div>';
+  }
   h+='<h2>'+esc(r.title)+'</h2>';
+  if(multi) h+='<p class="verline"><strong>'+esc(vName(r))+'</strong>'+(r.changeNote?'<br>'+esc(r.changeNote):'')+'</p>';
   if(r.source) h+='<p class="source">'+(isUrl(r.source)?'From <a href="'+esc(r.source)+'" target="_blank" rel="noopener">'+esc(host(r.source))+'</a>':esc(r.source))+'</p>';
   const facts=[]; if(r.serves) facts.push('Serves '+esc(r.serves)); if(r.time) facts.push(esc(r.time));
   if(facts.length) h+='<div class="facts">'+facts.map(f=>'<span>'+f+'</span>').join('')+'</div>';
   if(ed){ h+='<div class="rate" role="group" aria-label="Rating">'; for(let i=1;i<=5;i++) h+='<button type="button" data-act="rate" data-v="'+i+'" aria-label="Rate '+i+' out of 5" aria-pressed="'+(i<=r.rating)+'">'+(i<=r.rating?'★':'☆')+'</button>'; h+='</div>'; }
   else if(r.rating) h+='<div class="rate"><span class="stars" aria-label="'+r.rating+' out of 5 stars">'+stars(r.rating)+'</span></div>';
   if(r.tags.length) h+='<div class="tags">'+r.tags.map(t=>'<span class="tag">'+esc(t)+'</span>').join('')+'</div>';
-  if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
+  if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="newver">New version</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
 
   if(ed){
     h+='<section class="logbox" aria-labelledby="log-h"><h3 id="log-h">Made it?</h3><div class="logrow">'+
@@ -666,21 +946,66 @@ function renderDetail(){
   } else {
     h+='<div class="cols">';
     if(r.ingredients.length){
-      h+='<section class="section"><h3>Ingredients</h3><ul class="ing">'+r.ingredients.map((x,i)=>/:\s*$/.test(x)?
-        '<li class="sub">'+esc(x.replace(/:\s*$/,''))+'</li>':
-        '<li><label><input type="checkbox" data-act="tick" data-i="'+i+'"'+(ticks[i]?' checked':'')+'><span>'+esc(x)+'</span></label></li>').join('')+'</ul></section>';
+      h+='<section class="section"><h3>Ingredients</h3><ul class="ing">'+r.ingredients.map(x=>{
+        const sub=/:\s*$/.test(x.text);
+        return '<li class="line'+(sub?' sub':'')+'"><div class="line-row">'+
+          (sub?'<span class="sub-t">'+esc(x.text.replace(/:\s*$/,''))+'</span>':
+            '<label><input type="checkbox" data-act="tick" data-i="'+esc(x.id)+'"'+(ticks[x.id]?' checked':'')+'><span>'+esc(x.text)+'</span></label>')+
+          (ed?noteBtn(x.id):'')+'</div>'+annoList(byT[x.id],ed)+'</li>';
+      }).join('')+'</ul></section>';
     }
-    if(r.instructions.length) h+='<section class="section"><h3>Method</h3><ol class="method">'+r.instructions.map(s=>'<li>'+esc(s.replace(/^(step\s*)?\d+[.):]\s*/i,''))+'</li>').join('')+'</ol></section>';
+    if(r.instructions.length){
+      h+='<section class="section"><h3>Method</h3><ol class="method">'+r.instructions.map(x=>
+        '<li><div class="line-row"><span class="step-t">'+esc(stripStep(x.text))+'</span>'+(ed?noteBtn(x.id):'')+'</div>'+annoList(byT[x.id],ed)+'</li>').join('')+'</ol></section>';
+    }
     h+='</div>';
     if(r.type==='External' && isUrl(r.source)) h+='<p class="source" style="margin-top:14px"><a href="'+esc(r.source)+'" target="_blank" rel="noopener">Open the original recipe</a></p>';
   }
-  if(r.notes) h+='<section class="section"><h3>Notes</h3><p class="notes">'+esc(r.notes)+'</p></section>';
+
+  const recipeNotes=byT['recipe']||[];
+  if(r.notes || recipeNotes.length || ed){
+    h+='<section class="section"><h3>Notes</h3>'+(r.notes?'<p class="notes">'+esc(r.notes)+'</p>':'')+annoList(recipeNotes,ed)+
+      (ed?'<button type="button" class="btn ghost addnote" data-act="note-recipe">✎ Add a note to the whole recipe</button>':'')+'</section>';
+  }
+  if(orphans.length){
+    h+='<section class="section"><h3>Notes on removed lines</h3>'+orphans.map(a=>
+      '<div class="orphan"><p class="quote">'+esc(a.quote||'A line that has since been removed')+'</p>'+annoList([a],ed)+'</div>').join('')+'</section>';
+  }
+
+  if(multi){
+    const activeCount=fam.filter(x=>!x.archived).length;
+    h+='<section class="section versions-sec"><h3>Versions</h3><ul class="vers">'+versionTree(fam).map(node=>{
+      const x=node.r, cur=isCurrent(x), here=x.id===r.id, made=x.cookLog.length;
+      let meta=(x.created?'created '+fmtDate(String(x.created).slice(0,10))+', ':'')+(made?'made '+times(made):'not made yet');
+      meta=meta.charAt(0).toUpperCase()+meta.slice(1);
+      const acts=[];
+      if(!here) acts.push('<button type="button" class="btn" data-act="viewver" data-id="'+esc(x.id)+'">View</button>');
+      if(ed && !cur && !x.archived) acts.push('<button type="button" class="btn" data-act="makecurrent" data-id="'+esc(x.id)+'">Make current</button>');
+      if(ed && !x.archived && activeCount>1) acts.push('<button type="button" class="btn" data-act="archive" data-id="'+esc(x.id)+'">Archive</button>');
+      if(ed && x.archived) acts.push('<button type="button" class="btn" data-act="restore" data-id="'+esc(x.id)+'">Restore</button>');
+      return '<li class="ver'+(x.archived?' archived':'')+'" style="margin-left:'+(Math.min(node.depth,4)*18)+'px"'+(here?' aria-current="true"':'')+'>'+
+        '<div class="ver-h">'+(node.depth?'<span class="branch" aria-hidden="true">↳</span>':'')+esc(vName(x))+
+          (cur?'<span class="pill">Current</span>':'')+(x.archived?'<span class="pill muted-pill">Archived</span>':'')+(here?'<span class="pill here-pill">Viewing</span>':'')+'</div>'+
+        (x.changeNote?'<p class="ver-note">'+esc(x.changeNote)+'</p>':'')+
+        '<p class="ver-meta">'+esc(meta)+'</p>'+
+        (acts.length?'<div class="acts">'+acts.join('')+'</div>':'')+'</li>';
+    }).join('')+'</ul></section>';
+  }
+
   const n=r.cookLog.length;
-  h+='<section class="section"><h3>'+(n?'Cooked '+(n===1?'once':n+' times'):'Cooking history')+'</h3>';
+  h+='<section class="section"><h3>'+(n?'Cooked '+times(n)+(multi?' as this version':''):'Cooking history')+'</h3>';
   h+=n?'<ul class="history">'+r.cookLog.map(e=>'<li><div class="when">'+esc(fmtDate(e.date,true))+'<span class="ago">'+esc(ago(e.date))+'</span>'+
       (ed?'<button type="button" class="rm" data-act="unlog" data-eid="'+esc(e.id)+'">Remove</button>':'')+'</div>'+
       (e.comment?'<p class="c">'+esc(e.comment)+'</p>':'')+'</li>').join('')+'</ul>'
      :'<p class="muted">'+(ed?'Not made yet. Record it above when you do.':'Not made yet.')+'</p>';
+  if(multi){
+    const all=[]; fam.forEach(v=>v.cookLog.forEach(e=>all.push({e,v})));
+    if(all.length>n){
+      all.sort((a,b)=>b.e.date.localeCompare(a.e.date));
+      h+='<details class="allhist"><summary>All versions: made '+times(all.length)+'</summary><ul class="history">'+all.map(({e,v})=>
+        '<li><div class="when">'+esc(fmtDate(e.date,true))+'<span class="ago">'+esc(vName(v))+'</span></div>'+(e.comment?'<p class="c">'+esc(e.comment)+'</p>':'')+'</li>').join('')+'</ul></details>';
+    }
+  }
   h+='</section></article>';
   pane.innerHTML=h; pane.dataset.rid=r.id; pane.scrollTop=scrollTop;
 }
@@ -707,8 +1032,12 @@ function openEdit(r,isNew){
   $('#f-title').value=r.title||''; $('#f-source').value=r.source||'';
   $('#f-serves').value=r.serves||''; $('#f-time').value=r.time||'';
   $('#f-tags').value=(r.tags||[]).join(', ');
-  $('#f-ings').value=(r.ingredients||[]).join('\n'); $('#f-method').value=(r.instructions||[]).join('\n');
+  $('#f-ings').value=(r.ingredients||[]).map(itemText).join('\n'); $('#f-method').value=(r.instructions||[]).map(itemText).join('\n');
   $('#f-notes').value=r.notes||''; $('#f-rating').value=String(Math.round(r.rating)||0);
+  const ex=!isNew && state.db.recipes.find(x=>x.id===editing.id);
+  const showVer=!!ex && (familyOf(ex).length>1 || ex.versionNo>1);
+  $('#f-verwrap').hidden=!showVer;
+  $('#f-vlabel').value=ex?ex.versionLabel:''; $('#f-vnote').value=ex?ex.changeNote:'';
   setSeg('#f-type',r.type==='External'?'External':'Full'); syncTypeFields();
   $('#edit-msg').hidden=true; renderQuickTags();
   $('#dlg-edit').showModal(); $('#dlg-edit').scrollTop=0;
@@ -719,14 +1048,107 @@ function saveEdit(){
   const seenTag=new Set();
   const tags=$('#f-tags').value.split(',').map(s=>s.trim()).filter(t=>t && !seenTag.has(t.toLowerCase()) && seenTag.add(t.toLowerCase()));
   const type=segVal('#f-type')||'Full';
+  const ex=state.db.recipes.find(x=>x.id===editing.id);
   const r={id:editing.id,title,type,source:$('#f-source').value.trim(),serves:$('#f-serves').value.trim(),time:$('#f-time').value.trim(),
-    tags,ingredients:lines($('#f-ings').value),instructions:lines($('#f-method').value).map(s=>s.replace(/^(step\s*)?\d+[.):]\s*/i,'')),
+    tags,
+    ingredients:matchItems(ex?ex.ingredients:[],lines($('#f-ings').value),'i'),
+    instructions:matchItems(ex?ex.instructions:[],lines($('#f-method').value).map(stripStep),'s'),
     notes:$('#f-notes').value.trim(),rating:Number($('#f-rating').value)||0,created:editing.created,updated:new Date().toISOString()};
-  const wasNew=editing.isNew;
+  if(ex){
+    const showVer=!$('#f-verwrap').hidden;
+    r.versionLabel=(showVer&&$('#f-vlabel').value.trim())||ex.versionLabel;
+    r.changeNote=showVer?$('#f-vnote').value.trim():ex.changeNote;
+  } else {
+    Object.assign(r,{familyId:r.id,parentId:null,versionNo:1,versionLabel:'Original',changeNote:'',archived:false,annotations:[]});
+  }
+  const wasNew=!ex;
   $('#dlg-edit').close(); editing=null;
   commit({t:'upsert',r});
   select(r.id);
   toast(wasNew?'Recipe added':'Recipe saved');
+}
+
+/* ── Margin notes ────────────────────────────────────── */
+let noteCtx=null;
+function noteMsg(m){ const el=$('#note-msg'); el.textContent=m||''; el.hidden=!m; }
+function openNote(r,target,aid){
+  const a=aid?r.annotations.find(x=>x.id===aid):null; if(aid && !a) return;
+  const tgt=a?a.target:target;
+  const item=r.ingredients.concat(r.instructions).find(x=>x.id===tgt)||null;
+  noteCtx={rid:r.id,target:tgt,aid:a?a.id:null,item:item?item.text:null};
+  $('#note-h').textContent=a?'Edit note':'Add a note';
+  $('#note-quote').textContent=tgt==='recipe'?'The whole recipe':(item?stripStep(item.text).replace(/:\s*$/,''):((a&&a.quote)||'A line that has since been removed'));
+  $('#note-text').value=a?a.text:'';
+  $('#note-del').hidden=!a;
+  $('#note-applywrap').hidden=!item;
+  $('#note-apply').checked=false; $('#note-linewrap').hidden=true; $('#note-line').value=item?item.text:'';
+  noteMsg('');
+  $('#dlg-note').showModal();
+  setTimeout(()=>$('#note-text').focus(),60);
+}
+function saveNote(){
+  const c=noteCtx; if(!c) return;
+  const text=$('#note-text').value.trim();
+  if(!text){ noteMsg('Write a note first.'); return; }
+  const r=state.db.recipes.find(x=>x.id===c.rid); if(!r){ $('#dlg-note').close(); return; }
+  const at=new Date().toISOString(), ops=[], aid=c.aid||uid('a-');
+  if(!c.aid) ops.push({t:'note',id:c.rid,a:{id:aid,target:c.target,quote:c.item||'',text,date:today(),at}});
+  else { const a=r.annotations.find(x=>x.id===c.aid); if(a && a.text!==text) ops.push({t:'noteEdit',id:c.rid,aid,f:{text,edited:at}}); }
+  const apply=!$('#note-applywrap').hidden && $('#note-apply').checked;
+  const line=$('#note-line').value.replace(/\s*\n\s*/g,' ').trim();
+  if(apply && !line){ noteMsg('The recipe line can\'t be empty.'); return; }
+  const changesLine=apply && line!==c.item;
+  if(changesLine) ops.push({t:'applyNote',id:c.rid,aid,target:c.target,text:line,at});
+  $('#dlg-note').close(); noteCtx=null;
+  if(ops.length) commitMany(ops);
+  toast(changesLine?'Note saved and recipe updated':'Note saved');
+}
+function deleteNote(){
+  const c=noteCtx; if(!c||!c.aid) return;
+  if(!confirm('Delete this note?')) return;
+  $('#dlg-note').close(); noteCtx=null;
+  commit({t:'noteDel',id:c.rid,aid:c.aid});
+  toast('Note deleted');
+}
+
+/* ── Versions ────────────────────────────────────────── */
+let verBase=null, delTarget=null;
+function openNewVersion(r){
+  verBase=r.id;
+  $('#v-from').textContent='Starts as a copy of '+(familyOf(r).length>1?vName(r):'this recipe')+'. Everything comes across except the cooking history and the rating, and the new version becomes the one shown in your list.';
+  $('#v-label').value=''; $('#v-note').value='';
+  $('#v-copywrap').hidden=!r.annotations.length; $('#v-copynotes').checked=true;
+  $('#v-msg').hidden=true;
+  $('#dlg-version').showModal();
+}
+function createVersion(){
+  const base=state.db.recipes.find(x=>x.id===verBase);
+  if(!base){ $('#dlg-version').close(); return; }
+  const label=$('#v-label').value.trim();
+  if(!label){ const m=$('#v-msg'); m.textContent='Give the new version a name, for example "With chicken thighs".'; m.hidden=false; $('#v-label').focus(); return; }
+  const now=new Date().toISOString(), nr=clone(base);
+  const keepNotes=!$('#v-copywrap').hidden && $('#v-copynotes').checked;
+  Object.assign(nr,{id:uid('r-'),familyId:base.familyId,parentId:base.id,versionLabel:label,changeNote:$('#v-note').value.trim(),
+    rating:0,cookLog:[],archived:false,created:now,updated:now,
+    annotations:keepNotes?base.annotations.map(a=>Object.assign(clone(a),{id:uid('a-')})):[]});
+  delete nr.versionNo;
+  $('#dlg-version').close();
+  commit({t:'newVersion',r:nr});
+  select(nr.id);
+  const made=state.db.recipes.find(x=>x.id===nr.id);
+  if(made){ toast('Created '+vName(made)); openEdit(made,false); }
+}
+function openDelete(r){
+  delTarget=r.id;
+  const fam=familyOf(r), active=fam.filter(x=>!x.archived).length;
+  $('#del-text').textContent='"'+r.title+'" has '+fam.length+' versions. Archiving hides '+vName(r)+' but keeps it and its cooking history, and you can restore it later. Deleting removes every version and all their cooking history.';
+  const canArchive=!r.archived && active>1;
+  $('#del-archive').hidden=!canArchive;
+  const hint=$('#del-hint');
+  hint.hidden=canArchive;
+  hint.textContent=r.archived?'This version is already archived.':'This is the only version that isn\'t archived, so it can\'t be archived.';
+  $('#del-all').textContent='Delete all '+fam.length+' versions';
+  $('#dlg-delete').showModal();
 }
 
 /* ── Import ──────────────────────────────────────────── */
@@ -842,6 +1264,8 @@ function openSettings(){
   $('#s-viewonly').checked=!!ls.get('viewOnly',false);
   $('#s-key').value=ls.get('apiKey','');
   $('#s-model').value=ls.get('model','')||CONFIG.defaultModel;
+  $('#s-file').innerHTML='Dropbox › Apps › <em>your app name</em> › '+esc(CONFIG.filePath.replace(/^\//,''));
+  $('#s-ver').textContent='App version '+APP_VERSION+', data format '+DATA_VERSION;
   $('#dlg-settings').showModal();
 }
 function saveSettings(){
@@ -881,11 +1305,16 @@ function bind(){
     const r=state.db.recipes.find(x=>x.id===state.selected); const act=el.dataset.act;
     if(act==='back'){ document.body.classList.remove('show-detail'); return; }
     if(!r) return;
+    const byId=id=>state.db.recipes.find(x=>x.id===id);
     if(act==='tick'){ (state.ticks[r.id]=state.ticks[r.id]||{})[el.dataset.i]=el.checked; return; }
     if(act==='rate'){ const v=Number(el.dataset.v); commit({t:'patch',id:r.id,f:{rating:v===r.rating?0:v},at:new Date().toISOString()}); }
     if(act==='edit') openEdit(r,false);
+    if(act==='newver') openNewVersion(r);
     if(act==='print') window.print();
-    if(act==='delete'){ if(confirm('Delete "'+r.title+'" and its cooking history? This can\'t be undone.')){ commit({t:'delete',id:r.id}); state.selected=null; render(); toast('Recipe deleted'); } }
+    if(act==='delete'){
+      if(familyOf(r).length>1){ openDelete(r); return; }
+      if(confirm('Delete "'+r.title+'" and its cooking history? This can\'t be undone.')){ commit({t:'delete',id:r.id}); state.selected=null; render(); toast('Recipe deleted'); }
+    }
     if(act==='log'){
       const date=$('#log-date').value||today(), comment=$('#log-comment').value.trim();
       $('#log-comment').value='';
@@ -894,6 +1323,14 @@ function bind(){
     }
     if(act==='unlog'){ if(confirm('Remove this entry from the cooking history?')) commit({t:'unlog',id:r.id,eid:el.dataset.eid}); }
     if(act==='import-link'){ openImport('url',r.source); impMerge=r.id; }
+    if(act==='note') openNote(r,el.dataset.target,null);
+    if(act==='note-edit') openNote(r,null,el.dataset.aid);
+    if(act==='note-recipe') openNote(r,'recipe',null);
+    if(act==='gocurrent'){ const f=(state.db.families||{})[r.familyId]; if(f) select(f.defaultId); }
+    if(act==='viewver'){ if(byId(el.dataset.id)) select(el.dataset.id); }
+    if(act==='makecurrent'){ const v=byId(el.dataset.id); if(v){ commit({t:'setDefault',id:v.id}); toast(vName(v)+' is now the current version'); } }
+    if(act==='archive'){ const v=byId(el.dataset.id); if(v){ commit({t:'archive',id:v.id,v:true}); toast(vName(v)+' archived'); } }
+    if(act==='restore'){ const v=byId(el.dataset.id); if(v){ commit({t:'archive',id:v.id,v:false}); toast(vName(v)+' restored'); } }
   });
 
   $$('dialog [data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
@@ -906,6 +1343,23 @@ function bind(){
     $('#f-tags').value=cur.join(', '); renderQuickTags();
   });
   $('#edit-save').addEventListener('click',saveEdit);
+
+  $('#note-save').addEventListener('click',saveNote);
+  $('#note-del').addEventListener('click',deleteNote);
+  $('#note-apply').addEventListener('change',e=>{ $('#note-linewrap').hidden=!e.target.checked; if(e.target.checked) setTimeout(()=>$('#note-line').focus(),40); });
+
+  $('#v-go').addEventListener('click',createVersion);
+  $('#del-archive').addEventListener('click',()=>{
+    const r=state.db.recipes.find(x=>x.id===delTarget); $('#dlg-delete').close(); if(!r) return;
+    commit({t:'archive',id:r.id,v:true}); toast(vName(r)+' archived');
+  });
+  $('#del-all').addEventListener('click',()=>{
+    const r=state.db.recipes.find(x=>x.id===delTarget); if(!r){ $('#dlg-delete').close(); return; }
+    const n=familyOf(r).length;
+    if(!confirm('Delete "'+r.title+'" and all '+n+' versions, including their cooking history? This can\'t be undone.')) return;
+    $('#dlg-delete').close();
+    commit({t:'delete',id:r.id}); state.selected=null; render(); toast('Recipe deleted');
+  });
 
   $('#imp-tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) impTab(b.dataset.v); });
   $('#imp-files').addEventListener('change',async e=>{
@@ -920,7 +1374,7 @@ function bind(){
   $('#s-disconnect').addEventListener('click',()=>{
     const warn=state.queue.length?' You have '+state.queue.length+' unsaved change(s) that will be lost.':'';
     if(!confirm('Disconnect Dropbox on this device?'+warn)) return;
-    ls.del('token'); ls.del('queue'); ls.del('cache'); state.queue=[]; state.db={version:2,recipes:[]}; state.selected=null;
+    ls.del('token'); ls.del('queue'+DK); ls.del('cache'+DK); state.queue=[]; state.db={version:DATA_VERSION,recipes:[],families:{}}; state.selected=null;
     $('#dlg-settings').close(); showConnect();
   });
 
