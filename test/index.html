@@ -59,8 +59,54 @@ a{color:var(--basil)}
 .list-pane{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px calc(24px + var(--sb))}
 .search{width:100%;min-height:var(--tap);padding:0 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--card);-webkit-appearance:none;appearance:none}
 .filters{display:flex;gap:8px;align-items:center;margin:10px 0 2px}
-.chips{display:flex;gap:6px;overflow-x:auto;flex:1;padding:2px 0 6px;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
+.fbtn{flex:1;min-width:0;display:flex;align-items:center;gap:8px;min-height:38px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:.9rem;font-weight:600;padding:0 14px;text-align:left}
+.fbtn.on{border-color:var(--ink)}
+.fbtn .n{min-width:20px;padding:2px 7px;border-radius:999px;background:var(--ink);color:#fff;font-size:.75rem;text-align:center}
+.active{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.achip{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 10px;border-radius:999px;border:1px solid var(--ink);background:var(--ink);color:#fff;font-size:.82rem}
+.achip .g{opacity:.7}
+.achip .x{opacity:.75;font-size:.9rem}
+.aclear{border:none;background:none;color:var(--basil);font-weight:600;font-size:.85rem;min-height:32px;padding:0 6px}
+/* Filter panel: side panel on iPad, full screen on iPhone */
+dialog.sheet{position:fixed;inset:0 0 0 auto;margin:0;width:min(420px,100vw);height:100%;max-height:100%;max-width:100vw;border-radius:0;flex-direction:column}
+dialog.sheet[open]{display:flex}
+dialog.sheet::backdrop{background:rgba(24,34,29,.25)}
+dialog.sheet .dlg-head{padding-top:calc(10px + var(--st))}
+dialog.sheet .dlg-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;align-content:start;gap:0;padding-top:4px}
+dialog.sheet .dlg-foot{position:static}
+@media (max-width:600px){dialog.sheet{width:100vw}}
+.fgroup{border-bottom:1px solid var(--line);padding:2px 0 12px}
+.fgroup summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:var(--tap);font:600 1.05rem/1.2 var(--serif);cursor:pointer}
+.fgroup summary::-webkit-details-marker{display:none}
+.fgroup summary::after{content:"";margin:0 6px 0 auto;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
+.fgroup[open] summary::after{transform:rotate(-135deg)}
+.fsel{font:600 .72rem/1 var(--sans);color:#fff;background:var(--basil);padding:4px 7px;border-radius:999px}
+.fvals{display:flex;flex-wrap:wrap;gap:6px}
+.fchip{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.88rem}
+.fchip .n{color:var(--muted);font-size:.78rem;margin-left:5px}
+.fchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.fchip[aria-pressed="true"] .n{color:#CFD6D1}
+.fchip:disabled{opacity:.38;cursor:default}
+.fhint{font-size:.8rem;color:var(--muted);margin:0 0 8px}
+/* Tag pickers in the edit dialog */
+.tgroups{border:1px solid var(--line);border-radius:var(--r-sm)}
+.tg+.tg{border-top:1px solid var(--line)}
+.tg-head{display:grid;grid-template-columns:minmax(120px,auto) 1fr auto;gap:10px;align-items:center;width:100%;min-height:var(--tap);padding:6px 12px;border:none;background:none;text-align:left}
+.tg-head::after{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px}
+.tg.open .tg-head::after{transform:rotate(-135deg)}
+.tg-name{font-weight:600;font-size:.9rem}
+.tg-sum{font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tg-body{padding:2px 12px 12px}
+.tg-add{display:flex;gap:8px;margin-top:10px}
+.tg-add input{flex:1}
+/* Tag manager */
+.tmlist{list-style:none;margin:0 0 10px;padding:0}
+.tmrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.tm-name{font-weight:600}
+.tm-n{font-size:.8rem;color:var(--muted);margin-right:auto}
+.tm-acts{display:flex;gap:4px;flex-wrap:wrap}
+.tm-acts .btn{min-height:34px;padding:0 10px;font-size:.82rem}
+.tm-acts .btn.icon{width:34px;padding:0}
 .chip{flex:none;min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:.85rem;color:var(--muted)}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .sort{flex:none;min-height:34px;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:0 10px;font-size:.85rem}
@@ -185,8 +231,6 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 .seg button{flex:1;min-height:40px;border:none;background:var(--card);font-size:.92rem}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
-.quicktags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.quicktags .chip{min-height:30px;font-size:.8rem}
 .msg{padding:10px 12px;border-radius:var(--r-sm);font-size:.9rem;margin:0}
 .msg.err{background:#F7E4E0;color:var(--danger)}
 .msg.ok{background:var(--basil-soft);color:var(--basil)}
@@ -220,7 +264,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 @media (max-width:520px){.row2{grid-template-columns:1fr}.detail h2{font-size:1.8rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{
-  .topbar,.lockbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
+  .active,.topbar,.lockbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
   .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
@@ -279,14 +323,16 @@ window.RECIPE_CONFIG = {
     <aside class="list-pane">
       <input id="search" class="search" type="search" placeholder="Search recipes, ingredients, notes" autocomplete="off">
       <div class="filters">
-        <div id="chips" class="chips" role="group" aria-label="Filter by tag"></div>
+        <button id="btn-filter" class="fbtn" type="button" aria-haspopup="dialog">Filters</button>
         <select id="sort" class="sort" aria-label="Sort recipes">
           <option value="title">A to Z</option>
           <option value="recent">Recently made</option>
           <option value="most">Most made</option>
           <option value="rating">Top rated</option>
+          <option value="added">Recently added</option>
         </select>
       </div>
+      <div id="active" class="active" hidden></div>
       <p id="count" class="count"></p>
       <ul id="list" class="list"></ul>
     </aside>
@@ -311,7 +357,7 @@ window.RECIPE_CONFIG = {
       <div class="field"><label for="f-serves">Serves</label><input id="f-serves" type="text" placeholder="e.g. 4"></div>
       <div class="field"><label for="f-time">Time</label><input id="f-time" type="text" placeholder="e.g. 1 hr 15 min"></div>
     </div>
-    <div class="field"><label for="f-tags">Tags</label><input id="f-tags" type="text" placeholder="Separate with commas"><p class="hint">Each tag goes into its group automatically. Tags the app doesn't recognise go to Unsorted.</p><div id="f-quicktags" class="quicktags"></div></div>
+    <div class="field"><span class="lbl">Tags</span><div id="f-taggroups" class="tgroups"></div><p class="hint">All optional. Tap a group to choose, or add a new value.</p></div>
     <div class="field full-only"><label for="f-ings">Ingredients</label><textarea id="f-ings" rows="8"></textarea><p class="hint">One per line. End a line with a colon to make a heading, e.g. "For the sauce:". Notes stay with a line when you reword it.</p></div>
     <div class="field full-only"><label for="f-method">Method</label><textarea id="f-method" rows="8"></textarea><p class="hint">One step per line.</p></div>
     <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" rows="4" placeholder="Tips, swaps, what to do differently"></textarea></div>
@@ -388,6 +434,31 @@ window.RECIPE_CONFIG = {
   <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="imp-go" class="btn primary" type="button">Read recipe</button></div>
 </dialog>
 
+<!-- Filters -->
+<dialog id="dlg-filter" class="sheet" aria-labelledby="flt-h">
+  <div class="dlg-head"><h2 id="flt-h">Filters</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div id="flt-body" class="dlg-body"></div>
+  <div class="dlg-foot"><button id="flt-clear" class="btn ghost left" type="button">Clear all</button><button id="flt-done" class="btn primary" type="button">Show recipes</button></div>
+</dialog>
+
+<!-- Tag manager -->
+<dialog id="dlg-tags" aria-labelledby="tm-h">
+  <div class="dlg-head"><h2 id="tm-h">Manage tags</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div id="tm-body" class="dlg-body"></div>
+  <div class="dlg-foot"><button class="btn primary" data-close type="button">Done</button></div>
+</dialog>
+<dialog id="dlg-tagact" aria-labelledby="ta-h">
+  <div class="dlg-head"><h2 id="ta-h">Rename</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <p id="ta-text"></p>
+    <div id="ta-selwrap" class="field"><label id="ta-sellbl" for="ta-sel">Group</label><select id="ta-sel" class="field-select"></select></div>
+    <div id="ta-namewrap" class="field"><label for="ta-name">Name</label><input id="ta-name" type="text" autocomplete="off"></div>
+    <p id="ta-info" class="hint" hidden></p>
+    <p id="ta-msg" class="msg err" hidden></p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="ta-go" class="btn primary" type="button">Save</button></div>
+</dialog>
+
 <!-- Settings -->
 <dialog id="dlg-settings" aria-labelledby="set-h">
   <div class="dlg-head"><h2 id="set-h">Settings</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
@@ -401,6 +472,10 @@ window.RECIPE_CONFIG = {
     <div class="field">
       <label for="s-model">Model</label>
       <input id="s-model" type="text" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="field edit-only"><span class="lbl">Tags</span>
+      <p class="hint" style="margin:0 0 10px">Rename, merge, reorder or delete tag values, and sort out Unsorted tags.</p>
+      <button id="s-tags" class="btn" type="button">Manage tags</button>
     </div>
     <div class="field"><span class="lbl">Recipe file</span>
       <p id="s-file" class="hint" style="margin:0"></p>
@@ -422,7 +497,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '3.0';
-const BUILD = 'R1 step 1 (test)';
+const BUILD = 'R1 step 2 (test)';
 const DATA_VERSION = 4;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -452,6 +527,9 @@ const DEFAULT_TAXONOMY = {
 const QUICK_MINUTES = 45;
 const SOURCE_KINDS = ['Book','Online','Homemade','Other'];
 const ONLINE_ID = 'src-online';
+const GROUP_LABEL = Object.assign({unsorted:'Unsorted'},Object.fromEntries(GROUPS));
+/* Order of groups in the filter panel (the edit dialog uses GROUPS order) */
+const FILTER_ORDER = ['course','cuisine','mainIngredient','diet','effort','occasion','unsorted'];
 
 /* Starter content, used only if the recipe file doesn't exist in Dropbox yet */
 const STARTER = {version:2,recipes:[
@@ -529,6 +607,25 @@ function normTags(t){
   return o;
 }
 function flatTags(r){ const t=(r&&r.tags)||{}; return TAG_KEYS.reduce((a,k)=>a.concat(t[k]||[]),[]); }
+/* The edit dialog saves only what changed in the tags, so a rename or merge made on another
+   device at the same time isn't undone by this device's copy of the old tags. */
+function diffTags(a,b){
+  const out={};
+  TAG_KEYS.forEach(k=>{
+    const add=(b[k]||[]).filter(v=>!(a[k]||[]).some(x=>tagMatch(x,v)));
+    const remove=(a[k]||[]).filter(v=>!(b[k]||[]).some(x=>tagMatch(x,v)));
+    if(add.length||remove.length) out[k]={add,remove};
+  });
+  return out;
+}
+function applyTagDiff(tags,diff){
+  const t=normTags(tags);
+  TAG_KEYS.forEach(k=>{ const df=(diff||{})[k]; if(!df) return;
+    (df.remove||[]).forEach(v=>{ t[k]=t[k].filter(x=>!tagMatch(x,v)); });
+    (df.add||[]).forEach(v=>{ v=String(v||'').trim(); if(v) addTag(t,k,v); });
+  });
+  return t;
+}
 
 /* "1 hour 30 minutes" → 90, "1.5 Hours" → 90, "30 minutew" → 30, "45" → 45 */
 function parseMinutes(s){
@@ -779,8 +876,13 @@ function applyOp(d,op){
         if(!inc.versionLabel) m.versionLabel=ex.versionLabel;
         if(inc.changeNote==null) m.changeNote=ex.changeNote;
         if(inc.time!=null && !('timeMinutes' in inc)) m.timeMinutes=parseMinutes(inc.time);
+        if(inc.tagDiff){ m.tags=applyTagDiff(ex.tags,inc.tagDiff); delete m.tagDiff; }
         d.recipes[i]=normRecipe(m,i,null,d).r;
-      } else { const inc=normRecipe(clone(op.r),d.recipes.length,null,d).r; inc.cookLog=[]; d.recipes.push(inc); }
+      } else {
+        const raw=clone(op.r);
+        if(raw.tagDiff){ raw.tags=applyTagDiff(emptyTags(),raw.tagDiff); delete raw.tagDiff; }
+        const inc=normRecipe(raw,d.recipes.length,null,d).r; inc.cookLog=[]; d.recipes.push(inc);
+      }
       break;
     }
     case 'newVersion': {
@@ -808,6 +910,40 @@ function applyOp(d,op){
     case 'note': { const r=find(op.id); if(r && !r.annotations.some(a=>a.id===op.a.id)) r.annotations.push(clone(op.a)); break; }
     case 'noteEdit': { const r=find(op.id); const a=r&&r.annotations.find(x=>x.id===op.aid); if(a) Object.assign(a,op.f); break; }
     case 'noteDel': { const r=find(op.id); if(r) r.annotations=r.annotations.filter(a=>a.id!==op.aid); break; }
+    /* Tag manager changes: one queued change each, applied to every recipe when it's saved */
+    case 'addTag': { ensureTaxonomy(d); const v=String(op.v||'').trim(); if(GROUP_KEYS.includes(op.g) && v && !d.taxonomy[op.g].some(x=>tagMatch(x,v))) d.taxonomy[op.g].push(v); break; }
+    case 'renameTag': {
+      ensureTaxonomy(d); const g=op.g, from=op.from, to=String(op.to||'').trim(); if(!TAG_KEYS.includes(g) || !to) break;
+      const list=d.taxonomy[g], fi=list.findIndex(x=>tagMatch(x,from)), ti=list.findIndex((x,i)=>i!==fi && tagMatch(x,to));
+      if(fi>=0){ if(ti>=0) list.splice(fi,1); else list[fi]=to; }
+      else if(g!=='unsorted' && ti<0) list.push(to);
+      const target=list.find(x=>tagMatch(x,to))||to;
+      d.recipes.forEach(r=>{ const t=r.tags=r.tags||emptyTags(), cur=t[g]||[]; if(!cur.some(x=>tagMatch(x,from))) return;
+        const out=[]; cur.forEach(x=>{ const y=tagMatch(x,from)?target:x; if(!out.some(z=>tagMatch(z,y))) out.push(y); }); t[g]=out; });
+      break;
+    }
+    case 'moveTag': {
+      ensureTaxonomy(d); const from=op.from, to=op.to, v=op.v, name=String(op.as||op.v||'').trim();
+      if(!TAG_KEYS.includes(from) || !GROUP_KEYS.includes(to) || from===to || !name) break;
+      let target=d.taxonomy[to].find(x=>tagMatch(x,name)); if(!target){ target=name; d.taxonomy[to].push(name); }
+      if(from!=='unsorted') d.taxonomy[from]=d.taxonomy[from].filter(x=>!tagMatch(x,v));
+      d.recipes.forEach(r=>{ const t=r.tags=r.tags||emptyTags(); if(!(t[from]||[]).some(x=>tagMatch(x,v))) return;
+        t[from]=t[from].filter(x=>!tagMatch(x,v)); addTag(t,to,target); });
+      break;
+    }
+    case 'deleteTag': {
+      ensureTaxonomy(d); if(!TAG_KEYS.includes(op.g)) break;
+      d.taxonomy[op.g]=d.taxonomy[op.g].filter(x=>!tagMatch(x,op.v));
+      d.recipes.forEach(r=>{ const t=r.tags=r.tags||emptyTags(); t[op.g]=(t[op.g]||[]).filter(x=>!tagMatch(x,op.v)); });
+      break;
+    }
+    case 'orderTags': {
+      ensureTaxonomy(d); if(!GROUP_KEYS.includes(op.g)) break;
+      const cur=d.taxonomy[op.g], out=[];
+      (op.order||[]).forEach(v=>{ const x=cur.find(y=>tagMatch(y,v)); if(x && !out.includes(x)) out.push(x); });
+      cur.forEach(x=>{ if(!out.includes(x)) out.push(x); });
+      d.taxonomy[op.g]=out; break;
+    }
     case 'applyNote': {
       const r=find(op.id); if(!r) break;
       const it=r.ingredients.concat(r.instructions).find(x=>x.id===op.target);
@@ -822,7 +958,7 @@ function applyOp(d,op){
 }
 
 /* ── State ───────────────────────────────────────────── */
-const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', tags:new Set(), sort:ls.get('sort','title'), ticks:{}, lastPull:0, locked:null };
+const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['course']), sort:ls.get('sort','title'), ticks:{}, lastPull:0, locked:null };
 let pulling=false, flushing=false;
 function saveCache(){ ls.set('cache'+DK,{db:state.db}); }
 function queueOp(op){ state.queue.push(op); ls.set('queue'+DK,state.queue); }
@@ -1067,22 +1203,40 @@ function searchText(r){
   return [r.title,s?s.name:'',s?s.author:'',r.siteName,r.legacySource,r.notes,r.versionLabel,r.changeNote].concat(flatTags(r),r.ingredients.map(itemText),
     r.cookLog.map(e=>e.comment),r.annotations.map(a=>a.text)).join(' ');
 }
+/* Filters: OR within a group, AND across groups. Diet is AND within the group too,
+   so Vegetarian + Gluten-free means recipes that are both. Filters use the current version. */
+function fsel(g){ return state.filters[g]||(state.filters[g]=new Set()); }
+function filterCount(){ return TAG_KEYS.reduce((n,k)=>n+fsel(k).size,0); }
+function groupPass(r,g,sel){
+  if(!sel || !sel.size) return true;
+  const vals=(r.tags&&r.tags[g])||[], has=v=>vals.some(x=>tagMatch(x,v));
+  return g==='diet'?Array.from(sel).every(has):Array.from(sel).some(has);
+}
+function passFilters(r,excl){ return TAG_KEYS.every(g=>g===excl || groupPass(r,g,state.filters[g])); }
+function searchWords(){ return state.search.trim().toLowerCase().split(/\s+/).filter(Boolean); }
+function passSearch(g,words){
+  if(!words.length) return true;
+  const hay=(g.active.length?g.active:[g.def]).map(searchText).join(' ').toLowerCase();
+  return words.every(w=>hay.indexOf(w)>=0);
+}
+function groupValues(g){ const t=state.db.taxonomy||{}; return (t[g]||[]).slice(); }
+/* Drop filter values that no longer exist (renamed, merged or deleted) */
+function pruneFilters(){
+  TAG_KEYS.forEach(g=>{ const vals=groupValues(g), sel=fsel(g);
+    Array.from(sel).forEach(v=>{ const hit=vals.find(x=>tagMatch(x,v)); sel.delete(v); if(hit) sel.add(hit); }); });
+}
 function filtered(gs){
-  const words=state.search.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const out=gs.filter(g=>{
-    const ft=flatTags(g.def);
-    for(const t of state.tags) if(!ft.includes(t)) return false;
-    if(!words.length) return true;
-    const hay=(g.active.length?g.active:[g.def]).map(searchText).join(' ').toLowerCase();
-    return words.every(w=>hay.indexOf(w)>=0);
-  });
+  const words=searchWords();
+  const out=gs.filter(g=>passFilters(g.def) && passSearch(g,words));
   const last=g=>g.logs[0]?g.logs[0].date:'';
+  const added=g=>g.members.reduce((mn,m)=>{ const c=String(m.created||''); return c && (!mn || c<mn)?c:mn; },'');
   const byTitle=(a,b)=>a.def.title.localeCompare(b.def.title,'en-GB',{sensitivity:'base'});
   const sorters={
     title:byTitle,
     recent:(a,b)=>last(b).localeCompare(last(a))||byTitle(a,b),
     most:(a,b)=>b.logs.length-a.logs.length||byTitle(a,b),
-    rating:(a,b)=>b.def.rating-a.def.rating||byTitle(a,b)
+    rating:(a,b)=>b.def.rating-a.def.rating||byTitle(a,b),
+    added:(a,b)=>added(b).localeCompare(added(a))||byTitle(a,b)
   };
   return out.sort(sorters[state.sort]||byTitle);
 }
@@ -1096,19 +1250,15 @@ function monthStrip(logs){
   }
   return '<span class="months" role="img" aria-label="Made in '+on+' of the last 12 months" title="Made in '+on+' of the last 12 months">'+cells+'</span>';
 }
-function allTags(gs){
-  const counts={}; (gs||groups()).forEach(g=>flatTags(g.def).forEach(t=>counts[t]=(counts[t]||0)+1));
-  return Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||a.localeCompare(b));
-}
 function render(){
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
   document.title=(TEST?'TEST: ':'')+CONFIG.bookTitle;
   $('#testflag').hidden=!TEST;
   renderLock();
   $$('.edit-only').forEach(el=>el.hidden=!canEdit());
-  const gs=groups(), tags=allTags(gs);
-  for(const t of Array.from(state.tags)) if(!tags.includes(t)) state.tags.delete(t);
-  $('#chips').innerHTML=tags.map(t=>'<button type="button" class="chip" data-tag="'+esc(t)+'" aria-pressed="'+state.tags.has(t)+'">'+esc(t)+'</button>').join('');
+  const gs=groups();
+  pruneFilters(); renderFilterButton(); renderActive();
+  if($('#dlg-filter').open) renderFilterPanel(gs);
   $('#sort').value=state.sort;
   const sel=state.db.recipes.find(x=>x.id===state.selected);
   const rs=filtered(gs), total=gs.length;
@@ -1122,9 +1272,49 @@ function render(){
       monthStrip(g.logs)+
       '<span class="item-meta">'+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+esc(meta)+'</span>'+
       '</button></li>';
-  }).join(''):'<li class="empty">'+(total?'No recipes match. Try fewer words or clear a tag.':(canEdit()?'No recipes yet. Tap Add or Import to start.':'No recipes yet.'))+'</li>';
+  }).join(''):'<li class="empty">'+(total?'No recipes match. Try fewer words or remove a filter.':(canEdit()?'No recipes yet. Tap Add or Import to start.':'No recipes yet.'))+'</li>';
   renderDetail();
 }
+
+function renderFilterButton(){
+  const n=filterCount(), b=$('#btn-filter');
+  b.innerHTML='Filters'+(n?'<span class="n">'+n+'</span>':'');
+  b.classList.toggle('on',!!n);
+  b.setAttribute('aria-label',n?'Filters, '+n+' selected':'Filters');
+}
+function renderActive(){
+  const el=$('#active'), items=[];
+  FILTER_ORDER.forEach(g=>fsel(g).forEach(v=>items.push('<button type="button" class="achip" data-g="'+g+'" data-v="'+esc(v)+'" aria-label="Remove filter '+esc(GROUP_LABEL[g]+': '+v)+'"><span class="g">'+esc(GROUP_LABEL[g])+'</span>'+esc(v)+'<span class="x" aria-hidden="true">✕</span></button>')));
+  el.hidden=!items.length;
+  el.innerHTML=items.join('')+(items.length>1?'<button type="button" class="aclear" data-clear>Clear all</button>':'');
+}
+function renderFilterPanel(gs){
+  gs=gs||groups();
+  const words=searchWords(), pool=gs.filter(g=>passSearch(g,words));
+  const groupsToShow=FILTER_ORDER.filter(g=>g!=='unsorted' || groupValues('unsorted').length);
+  const scroll=$('#flt-body').scrollTop;
+  $('#flt-body').innerHTML=groupsToShow.map(g=>{
+    const sel=fsel(g), base=pool.filter(x=>passFilters(x.def,g==='diet'?null:g));
+    const chips=groupValues(g).map(v=>{
+      const on=sel.has(v), n=base.filter(x=>groupPass(x.def,g,new Set([v]))).length;
+      return '<button type="button" class="fchip" data-g="'+g+'" data-v="'+esc(v)+'" aria-pressed="'+on+'"'+(!n&&!on?' disabled':'')+'>'+esc(v)+'<span class="n">'+n+'</span></button>';
+    }).join('');
+    return '<details class="fgroup" data-g="'+g+'"'+(state.fOpen.has(g)?' open':'')+'><summary>'+esc(GROUP_LABEL[g])+(sel.size?'<span class="fsel">'+sel.size+'</span>':'')+'</summary>'+
+      (g==='diet'?'<p class="fhint">Shows recipes that match every diet you tick.</p>':'')+
+      (g==='unsorted'?'<p class="fhint">Tags not yet in a group. Sort them out in Settings › Manage tags.</p>':'')+
+      '<div class="fvals">'+chips+'</div></details>';
+  }).join('');
+  $('#flt-body').scrollTop=scroll;
+  const n=filtered(gs).length;
+  $('#flt-done').textContent=n===1?'Show 1 recipe':'Show '+n+' recipes';
+  $('#flt-clear').disabled=!filterCount();
+}
+function openFilters(){
+  TAG_KEYS.forEach(g=>{ if(fsel(g).size) state.fOpen.add(g); });
+  renderFilterPanel(); $('#dlg-filter').showModal();
+}
+function toggleFilter(g,v){ const sel=fsel(g); sel.has(v)?sel.delete(v):sel.add(v); render(); }
+function clearFilters(){ TAG_KEYS.forEach(g=>fsel(g).clear()); render(); }
 
 function noteBtn(id){ return '<button type="button" class="anno-add" data-act="note" data-target="'+esc(id)+'" aria-label="Add a note to this line" title="Add a note">✎</button>'; }
 function annoList(list,ed){
@@ -1266,9 +1456,26 @@ let editing=null;
 function setSeg(sel,v){ $$(sel+' button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v))); }
 function segVal(sel){ const b=$$(sel+' button').find(b=>b.getAttribute('aria-pressed')==='true'); return b?b.dataset.v:null; }
 function syncTypeFields(){ const full=segVal('#f-type')!=='External'; $$('#dlg-edit .full-only').forEach(el=>el.hidden=!full); }
-function renderQuickTags(){
-  const cur=$('#f-tags').value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
-  $('#f-quicktags').innerHTML=allTags().slice(0,24).map(t=>'<button type="button" class="chip" data-qt="'+esc(t)+'" aria-pressed="'+cur.includes(t.toLowerCase())+'">'+esc(t)+'</button>').join('');
+function renderTagPickers(){
+  const ed=editing; if(!ed) return;
+  const keys=GROUP_KEYS.concat(ed.tags.unsorted.length||ed.origTags.unsorted.length?['unsorted']:[]);
+  $('#f-taggroups').innerHTML=keys.map(g=>{
+    const sel=ed.tags[g], open=ed.open.has(g), tax=groupValues(g);
+    const has=v=>sel.some(x=>tagMatch(x,v)), isNew=v=>g!=='unsorted' && !tax.some(x=>tagMatch(x,v));
+    let vals=g==='unsorted'?ed.origTags.unsorted.slice():tax;
+    sel.forEach(v=>{ if(!vals.some(x=>tagMatch(x,v))) vals=vals.concat(v); });
+    const body=!open?'':'<div class="tg-body"><div class="fvals">'+vals.map(v=>'<button type="button" class="fchip" data-g="'+g+'" data-v="'+esc(v)+'" aria-pressed="'+has(v)+'">'+esc(v)+(isNew(v)?'<span class="n">new</span>':'')+'</button>').join('')+'</div>'+
+      (g==='unsorted'?'<p class="hint">Tap a tag to remove it from this recipe. To move one into a group, use Settings › Manage tags.</p>'
+        :'<div class="tg-add"><input type="text" data-add="'+g+'" placeholder="Add a new value" aria-label="Add a new '+esc(GROUP_LABEL[g])+' value" autocomplete="off"><button type="button" class="btn" data-addbtn="'+g+'">Add</button></div>')+'</div>';
+    return '<div class="tg'+(open?' open':'')+'"><button type="button" class="tg-head" data-tg="'+g+'" aria-expanded="'+open+'"><span class="tg-name">'+esc(GROUP_LABEL[g])+'</span><span class="tg-sum">'+(sel.length?esc(sel.join(', ')):'<span class="muted">None</span>')+'</span></button>'+body+'</div>';
+  }).join('');
+}
+function pickerAdd(g){
+  const inp=document.querySelector('#f-taggroups [data-add="'+g+'"]'); if(!inp||!editing) return;
+  const v=inp.value.trim(); if(!v) return;
+  const canon=groupValues(g).find(x=>tagMatch(x,v))||editing.tags[g].find(x=>tagMatch(x,v))||v;
+  addTag(editing.tags,g,canon); renderTagPickers();
+  const again=document.querySelector('#f-taggroups [data-add="'+g+'"]'); if(again) again.focus();
 }
 function openEdit(r,isNew){
   if(state.locked){ toast('Update this app before editing'); return; }
@@ -1277,7 +1484,6 @@ function openEdit(r,isNew){
   $('#edit-h').textContent=isNew?'New recipe':'Edit recipe';
   $('#f-title').value=r.title||''; $('#f-source').value=srcText;
   $('#f-serves').value=r.serves||''; $('#f-time').value=r.time||'';
-  $('#f-tags').value=(Array.isArray(r.tags)?r.tags:flatTags(r)).join(', ');
   $('#f-ings').value=(r.ingredients||[]).map(itemText).join('\n'); $('#f-method').value=(r.instructions||[]).map(itemText).join('\n');
   $('#f-notes').value=r.notes||''; $('#f-rating').value=String(Math.round(r.rating)||0);
   const ex=!isNew && state.db.recipes.find(x=>x.id===editing.id);
@@ -1285,20 +1491,21 @@ function openEdit(r,isNew){
   $('#f-verwrap').hidden=!showVer;
   $('#f-vlabel').value=ex?ex.versionLabel:''; $('#f-vnote').value=ex?ex.changeNote:'';
   setSeg('#f-type',r.type==='External'?'External':'Full'); syncTypeFields();
-  $('#edit-msg').hidden=true; renderQuickTags();
+  editing.origTags=ex?normTags(ex.tags):emptyTags();
+  editing.tags=Array.isArray(r.tags)?groupTags(r.tags,state.db.taxonomy):normTags(r.tags);
+  editing.open=new Set();
+  $('#edit-msg').hidden=true; renderTagPickers();
   $('#dlg-edit').showModal(); $('#dlg-edit').scrollTop=0;
 }
 function saveEdit(){
   if(!editing || state.locked){ $('#dlg-edit').close(); editing=null; toast('Update this app before editing'); return; }
   const title=$('#f-title').value.trim();
   if(!title){ const m=$('#edit-msg'); m.textContent='Give the recipe a title.'; m.hidden=false; $('#f-title').focus(); return; }
-  const seenTag=new Set();
-  const tags=$('#f-tags').value.split(',').map(s=>s.trim()).filter(t=>t && !seenTag.has(t.toLowerCase()) && seenTag.add(t.toLowerCase()));
   const type=segVal('#f-type')||'Full';
   const ex=state.db.recipes.find(x=>x.id===editing.id);
   const time=$('#f-time').value.trim(), srcTxt=$('#f-source').value.trim();
   const r={id:editing.id,title,type,serves:$('#f-serves').value.trim(),time,timeMinutes:parseMinutes(time),
-    tags,
+    tagDiff:diffTags(editing.origTags,editing.tags),
     ingredients:matchItems(ex?ex.ingredients:[],lines($('#f-ings').value),'i'),
     instructions:matchItems(ex?ex.instructions:[],lines($('#f-method').value).map(stripStep),'s'),
     notes:$('#f-notes').value.trim(),rating:Number($('#f-rating').value)||0,created:editing.created,updated:new Date().toISOString()};
@@ -1511,6 +1718,99 @@ async function runImport(){
   finally{ btn.disabled=false; btn.textContent=label; }
 }
 
+/* ── Tag manager ─────────────────────────────────────── */
+let taCtx=null;
+function tagUse(g,v){ return groups().filter(x=>x.members.some(m=>((m.tags||{})[g]||[]).some(y=>tagMatch(y,v)))).length; }
+function renderTagManager(){
+  if(!$('#dlg-tags').open) return;
+  const keys=GROUP_KEYS.concat(groupValues('unsorted').length?['unsorted']:[]);
+  const open=new Set($$('#tm-body details[open]').map(d=>d.dataset.g));
+  const first=!$('#tm-body').children.length, scroll=$('#tm-body').scrollTop;
+  $('#tm-body').innerHTML='<p class="hint" style="margin:0">Renames, merges and deletes change every recipe that uses the tag, including older versions.</p>'+keys.map(g=>{
+    const vals=groupValues(g), un=g==='unsorted';
+    const rows=vals.map((v,i)=>{ const n=tagUse(g,v);
+      return '<li class="tmrow"><span class="tm-name">'+esc(v)+'</span><span class="tm-n">'+(n?n+' recipe'+(n>1?'s':''):'not used')+'</span><span class="tm-acts">'+
+        (un?'<button type="button" class="btn primary" data-tm="move" data-g="'+g+'" data-v="'+esc(v)+'">Move to group</button>'
+          :'<button type="button" class="btn icon" data-tm="up" data-g="'+g+'" data-i="'+i+'" aria-label="Move '+esc(v)+' up"'+(i?'':' disabled')+'>↑</button><button type="button" class="btn icon" data-tm="down" data-g="'+g+'" data-i="'+i+'" aria-label="Move '+esc(v)+' down"'+(i<vals.length-1?'':' disabled')+'>↓</button>')+
+        '<button type="button" class="btn" data-tm="rename" data-g="'+g+'" data-v="'+esc(v)+'">Rename</button>'+
+        (!un&&vals.length>1?'<button type="button" class="btn" data-tm="merge" data-g="'+g+'" data-v="'+esc(v)+'">Merge</button>':'')+
+        '<button type="button" class="btn danger" data-tm="delete" data-g="'+g+'" data-v="'+esc(v)+'">Delete</button></span></li>';
+    }).join('');
+    return '<details class="fgroup" data-g="'+g+'"'+(open.has(g)||(first&&un)?' open':'')+'><summary>'+esc(GROUP_LABEL[g])+'<span class="muted" style="font:400 .85rem var(--sans)">'+vals.length+'</span></summary>'+
+      '<ul class="tmlist">'+rows+'</ul>'+
+      (un?'':'<div class="tg-add"><input type="text" data-tmadd="'+g+'" placeholder="Add a new '+esc(GROUP_LABEL[g].toLowerCase())+' value" aria-label="Add a new '+esc(GROUP_LABEL[g])+' value" autocomplete="off"><button type="button" class="btn" data-tm="add" data-g="'+g+'">Add</button></div>')+'</details>';
+  }).join('');
+  $('#tm-body').scrollTop=scroll;
+}
+function openTagManager(){ $('#tm-body').innerHTML=''; $('#dlg-tags').showModal(); renderTagManager(); }
+function taMsg(m){ const el=$('#ta-msg'); el.textContent=m||''; el.hidden=!m; }
+function openTagAction(mode,g,v){
+  taCtx={mode,g,v}; taMsg(''); $('#ta-info').hidden=true;
+  const n=tagUse(g,v), used=n?' It\'s used on '+n+' recipe'+(n>1?'s':'')+'.':'';
+  $('#ta-namewrap').hidden=mode==='merge'; $('#ta-selwrap').hidden=mode==='rename';
+  $('#ta-name').value=v;
+  if(mode==='rename'){ $('#ta-h').textContent='Rename tag'; $('#ta-text').textContent='Rename "'+v+'" in '+GROUP_LABEL[g]+'.'+used; $('#ta-go').textContent='Rename'; }
+  if(mode==='merge'){
+    $('#ta-h').textContent='Merge tag'; $('#ta-text').textContent='Every recipe tagged "'+v+'" gets the tag you choose instead, and "'+v+'" is removed.'+used;
+    $('#ta-sellbl').textContent='Merge into'; $('#ta-sel').innerHTML=groupValues(g).filter(x=>x!==v).map(x=>'<option>'+esc(x)+'</option>').join('');
+    $('#ta-go').textContent='Merge';
+  }
+  if(mode==='move'){
+    $('#ta-h').textContent='Move to a group'; $('#ta-text').textContent='Move "'+v+'" out of Unsorted.'+used+' You can also change its name.';
+    $('#ta-sellbl').textContent='Group'; $('#ta-sel').innerHTML=GROUP_KEYS.map(k=>'<option value="'+k+'">'+esc(GROUP_LABEL[k])+'</option>').join('');
+    $('#ta-go').textContent='Move';
+  }
+  taInfo();
+  $('#dlg-tagact').showModal();
+  if(mode!=='merge') setTimeout(()=>{ $('#ta-name').focus(); $('#ta-name').select(); },60);
+}
+/* Warn when a rename or move lands on a value that already exists, because that's a merge */
+function taInfo(){
+  const c=taCtx; if(!c) return;
+  const name=$('#ta-name').value.trim(), g=c.mode==='move'?$('#ta-sel').value:c.g;
+  const hit=c.mode==='merge'?null:groupValues(g).find(x=>tagMatch(x,name) && !(g===c.g && x===c.v));
+  const el=$('#ta-info'); el.hidden=!hit;
+  if(hit) el.textContent='"'+hit+'" already exists in '+GROUP_LABEL[g]+', so the two will be merged.';
+}
+function runTagAction(){
+  const c=taCtx; if(!c) return;
+  const name=$('#ta-name').value.replace(/\s+/g,' ').trim();
+  if(c.mode==='rename'){
+    if(!name){ taMsg('Enter a name.'); return; }
+    if(name===c.v){ $('#dlg-tagact').close(); return; }
+    commit({t:'renameTag',g:c.g,from:c.v,to:name}); toast('Renamed to '+name);
+  }
+  if(c.mode==='merge'){ const to=$('#ta-sel').value; if(!to) return; commit({t:'renameTag',g:c.g,from:c.v,to}); toast('Merged into '+to); }
+  if(c.mode==='move'){
+    if(!name){ taMsg('Enter a name.'); return; }
+    const to=$('#ta-sel').value; commit({t:'moveTag',from:c.g,v:c.v,to,as:name}); toast('Moved to '+GROUP_LABEL[to]);
+  }
+  $('#dlg-tagact').close(); taCtx=null; renderTagManager();
+}
+function tagManagerClick(e){
+  const b=e.target.closest('[data-tm]'); if(!b) return;
+  const act=b.dataset.tm, g=b.dataset.g, v=b.dataset.v;
+  if(act==='add'){
+    const inp=document.querySelector('#tm-body [data-tmadd="'+g+'"]'), val=inp?inp.value.replace(/\s+/g,' ').trim():'';
+    if(!val) return;
+    if(groupValues(g).some(x=>tagMatch(x,val))){ toast('"'+val+'" is already in '+GROUP_LABEL[g]); return; }
+    commit({t:'addTag',g,v:val}); renderTagManager();
+    const again=document.querySelector('#tm-body [data-tmadd="'+g+'"]'); if(again) again.focus();
+  }
+  if(act==='up'||act==='down'){
+    const vals=groupValues(g), i=Number(b.dataset.i), j=act==='up'?i-1:i+1;
+    if(j<0||j>=vals.length) return;
+    [vals[i],vals[j]]=[vals[j],vals[i]];
+    commit({t:'orderTags',g,order:vals}); renderTagManager();
+  }
+  if(act==='rename'||act==='merge'||act==='move') openTagAction(act,g,v);
+  if(act==='delete'){
+    const n=tagUse(g,v);
+    if(!confirm('Delete "'+v+'"?'+(n?' It will be removed from '+n+' recipe'+(n>1?'s':'')+'.':''))) return;
+    commit({t:'deleteTag',g,v}); toast('Deleted '+v); renderTagManager();
+  }
+}
+
 /* ── Settings ────────────────────────────────────────── */
 function openSettings(){
   $('#s-viewonly').checked=!!ls.get('viewOnly',false);
@@ -1546,7 +1846,15 @@ function bind(){
 
   $('#search').addEventListener('input',e=>{ state.search=e.target.value; clearTimeout(bind._t); bind._t=setTimeout(render,120); });
   $('#sort').addEventListener('change',e=>{ state.sort=e.target.value; ls.set('sort',state.sort); render(); });
-  $('#chips').addEventListener('click',e=>{ const b=e.target.closest('[data-tag]'); if(!b) return; const t=b.dataset.tag; state.tags.has(t)?state.tags.delete(t):state.tags.add(t); render(); });
+  $('#btn-filter').addEventListener('click',openFilters);
+  $('#active').addEventListener('click',e=>{
+    if(e.target.closest('[data-clear]')){ clearFilters(); return; }
+    const b=e.target.closest('.achip'); if(b){ fsel(b.dataset.g).delete(b.dataset.v); render(); }
+  });
+  $('#flt-body').addEventListener('click',e=>{ const b=e.target.closest('.fchip'); if(b && !b.disabled) toggleFilter(b.dataset.g,b.dataset.v); });
+  $('#flt-body').addEventListener('toggle',e=>{ const d=e.target; if(d.matches && d.matches('details[data-g]')) d.open?state.fOpen.add(d.dataset.g):state.fOpen.delete(d.dataset.g); },true);
+  $('#flt-clear').addEventListener('click',clearFilters);
+  $('#flt-done').addEventListener('click',()=>$('#dlg-filter').close());
   $('#list').addEventListener('click',e=>{ const b=e.target.closest('.item'); if(b) select(b.dataset.id); });
   $('#sync').addEventListener('click',syncNow);
   $('#lock-retry').addEventListener('click',()=>location.reload());
@@ -1589,13 +1897,16 @@ function bind(){
 
   $$('dialog [data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
   $('#f-type').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ setSeg('#f-type',b.dataset.v); syncTypeFields(); } });
-  $('#f-tags').addEventListener('input',renderQuickTags);
-  $('#f-quicktags').addEventListener('click',e=>{
-    const b=e.target.closest('[data-qt]'); if(!b) return;
-    const t=b.dataset.qt; let cur=$('#f-tags').value.split(',').map(s=>s.trim()).filter(Boolean);
-    cur=cur.some(x=>x.toLowerCase()===t.toLowerCase())?cur.filter(x=>x.toLowerCase()!==t.toLowerCase()):cur.concat(t);
-    $('#f-tags').value=cur.join(', '); renderQuickTags();
+  $('#f-taggroups').addEventListener('click',e=>{
+    if(!editing) return;
+    const h=e.target.closest('[data-tg]');
+    if(h){ const g=h.dataset.tg; editing.open.has(g)?editing.open.delete(g):editing.open.add(g); renderTagPickers(); return; }
+    const c=e.target.closest('.fchip');
+    if(c){ const g=c.dataset.g, v=c.dataset.v, sel=editing.tags[g];
+      editing.tags[g]=sel.some(x=>tagMatch(x,v))?sel.filter(x=>!tagMatch(x,v)):sel.concat(v); renderTagPickers(); return; }
+    const a=e.target.closest('[data-addbtn]'); if(a) pickerAdd(a.dataset.addbtn);
   });
+  $('#f-taggroups').addEventListener('keydown',e=>{ const i=e.target.closest('[data-add]'); if(i && e.key==='Enter'){ e.preventDefault(); pickerAdd(i.dataset.add); } });
   $('#edit-save').addEventListener('click',saveEdit);
 
   $('#note-save').addEventListener('click',saveNote);
@@ -1623,6 +1934,13 @@ function bind(){
   $('#imp-go').addEventListener('click',runImport);
 
   $('#s-save').addEventListener('click',saveSettings);
+  $('#s-tags').addEventListener('click',()=>{ saveSettings(); openTagManager(); });
+  $('#tm-body').addEventListener('click',tagManagerClick);
+  $('#tm-body').addEventListener('keydown',e=>{ const i=e.target.closest('[data-tmadd]'); if(i && e.key==='Enter'){ e.preventDefault(); const b=i.parentNode.querySelector('[data-tm="add"]'); if(b) b.click(); } });
+  $('#ta-go').addEventListener('click',runTagAction);
+  $('#ta-name').addEventListener('input',taInfo);
+  $('#ta-sel').addEventListener('change',taInfo);
+  $('#ta-name').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); runTagAction(); } });
   $('#s-reload').addEventListener('click',()=>{ $('#dlg-settings').close(); pull(); });
   $('#s-backup').addEventListener('click',downloadBackup);
   $('#s-disconnect').addEventListener('click',()=>{
