@@ -99,6 +99,28 @@ dialog.sheet .dlg-foot{position:static}
 .tg-body{padding:2px 12px 12px}
 .tg-add{display:flex;gap:8px;margin-top:10px}
 .tg-add input{flex:1}
+/* Sources */
+.srcbtn{display:flex;align-items:center;gap:8px;width:100%;min-height:var(--tap);padding:6px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);text-align:left}
+.srcbtn::after{content:"";margin-left:auto;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
+.srcbtn[aria-expanded="true"]::after{transform:rotate(-135deg)}
+.srcbtn .k{font-size:.78rem;color:var(--muted)}
+.srcpanel{border:1px solid var(--line);border-top:none;border-radius:0 0 var(--r-sm) var(--r-sm);padding:10px 12px 12px;margin-top:-4px}
+.srclist{max-height:280px;overflow-y:auto;margin-top:8px}
+.srcopt{display:flex;align-items:baseline;gap:8px;width:100%;min-height:40px;padding:6px 8px;border:none;border-radius:var(--r-sm);background:none;text-align:left}
+.srcopt:hover,.srcopt[aria-selected="true"]{background:var(--basil-soft)}
+.srcopt .a{font-size:.8rem;color:var(--muted)}
+.srcopt.new{color:var(--basil);font-weight:600}
+.srcsubh{font:600 .72rem/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:10px 8px 4px}
+.srcnew{margin-top:10px;padding:12px;border-radius:var(--r-sm);background:var(--paper);display:grid;gap:12px}
+.srcsub{margin-top:12px}
+.srclink{border:none;background:none;padding:0;color:var(--basil);text-decoration:underline;text-underline-offset:2px;font:inherit;cursor:pointer}
+.fsearch{margin:0 0 10px}
+.fsub+.fsub{margin-top:10px}
+.fsubh{font:600 .72rem/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
+.fsites{margin:6px 0 0 14px;padding-left:10px;border-left:2px solid var(--line)}
+.srcrecipes{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.srcrecipes button{display:block;width:100%;padding:10px 4px;border:none;border-bottom:1px solid var(--line);background:none;text-align:left;font:600 1rem/1.3 var(--serif)}
+.srcrecipes .m{display:block;font:.8rem var(--sans);color:var(--muted)}
 /* Tag manager */
 .tmlist{list-style:none;margin:0 0 10px;padding:0}
 .tmrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:6px 0;border-bottom:1px solid var(--line)}
@@ -352,7 +374,23 @@ window.RECIPE_CONFIG = {
     <div class="field"><span class="lbl">Kind</span>
       <div class="seg" id="f-type"><button type="button" data-v="Full">Full recipe</button><button type="button" data-v="External">Link only</button></div>
     </div>
-    <div class="field"><label for="f-source">Source</label><input id="f-source" type="text" placeholder="Web address, book and page, or a source name"></div>
+    <div class="field"><span class="lbl" id="f-srclbl">Source</span>
+      <button type="button" id="f-srcbtn" class="srcbtn" aria-expanded="false" aria-labelledby="f-srclbl f-srcbtn"></button>
+      <div id="f-srcpanel" class="srcpanel" hidden>
+        <input id="f-srcq" type="search" placeholder="Search sources" autocomplete="off" aria-label="Search sources">
+        <div id="f-srclist" class="srclist" role="listbox" aria-label="Sources"></div>
+      </div>
+      <div id="f-srcnew" class="srcnew" hidden>
+        <div class="field"><label for="f-sn-name">New source name</label><input id="f-sn-name" type="text" autocomplete="off"></div>
+        <div class="field"><span class="lbl">Kind</span><div class="seg" id="f-sn-kind"><button type="button" data-v="Book">Book</button><button type="button" data-v="Homemade">Homemade</button><button type="button" data-v="Other">Other</button></div></div>
+        <div class="field" id="f-sn-authwrap"><label for="f-sn-author">Author</label><input id="f-sn-author" type="text" autocomplete="off"></div>
+      </div>
+      <div id="f-bookwrap" class="field srcsub" hidden><label for="f-page">Page</label><input id="f-page" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 154"></div>
+      <div id="f-onlinewrap" class="row2 srcsub" hidden>
+        <div class="field"><label for="f-url">Web address</label><input id="f-url" type="url" placeholder="https://" autocapitalize="off" autocomplete="off"></div>
+        <div class="field"><label for="f-site">Website name</label><input id="f-site" type="text" autocapitalize="off" autocomplete="off"><p class="hint">Filled in from the address. You can change it.</p></div>
+      </div>
+    </div>
     <div class="row2">
       <div class="field"><label for="f-serves">Serves</label><input id="f-serves" type="text" placeholder="e.g. 4"></div>
       <div class="field"><label for="f-time">Time</label><input id="f-time" type="text" placeholder="e.g. 1 hr 15 min"></div>
@@ -459,6 +497,38 @@ window.RECIPE_CONFIG = {
   <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="ta-go" class="btn primary" type="button">Save</button></div>
 </dialog>
 
+<!-- Sources -->
+<dialog id="dlg-sources" aria-labelledby="sm-h">
+  <div class="dlg-head"><h2 id="sm-h">Manage sources</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body"><div><button id="sm-add" class="btn primary" type="button">Add a source</button></div><div id="sm-body"></div></div>
+  <div class="dlg-foot"><button class="btn primary" data-close type="button">Done</button></div>
+</dialog>
+<dialog id="dlg-srcedit" aria-labelledby="se-h">
+  <div class="dlg-head"><h2 id="se-h">Edit source</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <div class="field" id="se-namewrap"><label for="se-name">Name</label><input id="se-name" type="text" autocomplete="off"></div>
+    <div class="field" id="se-kindwrap"><span class="lbl">Kind</span><div class="seg" id="se-kind"><button type="button" data-v="Book">Book</button><button type="button" data-v="Homemade">Homemade</button><button type="button" data-v="Other">Other</button></div></div>
+    <div class="field" id="se-authwrap"><label for="se-author">Author</label><input id="se-author" type="text" autocomplete="off"></div>
+    <div class="field"><label for="se-notes">Notes</label><textarea id="se-notes" rows="3"></textarea></div>
+    <p id="se-builtin" class="hint" hidden>Online is built in. It covers every website, so it can't be renamed or deleted.</p>
+    <p id="se-msg" class="msg err" hidden></p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="se-save" class="btn primary" type="button">Save source</button></div>
+</dialog>
+<dialog id="dlg-srcdel" aria-labelledby="sd-h">
+  <div class="dlg-head"><h2 id="sd-h">Delete source</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <p id="sd-text"></p>
+    <div id="sd-movewrap" class="field"><label for="sd-to">Move its recipes to</label><select id="sd-to" class="field-select"></select></div>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="sd-go" class="btn danger" type="button">Delete source</button></div>
+</dialog>
+<dialog id="dlg-srcview" aria-labelledby="sv-h">
+  <div class="dlg-head"><h2 id="sv-h">Source</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div id="sv-body" class="dlg-body"></div>
+  <div class="dlg-foot"><button id="sv-filter" class="btn left" type="button">Show these in the list</button><button id="sv-edit" class="btn edit-only" type="button">Edit source</button><button class="btn primary" data-close type="button">Close</button></div>
+</dialog>
+
 <!-- Settings -->
 <dialog id="dlg-settings" aria-labelledby="set-h">
   <div class="dlg-head"><h2 id="set-h">Settings</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
@@ -476,6 +546,10 @@ window.RECIPE_CONFIG = {
     <div class="field edit-only"><span class="lbl">Tags</span>
       <p class="hint" style="margin:0 0 10px">Rename, merge, reorder or delete tag values, and sort out Unsorted tags.</p>
       <button id="s-tags" class="btn" type="button">Manage tags</button>
+    </div>
+    <div class="field edit-only"><span class="lbl">Sources</span>
+      <p class="hint" style="margin:0 0 10px">Books, homemade sources and others. Websites all come under Online.</p>
+      <button id="s-sources" class="btn" type="button">Manage sources</button>
     </div>
     <div class="field"><span class="lbl">Recipe file</span>
       <p id="s-file" class="hint" style="margin:0"></p>
@@ -497,7 +571,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '3.0';
-const BUILD = 'R1 step 2 (test)';
+const BUILD = 'R1 step 3 (test)';
 const DATA_VERSION = 4;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -527,9 +601,12 @@ const DEFAULT_TAXONOMY = {
 const QUICK_MINUTES = 45;
 const SOURCE_KINDS = ['Book','Online','Homemade','Other'];
 const ONLINE_ID = 'src-online';
-const GROUP_LABEL = Object.assign({unsorted:'Unsorted'},Object.fromEntries(GROUPS));
+const GROUP_LABEL = Object.assign({unsorted:'Unsorted',source:'Source'},Object.fromEntries(GROUPS));
 /* Order of groups in the filter panel (the edit dialog uses GROUPS order) */
-const FILTER_ORDER = ['course','cuisine','mainIngredient','diet','effort','occasion','unsorted'];
+const FILTER_ORDER = ['source','course','cuisine','mainIngredient','diet','effort','occasion','unsorted'];
+const FILTER_KEYS = ['source'].concat(TAG_KEYS);
+const KIND_LABEL = {Book:'Books',Online:'Online',Homemade:'Homemade',Other:'Other'};
+const USER_KINDS = ['Book','Homemade','Other'];
 
 /* Starter content, used only if the recipe file doesn't exist in Dropbox yet */
 const STARTER = {version:2,recipes:[
@@ -944,6 +1021,30 @@ function applyOp(d,op){
       cur.forEach(x=>{ if(!out.includes(x)) out.push(x); });
       d.taxonomy[op.g]=out; break;
     }
+    /* Sources: save (create or edit) and delete-with-reassign, each one queued change */
+    case 'sourceSave': {
+      fixSources(d,false); const s=op.s; if(!s || !s.id) break;
+      const kind=USER_KINDS.includes(s.kind)?s.kind:'Other', ex=d.sources.find(x=>x.id===s.id);
+      if(ex){ if(ex.id===ONLINE_ID) ex.notes=String(s.notes||''); else Object.assign(ex,{name:String(s.name||ex.name).trim()||ex.name,kind,author:kind==='Book'?String(s.author||''):'',notes:String(s.notes||'')}); }
+      else if(s.id!==ONLINE_ID) d.sources.push({id:String(s.id),name:String(s.name||'Untitled source').trim(),kind,author:kind==='Book'?String(s.author||''):'',notes:String(s.notes||'')});
+      break;
+    }
+    case 'sourceDelete': {
+      fixSources(d,false); if(op.id===ONLINE_ID) break;
+      const old=d.sources.find(x=>x.id===op.id); if(!old) break;
+      const to=op.to && op.to!==op.id ? d.sources.find(x=>x.id===op.to) : null;
+      d.recipes.forEach(r=>{
+        if(r.sourceId!==op.id) return;
+        if(to){
+          r.sourceId=to.id;
+          if(to.kind!==old.kind && !(to.kind==='Online' && isUrl(r.sourceRef))) r.sourceRef='';
+          if(to.kind!=='Online') r.siteName=''; else if(!r.siteName && isUrl(r.sourceRef)) r.siteName=siteFromUrl(r.sourceRef);
+        } else { r.sourceId=''; r.sourceRef=''; r.siteName=''; }
+        r.sourceReview=false;
+      });
+      d.sources=d.sources.filter(x=>x.id!==op.id);
+      break;
+    }
     case 'applyNote': {
       const r=find(op.id); if(!r) break;
       const it=r.ingredients.concat(r.instructions).find(x=>x.id===op.target);
@@ -958,7 +1059,7 @@ function applyOp(d,op){
 }
 
 /* ── State ───────────────────────────────────────────── */
-const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['course']), sort:ls.get('sort','title'), ticks:{}, lastPull:0, locked:null };
+const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['source','course']), srcQuery:'', sort:ls.get('sort','title'), ticks:{}, lastPull:0, locked:null };
 let pulling=false, flushing=false;
 function saveCache(){ ls.set('cache'+DK,{db:state.db}); }
 function queueOp(op){ state.queue.push(op); ls.set('queue'+DK,state.queue); }
@@ -1183,18 +1284,20 @@ function versionTree(fam){
 /* ── Rendering ───────────────────────────────────────── */
 function srcOf(r){ return (state.db.sources||[]).find(s=>s.id===r.sourceId)||null; }
 function recipeUrl(r){ return isUrl(r.sourceRef)?r.sourceRef.trim():''; }
-/* What the Source box in the edit dialog shows; typing something different re-reads it */
-function srcEditText(r){
-  const s=srcOf(r); if(!s) return r.legacySource||'';
-  if(s.kind==='Online') return r.sourceRef||'Online';
-  if(s.kind==='Book') return s.name+(r.sourceRef?' page '+r.sourceRef:'');
-  return s.name;
+function sourcesByKind(kind){ return (state.db.sources||[]).filter(s=>s.kind===kind).sort((a,b)=>a.name.localeCompare(b.name,'en-GB',{sensitivity:'base'})); }
+function srcUse(id){ return groups().filter(g=>g.members.some(m=>m.sourceId===id)).length; }
+/* Website names in use, with the number of recipes (current versions) from each */
+function siteList(gs){
+  const out=[];
+  (gs||groups()).forEach(g=>{ const r=g.def; if(r.sourceId!==ONLINE_ID || !r.siteName) return;
+    const hit=out.find(x=>tkey(x.name)===tkey(r.siteName)); if(hit) hit.n++; else out.push({name:r.siteName,n:1}); });
+  return out.sort((a,b)=>a.name.localeCompare(b.name));
 }
 function srcLine(r,ed){
   const s=srcOf(r); if(!s) return '';
   let h;
   if(s.kind==='Online'){ const u=recipeUrl(r); h=u?'From <a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(r.siteName||host(u))+'</a>':esc(r.siteName||'Online'); }
-  else h=esc(s.name)+(s.kind==='Book'&&s.author?' by '+esc(s.author):'')+(s.kind==='Book'&&r.sourceRef?', page '+esc(r.sourceRef):'');
+  else h='<button type="button" class="srclink" data-act="srcpage" data-sid="'+esc(s.id)+'">'+esc(s.name)+'</button>'+(s.kind==='Book'&&s.author?' by '+esc(s.author):'')+(s.kind==='Book'&&r.sourceRef?', page '+esc(r.sourceRef):'')+(s.kind==='Homemade'?' <span class="muted">(homemade)</span>':'');
   if(ed && r.sourceReview) h+='<span class="badge review" title="Was: '+esc(r.legacySource)+'">Check source</span>';
   return h;
 }
@@ -1206,13 +1309,24 @@ function searchText(r){
 /* Filters: OR within a group, AND across groups. Diet is AND within the group too,
    so Vegetarian + Gluten-free means recipes that are both. Filters use the current version. */
 function fsel(g){ return state.filters[g]||(state.filters[g]=new Set()); }
-function filterCount(){ return TAG_KEYS.reduce((n,k)=>n+fsel(k).size,0); }
+function filterCount(){ return FILTER_KEYS.reduce((n,k)=>n+fsel(k).size,0); }
+/* Source filter keys: "id:<sourceId>" for a source, "site:<website>" for one website under Online */
+function srcKeyMatch(r,k){
+  if(k.indexOf('id:')===0) return r.sourceId===k.slice(3);
+  if(k.indexOf('site:')===0) return r.sourceId===ONLINE_ID && tkey(r.siteName)===tkey(k.slice(5));
+  return false;
+}
+function srcKeyLabel(k){
+  if(k.indexOf('site:')===0) return k.slice(5);
+  const s=(state.db.sources||[]).find(x=>x.id===k.slice(3)); return s?s.name:'Unknown source';
+}
 function groupPass(r,g,sel){
   if(!sel || !sel.size) return true;
+  if(g==='source') return Array.from(sel).some(k=>srcKeyMatch(r,k));
   const vals=(r.tags&&r.tags[g])||[], has=v=>vals.some(x=>tagMatch(x,v));
   return g==='diet'?Array.from(sel).every(has):Array.from(sel).some(has);
 }
-function passFilters(r,excl){ return TAG_KEYS.every(g=>g===excl || groupPass(r,g,state.filters[g])); }
+function passFilters(r,excl){ return FILTER_KEYS.every(g=>g===excl || groupPass(r,g,state.filters[g])); }
 function searchWords(){ return state.search.trim().toLowerCase().split(/\s+/).filter(Boolean); }
 function passSearch(g,words){
   if(!words.length) return true;
@@ -1222,6 +1336,8 @@ function passSearch(g,words){
 function groupValues(g){ const t=state.db.taxonomy||{}; return (t[g]||[]).slice(); }
 /* Drop filter values that no longer exist (renamed, merged or deleted) */
 function pruneFilters(){
+  const ss=fsel('source'), sites=siteList();
+  Array.from(ss).forEach(k=>{ if(k.indexOf('id:')===0 ? !(state.db.sources||[]).some(x=>x.id===k.slice(3)) : !sites.some(x=>tkey(x.name)===tkey(k.slice(5)))) ss.delete(k); });
   TAG_KEYS.forEach(g=>{ const vals=groupValues(g), sel=fsel(g);
     Array.from(sel).forEach(v=>{ const hit=vals.find(x=>tagMatch(x,v)); sel.delete(v); if(hit) sel.add(hit); }); });
 }
@@ -1284,7 +1400,7 @@ function renderFilterButton(){
 }
 function renderActive(){
   const el=$('#active'), items=[];
-  FILTER_ORDER.forEach(g=>fsel(g).forEach(v=>items.push('<button type="button" class="achip" data-g="'+g+'" data-v="'+esc(v)+'" aria-label="Remove filter '+esc(GROUP_LABEL[g]+': '+v)+'"><span class="g">'+esc(GROUP_LABEL[g])+'</span>'+esc(v)+'<span class="x" aria-hidden="true">✕</span></button>')));
+  FILTER_ORDER.forEach(g=>fsel(g).forEach(v=>{ const lab=g==='source'?srcKeyLabel(v):v, gl=g==='source'&&v.indexOf('site:')===0?'Website':GROUP_LABEL[g]; items.push('<button type="button" class="achip" data-g="'+g+'" data-v="'+esc(v)+'" aria-label="Remove filter '+esc(gl+': '+lab)+'"><span class="g">'+esc(gl)+'</span>'+esc(lab)+'<span class="x" aria-hidden="true">✕</span></button>'); }));
   el.hidden=!items.length;
   el.innerHTML=items.join('')+(items.length>1?'<button type="button" class="aclear" data-clear>Clear all</button>':'');
 }
@@ -1295,6 +1411,7 @@ function renderFilterPanel(gs){
   const scroll=$('#flt-body').scrollTop;
   $('#flt-body').innerHTML=groupsToShow.map(g=>{
     const sel=fsel(g), base=pool.filter(x=>passFilters(x.def,g==='diet'?null:g));
+    if(g==='source') return sourceFilterGroup(sel,base,gs);
     const chips=groupValues(g).map(v=>{
       const on=sel.has(v), n=base.filter(x=>groupPass(x.def,g,new Set([v]))).length;
       return '<button type="button" class="fchip" data-g="'+g+'" data-v="'+esc(v)+'" aria-pressed="'+on+'"'+(!n&&!on?' disabled':'')+'>'+esc(v)+'<span class="n">'+n+'</span></button>';
@@ -1304,17 +1421,41 @@ function renderFilterPanel(gs){
       (g==='unsorted'?'<p class="fhint">Tags not yet in a group. Sort them out in Settings › Manage tags.</p>':'')+
       '<div class="fvals">'+chips+'</div></details>';
   }).join('');
+  applySrcQuery();
   $('#flt-body').scrollTop=scroll;
   const n=filtered(gs).length;
   $('#flt-done').textContent=n===1?'Show 1 recipe':'Show '+n+' recipes';
   $('#flt-clear').disabled=!filterCount();
 }
+function srcChip(key,label,sel,base,extra){
+  const on=sel.has(key), n=base.filter(x=>srcKeyMatch(x.def,key)).length;
+  return '<button type="button" class="fchip" data-g="source" data-v="'+esc(key)+'" data-name="'+esc((label+' '+(extra||'')).toLowerCase())+'" aria-pressed="'+on+'"'+(!n&&!on?' disabled':'')+'>'+esc(label)+'<span class="n">'+n+'</span></button>';
+}
+function sourceFilterGroup(sel,base,gs){
+  const subs=['Book','Online','Homemade','Other'].map(kind=>{
+    if(kind==='Online'){
+      const sites=siteList(gs);
+      return '<div class="fsub" data-kind="Online"><p class="fsubh">Online</p><div class="fvals">'+srcChip('id:'+ONLINE_ID,'All websites',sel,base,sites.map(x=>x.name).join(' '))+'</div>'+
+        (sites.length?'<div class="fvals fsites">'+sites.map(x=>srcChip('site:'+x.name,x.name,sel,base)).join('')+'</div>':'')+'</div>';
+    }
+    const list=sourcesByKind(kind); if(!list.length) return '';
+    return '<div class="fsub" data-kind="'+kind+'"><p class="fsubh">'+KIND_LABEL[kind]+'</p><div class="fvals">'+list.map(x=>srcChip('id:'+x.id,x.name,sel,base,x.author)).join('')+'</div></div>';
+  }).join('');
+  return '<details class="fgroup" data-g="source"'+(state.fOpen.has('source')?' open':'')+'><summary>Source'+(sel.size?'<span class="fsel">'+sel.size+'</span>':'')+'</summary>'+
+    '<input type="search" class="fsearch" id="flt-srcq" placeholder="Search sources and websites" aria-label="Search sources" autocomplete="off" value="'+esc(state.srcQuery||'')+'">'+subs+'</details>';
+}
+/* Filter the source chips as you type, without redrawing the panel */
+function applySrcQuery(){
+  const q=(state.srcQuery||'').trim().toLowerCase();
+  $$('#flt-body .fchip[data-g="source"]').forEach(b=>{ b.hidden=!!q && b.dataset.name.indexOf(q)<0; });
+  $$('#flt-body .fsub').forEach(d=>{ d.hidden=!!q && !d.querySelector('.fchip:not([hidden])'); });
+}
 function openFilters(){
-  TAG_KEYS.forEach(g=>{ if(fsel(g).size) state.fOpen.add(g); });
+  FILTER_KEYS.forEach(g=>{ if(fsel(g).size) state.fOpen.add(g); });
   renderFilterPanel(); $('#dlg-filter').showModal();
 }
 function toggleFilter(g,v){ const sel=fsel(g); sel.has(v)?sel.delete(v):sel.add(v); render(); }
-function clearFilters(){ TAG_KEYS.forEach(g=>fsel(g).clear()); render(); }
+function clearFilters(){ FILTER_KEYS.forEach(g=>fsel(g).clear()); render(); }
 
 function noteBtn(id){ return '<button type="button" class="anno-add" data-act="note" data-target="'+esc(id)+'" aria-label="Add a note to this line" title="Add a note">✎</button>'; }
 function annoList(list,ed){
@@ -1477,12 +1618,99 @@ function pickerAdd(g){
   addTag(editing.tags,g,canon); renderTagPickers();
   const again=document.querySelector('#f-taggroups [data-add="'+g+'"]'); if(again) again.focus();
 }
+/* ── Source picker in the edit dialog ─────────────────── */
+/* An imported or typed source ("Book name page 12", a web address) becomes a picker choice */
+function srcFromDraft(text){
+  const spec=resolveSource(text,state.db), out={id:'',ref:'',url:'',site:'',newSrc:null};
+  if(!spec) return out;
+  if(spec.kind==='Online'){ Object.assign(out,{id:ONLINE_ID,url:spec.ref||'',site:spec.site||''}); return out; }
+  const id=spec.id||srcId(spec.kind,spec.name);
+  if((state.db.sources||[]).some(x=>x.id===id)) out.id=id;
+  else { out.id='__new'; out.newSrc={name:spec.name,kind:USER_KINDS.includes(spec.kind)?spec.kind:'Other',author:spec.author||''}; }
+  out.ref=spec.ref||''; return out;
+}
+function srcKind(){
+  const e=editing; if(!e) return '';
+  if(e.src.id==='__new') return segVal('#f-sn-kind')||'Other';
+  const s=(state.db.sources||[]).find(x=>x.id===e.src.id); return s?s.kind:'';
+}
+function renderSrcPicker(){
+  const e=editing; if(!e) return;
+  const id=e.src.id, s=(state.db.sources||[]).find(x=>x.id===id);
+  const btn=$('#f-srcbtn');
+  btn.innerHTML=id==='__new'?'<span>New source</span><span class="k">created when you save</span>':s?'<span>'+esc(s.name)+'</span><span class="k">'+esc(s.kind==='Online'?'any website':s.kind+(s.author?', '+s.author:''))+'</span>':'<span class="muted">No source</span>';
+  $('#f-srcnew').hidden=id!=='__new';
+  $('#f-sn-authwrap').hidden=segVal('#f-sn-kind')!=='Book';
+  const k=srcKind();
+  $('#f-bookwrap').hidden=k!=='Book';
+  $('#f-onlinewrap').hidden=k!=='Online';
+}
+function renderSrcList(){
+  const e=editing; if(!e) return;
+  const q=$('#f-srcq').value.trim().toLowerCase(), hit=x=>!q || (x.name+' '+(x.author||'')).toLowerCase().indexOf(q)>=0;
+  let h='<button type="button" class="srcopt" role="option" data-sid="" aria-selected="'+(e.src.id==='')+'">No source</button>';
+  ['Online','Book','Homemade','Other'].forEach(kind=>{
+    const list=sourcesByKind(kind).filter(hit); if(!list.length) return;
+    h+='<p class="srcsubh">'+KIND_LABEL[kind]+'</p>'+list.map(x=>'<button type="button" class="srcopt" role="option" data-sid="'+esc(x.id)+'" aria-selected="'+(e.src.id===x.id)+'">'+esc(kind==='Online'?'Online (any website)':x.name)+(x.author?'<span class="a">'+esc(x.author)+'</span>':'')+'</button>').join('');
+  });
+  const typed=$('#f-srcq').value.trim();
+  h+='<button type="button" class="srcopt new" role="option" data-sid="__new">＋ New source'+(typed?': '+esc(typed):'…')+'</button>';
+  $('#f-srclist').innerHTML=h;
+}
+function toggleSrcPanel(open){
+  const p=$('#f-srcpanel'); open=open==null?p.hidden:open;
+  p.hidden=!open; $('#f-srcbtn').setAttribute('aria-expanded',String(open));
+  if(open){ $('#f-srcq').value=''; renderSrcList(); setTimeout(()=>$('#f-srcq').focus(),40); }
+}
+function pickSource(sid){
+  const e=editing; if(!e) return;
+  if(sid==='__new'){
+    const typed=$('#f-srcq').value.trim();
+    e.src.id='__new';
+    if(typed || !$('#f-sn-name').value) $('#f-sn-name').value=typed;
+    if(!segVal('#f-sn-kind')) setSeg('#f-sn-kind','Book');
+  } else e.src.id=sid;
+  toggleSrcPanel(false); renderSrcPicker();
+  if(sid==='__new') setTimeout(()=>$('#f-sn-name').focus(),40);
+}
+function setupSrcFields(r){
+  const e=editing;
+  e.src=typeof r.source==='string'?srcFromDraft(r.source):{id:r.sourceId||'',ref:r.sourceRef||'',url:'',site:r.siteName||'',newSrc:null};
+  const s=(state.db.sources||[]).find(x=>x.id===e.src.id);
+  if(s && s.kind==='Online' && !e.src.url) e.src.url=isUrl(r.sourceRef)?r.sourceRef:'';
+  $('#f-page').value=(s&&s.kind==='Book')||e.src.newSrc?e.src.ref:'';
+  $('#f-url').value=e.src.url||''; $('#f-site').value=e.src.site||'';
+  e.siteTouched=!!e.src.site && e.src.site!==siteFromUrl(e.src.url||'');
+  const ns=e.src.newSrc||{name:'',kind:'Book',author:''};
+  $('#f-sn-name').value=ns.name; setSeg('#f-sn-kind',ns.kind); $('#f-sn-author').value=ns.author;
+  toggleSrcPanel(false); renderSrcPicker();
+}
+/* Source fields for saving, plus a sourceSave change if a new source is being created */
+function readSrcFields(){
+  const e=editing, out={ops:[],f:{sourceId:'',sourceRef:'',siteName:'',sourceReview:false}};
+  let id=e.src.id;
+  if(id==='__new'){
+    const name=$('#f-sn-name').value.replace(/\s+/g,' ').trim(), kind=segVal('#f-sn-kind')||'Other';
+    if(!name) return {error:'Give the new source a name, or choose an existing one.'};
+    const same=(state.db.sources||[]).find(x=>x.kind===kind && tkey(x.name)===tkey(name));
+    if(same) id=same.id;
+    else { id=srcId(kind,name); out.ops.push({t:'sourceSave',s:{id,name,kind,author:kind==='Book'?$('#f-sn-author').value.trim():'',notes:''}}); }
+  }
+  out.f.sourceId=id;
+  const k=id===ONLINE_ID?'Online':(id?((state.db.sources||[]).find(x=>x.id===id)||{}).kind||(e.src.id==='__new'?segVal('#f-sn-kind'):''):'');
+  if(k==='Book') out.f.sourceRef=$('#f-page').value.trim();
+  if(k==='Online'){
+    const url=$('#f-url').value.trim();
+    if(url && !isUrl(url)) return {error:'The web address needs to start with https://'};
+    out.f.sourceRef=url; out.f.siteName=$('#f-site').value.trim()||siteFromUrl(url);
+  }
+  return out;
+}
 function openEdit(r,isNew){
   if(state.locked){ toast('Update this app before editing'); return; }
-  const srcText=typeof r.source==='string'?r.source:srcEditText(r);
-  editing={id:r.id||uid('r-'),isNew:!!isNew,created:r.created||new Date().toISOString(),srcText,srcDraft:typeof r.source==='string'};
+  editing={id:r.id||uid('r-'),isNew:!!isNew,created:r.created||new Date().toISOString()};
   $('#edit-h').textContent=isNew?'New recipe':'Edit recipe';
-  $('#f-title').value=r.title||''; $('#f-source').value=srcText;
+  $('#f-title').value=r.title||''; setupSrcFields(r);
   $('#f-serves').value=r.serves||''; $('#f-time').value=r.time||'';
   $('#f-ings').value=(r.ingredients||[]).map(itemText).join('\n'); $('#f-method').value=(r.instructions||[]).map(itemText).join('\n');
   $('#f-notes').value=r.notes||''; $('#f-rating').value=String(Math.round(r.rating)||0);
@@ -1503,14 +1731,14 @@ function saveEdit(){
   if(!title){ const m=$('#edit-msg'); m.textContent='Give the recipe a title.'; m.hidden=false; $('#f-title').focus(); return; }
   const type=segVal('#f-type')||'Full';
   const ex=state.db.recipes.find(x=>x.id===editing.id);
-  const time=$('#f-time').value.trim(), srcTxt=$('#f-source').value.trim();
+  const time=$('#f-time').value.trim(), src=readSrcFields();
+  if(src.error){ const m=$('#edit-msg'); m.textContent=src.error; m.hidden=false; return; }
   const r={id:editing.id,title,type,serves:$('#f-serves').value.trim(),time,timeMinutes:parseMinutes(time),
     tagDiff:diffTags(editing.origTags,editing.tags),
     ingredients:matchItems(ex?ex.ingredients:[],lines($('#f-ings').value),'i'),
     instructions:matchItems(ex?ex.instructions:[],lines($('#f-method').value).map(stripStep),'s'),
     notes:$('#f-notes').value.trim(),rating:Number($('#f-rating').value)||0,created:editing.created,updated:new Date().toISOString()};
-  /* Only re-read the source if it was typed or changed, so books and homemade sources stay put */
-  if(editing.srcDraft || srcTxt!==editing.srcText) r.source=srcTxt;
+  Object.assign(r,src.f);
   if(ex){
     const showVer=!$('#f-verwrap').hidden;
     r.versionLabel=(showVer&&$('#f-vlabel').value.trim())||ex.versionLabel;
@@ -1520,7 +1748,7 @@ function saveEdit(){
   }
   const wasNew=!ex;
   $('#dlg-edit').close(); editing=null;
-  commit({t:'upsert',r});
+  commitMany(src.ops.concat([{t:'upsert',r}]));
   select(r.id);
   toast(wasNew?'Recipe added':'Recipe saved');
 }
@@ -1811,6 +2039,90 @@ function tagManagerClick(e){
   }
 }
 
+/* ── Sources ─────────────────────────────────────────── */
+let seCtx=null, sdCtx=null, svCtx=null;
+function renderSourceManager(){
+  if(!$('#dlg-sources').open) return;
+  $('#sm-body').innerHTML=['Book','Online','Homemade','Other'].map(kind=>{
+    const list=sourcesByKind(kind); if(!list.length) return '';
+    return '<section class="section" style="margin-top:14px"><h3>'+KIND_LABEL[kind]+'</h3><ul class="tmlist">'+list.map(x=>{
+      const n=srcUse(x.id);
+      return '<li class="tmrow"><span class="tm-name">'+esc(x.id===ONLINE_ID?'Online (all websites)':x.name)+(x.author?' <span class="muted" style="font-weight:400">'+esc(x.author)+'</span>':'')+'</span>'+
+        '<span class="tm-n">'+(n?n+' recipe'+(n>1?'s':''):'not used')+'</span><span class="tm-acts">'+
+        '<button type="button" class="btn" data-sm="view" data-sid="'+esc(x.id)+'">View</button>'+
+        '<button type="button" class="btn" data-sm="edit" data-sid="'+esc(x.id)+'">Edit</button>'+
+        (x.id===ONLINE_ID?'':'<button type="button" class="btn danger" data-sm="delete" data-sid="'+esc(x.id)+'">Delete</button>')+'</span></li>';
+    }).join('')+'</ul></section>';
+  }).join('');
+}
+function openSourceManager(){ $('#dlg-sources').showModal(); renderSourceManager(); }
+function seMsg(m){ const el=$('#se-msg'); el.textContent=m||''; el.hidden=!m; }
+function openSourceEdit(id){
+  const x=id?(state.db.sources||[]).find(s=>s.id===id):null; if(id && !x) return;
+  seCtx={id:x?x.id:null}; seMsg('');
+  const online=!!x && x.id===ONLINE_ID;
+  $('#se-h').textContent=x?'Edit source':'Add a source';
+  $('#se-name').value=x?x.name:''; $('#se-author').value=x?x.author:''; $('#se-notes').value=x?x.notes:'';
+  setSeg('#se-kind',x?x.kind:'Book');
+  $('#se-namewrap').hidden=online; $('#se-kindwrap').hidden=online; $('#se-builtin').hidden=!online;
+  syncSeKind();
+  $('#dlg-srcedit').showModal();
+  if(!online) setTimeout(()=>$('#se-name').focus(),60);
+}
+function syncSeKind(){ $('#se-authwrap').hidden=segVal('#se-kind')!=='Book' || (seCtx&&seCtx.id===ONLINE_ID); }
+function saveSourceEdit(){
+  const c=seCtx; if(!c) return;
+  const online=c.id===ONLINE_ID, name=$('#se-name').value.replace(/\s+/g,' ').trim(), kind=segVal('#se-kind')||'Other';
+  if(!online && !name){ seMsg('Give the source a name.'); return; }
+  const clash=!online && (state.db.sources||[]).find(x=>x.id!==c.id && x.kind===kind && tkey(x.name)===tkey(name));
+  if(clash){ seMsg('There\'s already a '+kind.toLowerCase()+' source called "'+clash.name+'".'); return; }
+  const id=c.id||srcId(kind,name);
+  if(!c.id && (state.db.sources||[]).some(x=>x.id===id)){ seMsg('That source already exists.'); return; }
+  commit({t:'sourceSave',s:{id,name,kind,author:$('#se-author').value.trim(),notes:$('#se-notes').value.trim()}});
+  $('#dlg-srcedit').close(); seCtx=null; toast(c.id?'Source saved':'Source added');
+  renderSourceManager(); if($('#dlg-srcview').open) renderSourceView();
+  if(editing && $('#dlg-edit').open){ renderSrcPicker(); }
+}
+function openSourceDelete(id){
+  const x=(state.db.sources||[]).find(s=>s.id===id); if(!x || x.id===ONLINE_ID) return;
+  sdCtx={id}; const n=srcUse(id);
+  $('#sd-text').textContent=n?'"'+x.name+'" is used by '+n+' recipe'+(n>1?'s':'')+'. Choose where those recipes should go, then delete it.':'Delete "'+x.name+'"? No recipes use it.';
+  $('#sd-movewrap').hidden=!n;
+  $('#sd-to').innerHTML='<option value="">Choose a source…</option>'+['Book','Online','Homemade','Other'].map(kind=>{
+    const list=sourcesByKind(kind).filter(s=>s.id!==id); if(!list.length) return '';
+    return '<optgroup label="'+KIND_LABEL[kind]+'">'+list.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.id===ONLINE_ID?'Online':s.name)+'</option>').join('')+'</optgroup>';
+  }).join('')+'<option value="__none">No source</option>';
+  $('#dlg-srcdel').showModal();
+}
+function runSourceDelete(){
+  const c=sdCtx; if(!c) return;
+  const n=srcUse(c.id), to=$('#sd-to').value;
+  if(n && !to){ toast('Choose where the recipes should go first'); return; }
+  commit({t:'sourceDelete',id:c.id,to:to==='__none'?'':to});
+  $('#dlg-srcdel').close(); sdCtx=null; toast('Source deleted'); renderSourceManager();
+  if($('#dlg-srcview').open) $('#dlg-srcview').close();
+}
+/* Source page: details and every recipe whose current version uses it */
+function openSourceView(id){ svCtx={id}; $('#dlg-srcview').showModal(); renderSourceView(); }
+function renderSourceView(){
+  const c=svCtx; if(!c) return;
+  const x=(state.db.sources||[]).find(s=>s.id===c.id);
+  if(!x){ $('#dlg-srcview').close(); return; }
+  const gs=groups().filter(g=>g.def.sourceId===x.id).sort((a,b)=>a.def.title.localeCompare(b.def.title,'en-GB',{sensitivity:'base'}));
+  $('#sv-h').textContent=x.id===ONLINE_ID?'Online':x.name;
+  let h='<p class="muted" style="margin:0">'+esc(x.id===ONLINE_ID?'Recipes from websites':x.kind+(x.author?' by '+x.author:''))+'</p>';
+  if(x.notes) h+='<p class="notes" style="margin:0">'+esc(x.notes)+'</p>';
+  h+=gs.length?'<ul class="srcrecipes">'+gs.map(g=>{
+    const r=g.def, bits=[];
+    if(x.kind==='Book' && r.sourceRef) bits.push('page '+r.sourceRef);
+    if(x.kind==='Online' && r.siteName) bits.push(r.siteName);
+    bits.push(g.logs.length?'made '+times(g.logs.length):'not made yet');
+    return '<li><button type="button" data-svopen="'+esc(r.id)+'">'+esc(r.title)+'<span class="m">'+esc(bits.join(', '))+'</span></button></li>';
+  }).join('')+'</ul>':'<p class="muted" style="margin:0">No recipes use this source yet.</p>';
+  $('#sv-body').innerHTML=h;
+  $('#sv-edit').hidden=!canEdit();
+}
+
 /* ── Settings ────────────────────────────────────────── */
 function openSettings(){
   $('#s-viewonly').checked=!!ls.get('viewOnly',false);
@@ -1853,6 +2165,7 @@ function bind(){
   });
   $('#flt-body').addEventListener('click',e=>{ const b=e.target.closest('.fchip'); if(b && !b.disabled) toggleFilter(b.dataset.g,b.dataset.v); });
   $('#flt-body').addEventListener('toggle',e=>{ const d=e.target; if(d.matches && d.matches('details[data-g]')) d.open?state.fOpen.add(d.dataset.g):state.fOpen.delete(d.dataset.g); },true);
+  $('#flt-body').addEventListener('input',e=>{ if(e.target.id==='flt-srcq'){ state.srcQuery=e.target.value; applySrcQuery(); } });
   $('#flt-clear').addEventListener('click',clearFilters);
   $('#flt-done').addEventListener('click',()=>$('#dlg-filter').close());
   $('#list').addEventListener('click',e=>{ const b=e.target.closest('.item'); if(b) select(b.dataset.id); });
@@ -1885,6 +2198,7 @@ function bind(){
     }
     if(act==='unlog'){ if(confirm('Remove this entry from the cooking history?')) commit({t:'unlog',id:r.id,eid:el.dataset.eid}); }
     if(act==='import-link'){ openImport('url',recipeUrl(r)); impMerge=r.id; }
+    if(act==='srcpage'){ openSourceView(el.dataset.sid); return; }
     if(act==='note') openNote(r,el.dataset.target,null);
     if(act==='note-edit') openNote(r,null,el.dataset.aid);
     if(act==='note-recipe') openNote(r,'recipe',null);
@@ -1897,6 +2211,13 @@ function bind(){
 
   $$('dialog [data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
   $('#f-type').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ setSeg('#f-type',b.dataset.v); syncTypeFields(); } });
+  $('#f-srcbtn').addEventListener('click',()=>toggleSrcPanel());
+  $('#f-srcq').addEventListener('input',renderSrcList);
+  $('#f-srcq').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); const first=$('#f-srclist .srcopt:not([data-sid=""])'); if(first) pickSource(first.dataset.sid); } if(e.key==='Escape'){ e.preventDefault(); toggleSrcPanel(false); } });
+  $('#f-srclist').addEventListener('click',e=>{ const b=e.target.closest('[data-sid]'); if(b) pickSource(b.dataset.sid); });
+  $('#f-sn-kind').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ setSeg('#f-sn-kind',b.dataset.v); renderSrcPicker(); } });
+  $('#f-url').addEventListener('input',()=>{ if(editing && !editing.siteTouched) $('#f-site').value=siteFromUrl($('#f-url').value); });
+  $('#f-site').addEventListener('input',()=>{ if(editing) editing.siteTouched=!!$('#f-site').value.trim(); });
   $('#f-taggroups').addEventListener('click',e=>{
     if(!editing) return;
     const h=e.target.closest('[data-tg]');
@@ -1935,6 +2256,19 @@ function bind(){
 
   $('#s-save').addEventListener('click',saveSettings);
   $('#s-tags').addEventListener('click',()=>{ saveSettings(); openTagManager(); });
+  $('#s-sources').addEventListener('click',()=>{ saveSettings(); openSourceManager(); });
+  $('#sm-add').addEventListener('click',()=>openSourceEdit(null));
+  $('#sm-body').addEventListener('click',e=>{ const b=e.target.closest('[data-sm]'); if(!b) return;
+    if(b.dataset.sm==='view') openSourceView(b.dataset.sid);
+    if(b.dataset.sm==='edit') openSourceEdit(b.dataset.sid);
+    if(b.dataset.sm==='delete') openSourceDelete(b.dataset.sid); });
+  $('#se-kind').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ setSeg('#se-kind',b.dataset.v); syncSeKind(); } });
+  $('#se-save').addEventListener('click',saveSourceEdit);
+  $('#sd-go').addEventListener('click',runSourceDelete);
+  $('#sv-edit').addEventListener('click',()=>{ if(svCtx) openSourceEdit(svCtx.id); });
+  $('#sv-filter').addEventListener('click',()=>{ if(!svCtx) return; FILTER_KEYS.forEach(g=>fsel(g).clear()); fsel('source').add('id:'+svCtx.id);
+    $$('dialog[open]').forEach(d=>d.close()); document.body.classList.remove('show-detail'); render(); });
+  $('#sv-body').addEventListener('click',e=>{ const b=e.target.closest('[data-svopen]'); if(!b) return; $$('dialog[open]').forEach(d=>d.close()); select(b.dataset.svopen); });
   $('#tm-body').addEventListener('click',tagManagerClick);
   $('#tm-body').addEventListener('keydown',e=>{ const i=e.target.closest('[data-tmadd]'); if(i && e.key==='Enter'){ e.preventDefault(); const b=i.parentNode.querySelector('[data-tm="add"]'); if(b) b.click(); } });
   $('#ta-go').addEventListener('click',runTagAction);
