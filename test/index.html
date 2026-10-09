@@ -256,8 +256,16 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 .msg{padding:10px 12px;border-radius:var(--r-sm);font-size:.9rem;margin:0}
 .msg.err{background:#F7E4E0;color:var(--danger)}
 .msg.ok{background:var(--basil-soft);color:var(--basil)}
-.thumbs{display:flex;gap:8px;flex-wrap:wrap}
-.thumbs img{width:76px;height:76px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.impstep{padding:12px 14px;border-radius:var(--r);background:var(--paper);display:grid;gap:10px}
+.impstep p{margin:0}
+.impstep textarea{font-size:.8rem}
+.tagreview{margin:0 0 10px;padding:10px 12px;border-radius:var(--r-sm);background:#FBF4E4;border:1px solid #EAD8AC;display:grid;gap:8px}
+.tagreview p{margin:0;font-size:.88rem}
+.trrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding-top:8px;border-top:1px solid #EAD8AC}
+.trv{font-weight:600}
+.tracts{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap;align-items:center}
+.tracts .btn{min-height:36px;font-size:.85rem}
+.trmap{min-height:36px;max-width:190px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);font-size:.85rem;padding:0 8px}
 .check{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
 .check input{width:22px;height:22px;accent-color:var(--basil);margin:1px 0 0;flex:none}
 .stack{display:flex;flex-wrap:wrap;gap:8px}
@@ -306,8 +314,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 window.RECIPE_CONFIG = {
   dropboxAppKey: '89yrb6ctcgdmlar',
   filePath: '/recipes.json',
-  bookTitle: 'Cameron Family Recipe Book',
-  defaultModel: 'claude-sonnet-5-5'
+  bookTitle: 'Cameron Family Recipe Book'
 };
 </script>
 
@@ -395,7 +402,7 @@ window.RECIPE_CONFIG = {
       <div class="field"><label for="f-serves">Serves</label><input id="f-serves" type="text" placeholder="e.g. 4"></div>
       <div class="field"><label for="f-time">Time</label><input id="f-time" type="text" placeholder="e.g. 1 hr 15 min"></div>
     </div>
-    <div class="field"><span class="lbl">Tags</span><div id="f-taggroups" class="tgroups"></div><p class="hint">All optional. Tap a group to choose, or add a new value.</p></div>
+    <div class="field"><span class="lbl">Tags</span><div id="f-tagreview" class="tagreview" hidden></div><div id="f-taggroups" class="tgroups"></div><p class="hint">All optional. Tap a group to choose, or add a new value.</p></div>
     <div class="field full-only"><label for="f-ings">Ingredients</label><textarea id="f-ings" rows="8"></textarea><p class="hint">One per line. End a line with a colon to make a heading, e.g. "For the sauce:". Notes stay with a line when you reword it.</p></div>
     <div class="field full-only"><label for="f-method">Method</label><textarea id="f-method" rows="8"></textarea><p class="hint">One step per line.</p></div>
     <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" rows="4" placeholder="Tips, swaps, what to do differently"></textarea></div>
@@ -445,29 +452,23 @@ window.RECIPE_CONFIG = {
   <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="del-archive" class="btn" type="button">Archive this version</button><button id="del-all" class="btn danger" type="button">Delete all versions</button></div>
 </dialog>
 
-<!-- Import -->
+<!-- Import: paste ChatGPT's filled-in template (or any recipe text) -->
 <dialog id="dlg-import" aria-labelledby="imp-h">
   <div class="dlg-head"><h2 id="imp-h">Import a recipe</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
   <div class="dlg-body">
-    <div class="seg" id="imp-tabs"><button type="button" data-v="photo">Photo</button><button type="button" data-v="url">Website</button><button type="button" data-v="text">Paste text</button></div>
-    <div data-pane="photo" class="field">
-      <label for="imp-files">Photos of the recipe</label>
-      <input id="imp-files" type="file" accept="image/*" multiple>
-      <p class="hint">Take a photo or choose from your library. Add two photos if the recipe runs over two pages.</p>
-      <div id="imp-thumbs" class="thumbs" style="margin-top:10px"></div>
+    <div class="impstep">
+      <p><strong>1.</strong> Copy the prompt and paste it into ChatGPT, with your recipe photos or the recipe's web address.</p>
+      <div><button id="imp-copy" class="btn" type="button">Copy ChatGPT prompt</button></div>
+      <p id="imp-copied" class="msg ok" hidden></p>
+      <textarea id="imp-prompt" rows="6" readonly hidden aria-label="ChatGPT prompt"></textarea>
     </div>
-    <div data-pane="url" class="field">
-      <label for="imp-url">Recipe web address</label>
-      <input id="imp-url" type="url" placeholder="https://" autocapitalize="off">
-      <p class="hint">Tip: in Safari, tap Share, then Copy, then paste here.</p>
-    </div>
-    <div data-pane="text" class="field">
-      <label for="imp-text">Recipe text</label>
-      <textarea id="imp-text" rows="10" placeholder="Paste the recipe here"></textarea>
-      <p class="hint">Works without a Claude key. To copy text from a cookbook photo, open the photo, press and hold on the words, then Select All and Copy.</p>
+    <div class="field">
+      <label for="imp-text"><strong>2.</strong> Paste ChatGPT's reply here</label>
+      <textarea id="imp-text" rows="12" placeholder="Paste the filled-in template, or any recipe text" spellcheck="false"></textarea>
+      <p class="hint" id="imp-hint">Plain recipe text works too. If the reply has several recipes, you'll check them one after another.</p>
+      <p class="hint" id="imp-vernote" hidden>The pasted recipe becomes a new version. The current version and its cooking history stay as they are.</p>
     </div>
     <p id="imp-msg" class="msg err" hidden></p>
-    <p id="imp-nokey" class="msg err" hidden>Photo and website import need a Claude API key. Add one in Settings, or use Paste text.</p>
   </div>
   <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="imp-go" class="btn primary" type="button">Read recipe</button></div>
 </dialog>
@@ -534,15 +535,6 @@ window.RECIPE_CONFIG = {
   <div class="dlg-head"><h2 id="set-h">Settings</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
   <div class="dlg-body">
     <label class="check"><input id="s-viewonly" type="checkbox"><span><strong>View only on this device</strong><br><span class="muted">Hides adding, editing, notes and logging. Useful on your phone.</span></span></label>
-    <div class="field">
-      <label for="s-key">Claude API key (for photo and website import)</label>
-      <input id="s-key" type="password" autocomplete="off" placeholder="sk-ant-…">
-      <p class="hint">Stored only in this browser on this device. Set a monthly spend limit in the Claude Console.</p>
-    </div>
-    <div class="field">
-      <label for="s-model">Model</label>
-      <input id="s-model" type="text" autocapitalize="off" spellcheck="false">
-    </div>
     <div class="field edit-only"><span class="lbl">Tags</span>
       <p class="hint" style="margin:0 0 10px">Rename, merge, reorder or delete tag values, and sort out Unsorted tags.</p>
       <button id="s-tags" class="btn" type="button">Manage tags</button>
@@ -571,7 +563,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '3.0';
-const BUILD = 'R1 step 3 (test)';
+const BUILD = 'R1 step 4 (test)';
 const DATA_VERSION = 4;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -1504,7 +1496,7 @@ function renderDetail(){
   else if(r.rating) h+='<div class="rate"><span class="stars" aria-label="'+r.rating+' out of 5 stars">'+stars(r.rating)+'</span></div>';
   const tl=TAG_KEYS.reduce((a,k)=>a.concat((r.tags[k]||[]).map(v=>({v,u:k==='unsorted'}))),[]);
   if(tl.length) h+='<div class="tags">'+tl.map(t=>'<span class="tag'+(t.u?' unsorted':'')+'"'+(t.u?' title="Unsorted"':'')+'>'+esc(t.v)+'</span>').join('')+'</div>';
-  if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="newver">New version</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
+  if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="newver">New version</button><button type="button" class="btn" data-act="paste-version">Paste as new version</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
 
   if(ed){
     h+='<section class="logbox" aria-labelledby="log-h"><h3 id="log-h">Made it?</h3><div class="logrow">'+
@@ -1516,7 +1508,7 @@ function renderDetail(){
   if(r.type==='External' && !r.ingredients.length && !r.instructions.length){
     h+='<section class="section"><div class="linkout"><p>The full recipe is on '+(url?esc(r.siteName||host(url)):'the original source')+'.</p><div class="stack">'+
       (url?'<a class="btn primary" href="'+esc(url)+'" target="_blank" rel="noopener">Open recipe</a>':'')+
-      (ed&&url?'<button type="button" class="btn" data-act="import-link">Import the full recipe</button>':'')+
+      (ed?'<button type="button" class="btn" data-act="paste-version">Paste the full recipe</button>':'')+
       '</div></div></section>';
   } else {
     h+='<div class="cols">';
@@ -1610,6 +1602,19 @@ function renderTagPickers(){
         :'<div class="tg-add"><input type="text" data-add="'+g+'" placeholder="Add a new value" aria-label="Add a new '+esc(GROUP_LABEL[g])+' value" autocomplete="off"><button type="button" class="btn" data-addbtn="'+g+'">Add</button></div>')+'</div>';
     return '<div class="tg'+(open?' open':'')+'"><button type="button" class="tg-head" data-tg="'+g+'" aria-expanded="'+open+'"><span class="tg-name">'+esc(GROUP_LABEL[g])+'</span><span class="tg-sum">'+(sel.length?esc(sel.join(', ')):'<span class="muted">None</span>')+'</span></button>'+body+'</div>';
   }).join('');
+  renderTagReview();
+}
+/* Tags from an import that aren't in your lists: add, swap for an existing value, or drop */
+function renderTagReview(){
+  const e=editing, box=$('#f-tagreview');
+  if(!e){ box.hidden=true; return; }
+  e.importNew=(e.importNew||[]).filter(x=>e.tags[x.g].some(y=>tagMatch(y,x.v)) && !groupValues(x.g).some(y=>tagMatch(y,x.v)));
+  box.hidden=!e.importNew.length; if(!e.importNew.length){ box.innerHTML=''; return; }
+  box.innerHTML='<p><strong>New tags from the import.</strong> These aren\'t in your lists yet. Add each one, swap it for a value you already have, or drop it. Any left here are added when you save.</p>'+
+    e.importNew.map((x,i)=>'<div class="trrow"><span class="trv">'+esc(x.v)+'</span><span class="muted">'+esc(GROUP_LABEL[x.g])+'</span><span class="tracts">'+
+      '<button type="button" class="btn" data-tr="add" data-i="'+i+'">Add</button>'+
+      '<select class="trmap" data-i="'+i+'" aria-label="Use an existing '+esc(GROUP_LABEL[x.g])+' value instead"><option value="">Use existing…</option>'+groupValues(x.g).map(v=>'<option>'+esc(v)+'</option>').join('')+'</select>'+
+      '<button type="button" class="btn" data-tr="drop" data-i="'+i+'">Drop</button></span></div>').join('');
 }
 function pickerAdd(g){
   const inp=document.querySelector('#f-taggroups [data-add="'+g+'"]'); if(!inp||!editing) return;
@@ -1628,6 +1633,17 @@ function srcFromDraft(text){
   if((state.db.sources||[]).some(x=>x.id===id)) out.id=id;
   else { out.id='__new'; out.newSrc={name:spec.name,kind:USER_KINDS.includes(spec.kind)?spec.kind:'Other',author:spec.author||''}; }
   out.ref=spec.ref||''; return out;
+}
+/* Source from the import template: Online plus a web address, or a source name matched to yours */
+function srcFromSpec(sp){
+  const out={id:'',ref:sp.ref||'',url:'',site:'',newSrc:null}, kind=sp.kind, list=state.db.sources||[];
+  if(kind==='Online' || (!kind && !sp.name && sp.url)) return Object.assign(out,{id:ONLINE_ID,ref:'',url:sp.url||'',site:sp.site||siteFromUrl(sp.url||'')});
+  if(!sp.name){ if(kind==='Homemade' && list.some(x=>x.id===HOMEMADE_ID)) out.id=HOMEMADE_ID; return out; }
+  const same=list.find(x=>x.id!==ONLINE_ID && tkey(x.name)===tkey(sp.name) && (!kind || x.kind===kind)) || list.find(x=>x.id!==ONLINE_ID && tkey(x.name)===tkey(sp.name));
+  if(same){ out.id=same.id; return out; }
+  out.id='__new';
+  out.newSrc={name:sp.name.replace(/\s+/g,' ').trim(),kind:USER_KINDS.includes(kind)?kind:(sp.ref||sp.author?'Book':'Other'),author:sp.author||''};
+  return out;
 }
 function srcKind(){
   const e=editing; if(!e) return '';
@@ -1675,7 +1691,7 @@ function pickSource(sid){
 }
 function setupSrcFields(r){
   const e=editing;
-  e.src=typeof r.source==='string'?srcFromDraft(r.source):{id:r.sourceId||'',ref:r.sourceRef||'',url:'',site:r.siteName||'',newSrc:null};
+  e.src=r.srcSpec?srcFromSpec(r.srcSpec):typeof r.source==='string'?srcFromDraft(r.source):{id:r.sourceId||'',ref:r.sourceRef||'',url:'',site:r.siteName||'',newSrc:null};
   const s=(state.db.sources||[]).find(x=>x.id===e.src.id);
   if(s && s.kind==='Online' && !e.src.url) e.src.url=isUrl(r.sourceRef)?r.sourceRef:'';
   $('#f-page').value=(s&&s.kind==='Book')||e.src.newSrc?e.src.ref:'';
@@ -1706,21 +1722,27 @@ function readSrcFields(){
   }
   return out;
 }
-function openEdit(r,isNew){
+function mergeTags(a,b){ const t=normTags(a); TAG_KEYS.forEach(k=>(b[k]||[]).forEach(v=>addTag(t,k,v))); return t; }
+/* opts.versionOf: the recipe is a pasted new version of that recipe, created only when saved */
+function openEdit(r,isNew,opts){
   if(state.locked){ toast('Update this app before editing'); return; }
-  editing={id:r.id||uid('r-'),isNew:!!isNew,created:r.created||new Date().toISOString()};
-  $('#edit-h').textContent=isNew?'New recipe':'Edit recipe';
+  opts=opts||{};
+  const base=opts.versionOf?state.db.recipes.find(x=>x.id===opts.versionOf):null;
+  editing={id:base?uid('r-'):(r.id||uid('r-')),isNew:!!isNew,created:base?new Date().toISOString():(r.created||new Date().toISOString()),
+    pv:base?{baseId:base.id}:null,importTime:r.time||'',importMinutes:r.timeMinutes||null};
+  $('#edit-h').textContent=base?'New version':isNew?(opts.title||'New recipe'):'Edit recipe';
   $('#f-title').value=r.title||''; setupSrcFields(r);
   $('#f-serves').value=r.serves||''; $('#f-time').value=r.time||'';
   $('#f-ings').value=(r.ingredients||[]).map(itemText).join('\n'); $('#f-method').value=(r.instructions||[]).map(itemText).join('\n');
   $('#f-notes').value=r.notes||''; $('#f-rating').value=String(Math.round(r.rating)||0);
-  const ex=!isNew && state.db.recipes.find(x=>x.id===editing.id);
-  const showVer=!!ex && (familyOf(ex).length>1 || ex.versionNo>1);
+  const ex=base||(!isNew && state.db.recipes.find(x=>x.id===editing.id));
+  const showVer=!!base || (!!ex && (familyOf(ex).length>1 || ex.versionNo>1));
   $('#f-verwrap').hidden=!showVer;
-  $('#f-vlabel').value=ex?ex.versionLabel:''; $('#f-vnote').value=ex?ex.changeNote:'';
+  $('#f-vlabel').value=base?(opts.label||''):ex?ex.versionLabel:''; $('#f-vnote').value=base?(opts.note||''):ex?ex.changeNote:'';
   setSeg('#f-type',r.type==='External'?'External':'Full'); syncTypeFields();
   editing.origTags=ex?normTags(ex.tags):emptyTags();
-  editing.tags=Array.isArray(r.tags)?groupTags(r.tags,state.db.taxonomy):normTags(r.tags);
+  if(r.importTags){ const res=resolveImportTags(r.importTags); editing.tags=base?mergeTags(base.tags,res.tags):res.tags; editing.importNew=res.fresh; }
+  else { editing.tags=Array.isArray(r.tags)?groupTags(r.tags,state.db.taxonomy):normTags(r.tags); editing.importNew=[]; }
   editing.open=new Set();
   $('#edit-msg').hidden=true; renderTagPickers();
   $('#dlg-edit').showModal(); $('#dlg-edit').scrollTop=0;
@@ -1733,12 +1755,28 @@ function saveEdit(){
   const ex=state.db.recipes.find(x=>x.id===editing.id);
   const time=$('#f-time').value.trim(), src=readSrcFields();
   if(src.error){ const m=$('#edit-msg'); m.textContent=src.error; m.hidden=false; return; }
-  const r={id:editing.id,title,type,serves:$('#f-serves').value.trim(),time,timeMinutes:parseMinutes(time),
+  const r={id:editing.id,title,type,serves:$('#f-serves').value.trim(),time,timeMinutes:parseMinutes(time)||(time&&time===editing.importTime?editing.importMinutes:null),
     tagDiff:diffTags(editing.origTags,editing.tags),
     ingredients:matchItems(ex?ex.ingredients:[],lines($('#f-ings').value),'i'),
     instructions:matchItems(ex?ex.instructions:[],lines($('#f-method').value).map(stripStep),'s'),
     notes:$('#f-notes').value.trim(),rating:Number($('#f-rating').value)||0,created:editing.created,updated:new Date().toISOString()};
   Object.assign(r,src.f);
+  if(editing.pv){
+    const base=state.db.recipes.find(x=>x.id===editing.pv.baseId);
+    if(!base){ $('#dlg-edit').close(); editing=null; toast('That recipe has been deleted'); return; }
+    const label=$('#f-vlabel').value.trim();
+    if(!label){ const m=$('#edit-msg'); m.textContent='Give the new version a name, for example "Full recipe".'; m.hidden=false; $('#f-vlabel').focus(); return; }
+    const now=new Date().toISOString(), nr=clone(base);
+    Object.assign(nr,r,{familyId:base.familyId,parentId:base.id,versionLabel:label,changeNote:$('#f-vnote').value.trim(),
+      cookLog:[],archived:false,created:now,updated:now,annotations:[],tags:applyTagDiff(base.tags,r.tagDiff)});
+    delete nr.tagDiff; delete nr.versionNo;
+    $('#dlg-edit').close(); editing=null;
+    commitMany(src.ops.concat([{t:'newVersion',r:nr}]));
+    select(nr.id);
+    const made=state.db.recipes.find(x=>x.id===nr.id);
+    toast(made?'Created '+vName(made):'New version created');
+    return;
+  }
   if(ex){
     const showVer=!$('#f-verwrap').hidden;
     r.versionLabel=(showVer&&$('#f-vlabel').value.trim())||ex.versionLabel;
@@ -1838,44 +1876,151 @@ function openDelete(r){
   $('#dlg-delete').showModal();
 }
 
-/* ── Import ──────────────────────────────────────────── */
-let impImages=[], impMerge=null;
-const SYSTEM='You extract recipes for a personal family recipe book. Reply with ONLY one JSON object, with no markdown fences and no commentary, in exactly this shape:\n'+
- '{"title": string, "source": string, "serves": string, "time": string, "ingredients": [string], "instructions": [string], "tags": [string], "notes": string}\n'+
- 'Rules: "source" is the web address, or the cookbook title (and page number) if visible, otherwise "". Keep quantities and wording faithful to the original. One ingredient per item; if the recipe groups ingredients, add the group heading as its own item ending with a colon, e.g. "For the sauce:". One step per instructions item, without step numbers. Give 2 to 5 short tags in Title Case, such as cuisine, course and main ingredient. Put tips, variations and storage advice in "notes". Use "" or [] for anything not present. If there is no recipe, reply {"error": "short reason"}.';
-
-async function callClaude(content,tools){
-  const key=ls.get('apiKey','');
-  if(!key) throw new Error('Add your Claude API key in Settings first.');
-  const body={model:ls.get('model','')||CONFIG.defaultModel,max_tokens:4096,system:SYSTEM,messages:[{role:'user',content}]};
-  if(tools) body.tools=tools;
-  let res;
-  try{
-    res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
-  }catch(e){ throw new Error('Couldn\'t reach the Claude API. Check your connection.'); }
-  const j=await res.json().catch(()=>null);
-  if(!res.ok) throw new Error((j&&j.error&&j.error.message)||('Claude API error '+res.status));
-  const blocks=j.content||[];
-  let lastNonText=-1; blocks.forEach((b,i)=>{ if(b.type!=='text') lastNonText=i; });
-  const text=blocks.slice(lastNonText+1).filter(b=>b.type==='text').map(b=>b.text).join('\n') || blocks.filter(b=>b.type==='text').map(b=>b.text).join('\n');
-  const s=text.indexOf('{'), e=text.lastIndexOf('}');
-  if(s<0||e<s) throw new Error(j.stop_reason==='pause_turn'?'The page took too long to read. Try again.':'No recipe came back. Try a clearer photo or a different page.');
-  let o; try{ o=JSON.parse(text.slice(s,e+1)); }catch(err){ throw new Error('The reply couldn\'t be read as a recipe. Try again.'); }
-  if(o.error) throw new Error(o.error);
-  return o;
+/* ── Import (paste box and ChatGPT template, no API) ── */
+let impMode=null, impQueue=[], impTotal=0;
+function buildPrompt(){
+  const t=state.db.taxonomy||{}, list=g=>(t[g]||[]).join(', ');
+  const names=sourcesByKind('Book').concat(sourcesByKind('Homemade')).map(x=>x.name);
+  return [
+    'Convert the recipe in the attached photo(s) / at this web address into EXACTLY the template below. Reply with only the filled-in template inside one code block.',
+    '',
+    'Rules:',
+    '- Keep quantities and wording faithful to the original; use UK spelling.',
+    '- Don\'t invent anything – leave a field blank if it isn\'t shown.',
+    '- One ingredient per line. If ingredients are grouped, put the group heading on its own line ending with a colon (e.g. "For the sauce:").',
+    '- One method step per line, no numbers.',
+    '- Separate multiple values with commas.',
+    '- For Course, Cuisine, Main ingredient, Diet, Effort and Occasion, choose only from the allowed values listed; leave blank if none fit.',
+    '- Source type is Online for any website, with the site\'s name in Website name.',
+    '- Put tips, swaps and storage advice under NOTES.',
+    '- If there is more than one recipe, repeat the whole template, from === RECIPE === to === END ===, for each one.',
+    '',
+    'Allowed values:',
+    'Course: '+list('course'),
+    'Cuisine: '+list('cuisine'),
+    'Main ingredient: '+list('mainIngredient'),
+    'Diet: '+list('diet'),
+    'Effort: '+list('effort'),
+    'Occasion or season: '+list('occasion'),
+    'Existing book and homemade sources (reuse the exact name if it matches): '+(names.join(', ')||'none yet'),
+    '',
+    '=== RECIPE ===',
+    'Title:',
+    'Source type: Book / Online / Homemade / Other',
+    'Source name: (book title or homemade name; leave blank for Online)',
+    'Author:',
+    'Page:',
+    'Website name:',
+    'Web address:',
+    'Serves:',
+    'Total time (minutes):',
+    'Time as written:',
+    'Course:',
+    'Cuisine:',
+    'Main ingredient:',
+    'Diet:',
+    'Effort:',
+    'Occasion or season:',
+    '=== INGREDIENTS ===',
+    '=== METHOD ===',
+    '=== NOTES ===',
+    '=== END ==='
+  ].join('\n');
 }
-function prepImage(file){
-  return new Promise((resolve,reject)=>{
-    const url=URL.createObjectURL(file), img=new Image();
-    img.onload=()=>{
-      const max=1568, sc=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
-      const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*sc); c.height=Math.round(img.naturalHeight*sc);
-      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      URL.revokeObjectURL(url); resolve(c.toDataURL('image/jpeg',0.85));
-    };
-    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('Couldn\'t read that image.')); };
-    img.src=url;
+async function copyPrompt(){
+  const t=buildPrompt(), ok=$('#imp-copied'), ta=$('#imp-prompt');
+  try{
+    await navigator.clipboard.writeText(t);
+    ok.textContent='Copied. It includes your current tag lists and sources.'; ok.hidden=false; ta.hidden=true;
+  }catch(e){
+    ta.value=t; ta.hidden=false; ok.textContent='Copying was blocked. Select all the text below and copy it.'; ok.hidden=false;
+    ta.focus(); ta.select();
+  }
+}
+/* ── Template parser ── */
+const IMPORT_FIELDS={'title':'title','recipe title':'title','recipe name':'title','name':'title',
+  'source type':'stype','type':'stype','source name':'sname','source':'sname','book':'sname','book title':'sname',
+  'author':'author','page':'page','page number':'page','website name':'site','website':'site','site':'site','site name':'site',
+  'web address':'url','url':'url','link':'url','address':'url','serves':'serves','servings':'serves','serves makes':'serves','makes':'serves',
+  'total time':'mins','total time minutes':'mins','minutes':'mins','time as written':'time','time':'time',
+  'course':'course','cuisine':'cuisine','main ingredient':'mainIngredient','main ingredients':'mainIngredient','diet':'diet','dietary':'diet',
+  'effort':'effort','occasion or season':'occasion','occasion':'occasion','season':'occasion','occasion season':'occasion'};
+const SECTION_WORDS={'recipe':'recipe','ingredients':'ing','ingredient':'ing','method':'method','instructions':'method','steps':'method','directions':'method','notes':'notes','note':'notes','end':'end'};
+/* Strips Markdown bold, headings, bullets, numbering and quote marks that ChatGPT sometimes adds */
+function cleanLine(l){
+  return String(l).replace(/\*\*|__/g,'').replace(/^\s*#{1,6}\s*/,'').replace(/^\s*>\s*/,'').replace(/^\s*(?:[-•*–·]|\d+[.)])\s+/,'').replace(/\s+$/,'').trim();
+}
+function markerOf(l,inTemplate){
+  const m=l.match(/^=+\s*([a-z ]+?)\s*=*\s*:?$/i);
+  if(m) return SECTION_WORDS[m[1].toLowerCase().trim()]||null;
+  if(inTemplate){ const b=l.match(/^(ingredients?|method|instructions|notes?)\s*:?$/i); if(b) return SECTION_WORDS[b[1].toLowerCase()]; }
+  return null;
+}
+function blankish(v){
+  v=String(v||'').trim();
+  if(/^\(.*\)$/.test(v)) return '';
+  if(/^book\s*\/\s*online/i.test(v)) return '';
+  if(/^(n\/?a|none|not (shown|given|stated|specified)|unknown|blank|-+|–|—)\.?$/i.test(v)) return '';
+  return v;
+}
+function splitVals(v){ return blankish(v).split(/[,;]/).map(x=>x.replace(/\s*\([^)]*\)\s*/g,' ').replace(/\s+/g,' ').trim()).filter(x=>x && blankish(x)); }
+function parseTemplate(text){
+  const raw=String(text||'').replace(/\r/g,'').split('\n').filter(l=>!/^\s*```/.test(l));
+  const cleaned=raw.map(cleanLine);
+  const inTemplate=cleaned.some(l=>{ const k=markerOf(l,false); return k==='recipe'||k==='ing'; }) && cleaned.some(l=>/^title\s*:/i.test(l));
+  if(!inTemplate) return null;
+  const out=[]; let cur=null;
+  const start=()=>{ cur={head:{},ing:[],method:[],notes:[],sec:'head'}; };
+  const finish=()=>{ if(cur && (cur.head.title||cur.ing.length||cur.method.length)) out.push(cur); cur=null; };
+  cleaned.forEach(l=>{
+    if(!l) return;
+    const mk=markerOf(l,true);
+    if(mk==='recipe'){ finish(); start(); return; }
+    if(mk==='end'){ finish(); return; }
+    if(mk){ if(!cur) start(); cur.sec=mk; return; }
+    if(!cur){ if(/^title\s*:/i.test(l)) start(); else return; }
+    if(cur.sec==='head'){
+      const m=l.match(/^([^:]{1,40}):\s*(.*)$/); if(!m) return;
+      const key=IMPORT_FIELDS[m[1].toLowerCase().replace(/\([^)]*\)/g,' ').replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim()];
+      if(!key) return;
+      if(key==='title' && cur.head.title){ finish(); start(); }
+      const v=m[2].trim();
+      if(GROUP_KEYS.includes(key)) cur.head[key]=(cur.head[key]||[]).concat(splitVals(v));
+      else if(key==='stype'){ const k=tkey(blankish(v)); cur.head.stype=/^book/.test(k)?'Book':/^online|^web/.test(k)?'Online':/^home/.test(k)?'Homemade':k?'Other':''; }
+      else if(key==='mins'){ const n=blankish(v); cur.head.mins=/^\d+$/.test(n)?parseInt(n,10):parseMinutes(n); }
+      else if(key==='url'){ const u=(blankish(v).match(/https?:\/\/\S+/)||[''])[0].replace(/[)>.,]+$/,''); cur.head.url=u; }
+      else cur.head[key]=blankish(v);
+      return;
+    }
+    if(cur.sec==='ing') cur.ing.push(l);
+    else if(cur.sec==='method'){ const t=stripStep(l); if(t) cur.method.push(t); }
+    else if(cur.sec==='notes') cur.notes.push(l);
   });
+  finish();
+  return out.map(b=>{
+    const h=b.head, tags=emptyTags();
+    GROUP_KEYS.forEach(g=>(h[g]||[]).forEach(v=>tags[g].push(v)));
+    const mins=h.mins||null, time=h.time||(mins?mins+' minutes':''), url=isUrl(h.url)?h.url.trim():'';
+    let kind=h.stype||''; if(!kind && url && !h.sname) kind='Online';
+    return {title:h.title||'',type:(!b.ing.length && !b.method.length && url)?'External':'Full',serves:h.serves||'',time,timeMinutes:mins||parseMinutes(time),
+      ingredients:b.ing,instructions:b.method,notes:b.notes.join('\n'),rating:0,importTags:tags,
+      srcSpec:{kind,name:h.sname||'',author:h.author||'',ref:h.page||'',url,site:h.site||''}};
+  });
+}
+/* Tags from the template: matched to your values loosely (case, plurals, brackets), then to any group,
+   then through the old-tag rules; anything else is kept in its group and flagged as new */
+function resolveImportTags(grouped){
+  const tax=state.db.taxonomy||{}, out=emptyTags(), fresh=[];
+  GROUP_KEYS.forEach(g=>((grouped||{})[g]||[]).forEach(raw=>{
+    const v=String(raw).replace(/\s*\([^)]*\)\s*/g,' ').replace(/\s+/g,' ').trim(); if(!v) return;
+    const hit=(tax[g]||[]).find(x=>tagMatch(x,v));
+    if(hit){ addTag(out,g,hit); return; }
+    const m=mapTag(v,tax);
+    if(!m) return;
+    if(m[0]!=='unsorted'){ addTag(out,m[0],m[1]); return; }
+    if(!out[g].some(x=>tagMatch(x,v))){ addTag(out,g,v); fresh.push({g,v}); }
+  }));
+  return {tags:out,fresh};
 }
 function parsePlain(t){
   const ls_=lines(t); const out={title:ls_[0]||'',source:'',serves:'',time:'',ingredients:[],instructions:[],tags:[],notes:''};
@@ -1894,56 +2039,46 @@ function parsePlain(t){
   if(intro.length) out.notes=intro.join('\n')+(out.notes?'\n'+out.notes:'');
   return out;
 }
-function impTab(v){
-  setSeg('#imp-tabs',v);
-  $$('#dlg-import [data-pane]').forEach(p=>p.hidden=p.dataset.pane!==v);
-  $('#imp-nokey').hidden=v==='text'||!!ls.get('apiKey','');
-  $('#imp-go').textContent=v==='url'?'Fetch recipe':v==='text'?'Tidy into a recipe':'Read recipe';
-  $('#imp-msg').hidden=true;
+/* A pasted recipe as a new version: the pasted lines replace the old ones, blanks fall back to the current version */
+function versionDraft(base,d){
+  const sp=d.srcSpec||{}, hasSrc=!!(sp.kind||sp.name||sp.url), full=(d.ingredients||[]).length||(d.instructions||[]).length;
+  const out={title:d.title||base.title,type:full?'Full':base.type,serves:d.serves||base.serves,time:d.time||base.time,timeMinutes:d.timeMinutes||base.timeMinutes,
+    ingredients:d.ingredients||[],instructions:d.instructions||[],notes:d.notes||base.notes,rating:0,importTags:d.importTags||emptyTags()};
+  if(hasSrc) out.srcSpec=sp; else Object.assign(out,{sourceId:base.sourceId,sourceRef:base.sourceRef,siteName:base.siteName});
+  return out;
 }
-function openImport(tab,url){
-  impMerge=null; impImages=[];
-  $('#imp-files').value=''; $('#imp-thumbs').innerHTML=''; $('#imp-url').value=url||''; $('#imp-text').value='';
-  impTab(tab||'photo'); $('#dlg-import').showModal();
+function openImport(mode){
+  if(state.locked){ toast('Update this app before editing'); return; }
+  impMode=mode||null;
+  const base=impMode?state.db.recipes.find(x=>x.id===impMode.versionOf):null;
+  $('#imp-h').textContent=base?'Paste as new version':'Import a recipe';
+  $('#imp-vernote').hidden=!base; $('#imp-hint').hidden=!!base;
+  $('#imp-text').value=''; $('#imp-msg').hidden=true; $('#imp-copied').hidden=true; $('#imp-prompt').hidden=true;
+  $('#dlg-import').showModal();
 }
-async function runImport(){
-  const tab=segVal('#imp-tabs'), btn=$('#imp-go'), msg=$('#imp-msg'), label=btn.textContent;
-  msg.hidden=true;
-  try{
-    let result;
-    if(tab==='photo'){
-      if(!impImages.length) throw new Error('Choose at least one photo.');
-      btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Reading…';
-      result=await callClaude(impImages.map(d=>({type:'image',source:{type:'base64',media_type:'image/jpeg',data:d.split(',')[1]}}))
-        .concat([{type:'text',text:'These photos show one recipe, probably from a cookbook. Extract it.'}]));
-      if(!result.source) result.source='Cookbook photo';
-    } else if(tab==='url'){
-      const u=$('#imp-url').value.trim();
-      if(!isUrl(u)) throw new Error('Enter a full web address starting with https://');
-      btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Fetching…';
-      result=await callClaude([{type:'text',text:'Fetch this web page with the web_fetch tool and extract the recipe on it: '+u}],[{type:'web_fetch_20250910',name:'web_fetch',max_uses:3}]);
-      result.source=u;
-    } else {
-      const t=$('#imp-text').value.trim();
-      if(!t) throw new Error('Paste some recipe text first.');
-      if(ls.get('apiKey','')){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Tidying…'; result=await callClaude([{type:'text',text:'Tidy this recipe text into the structure:\n\n'+t}]); }
-      else result=parsePlain(t);
-    }
-    $('#dlg-import').close();
-    let draft=Object.assign({type:'Full',rating:0},result);
-    let isNew=true;
-    if(impMerge){
-      const ex=state.db.recipes.find(r=>r.id===impMerge);
-      if(ex){
-        isNew=false;
-        const tags=flatTags(ex); (result.tags||[]).forEach(t=>{ if(!tags.some(x=>tagMatch(x,t))) tags.push(t); });
-        draft=Object.assign({},ex,{type:'Full',ingredients:result.ingredients||[],instructions:result.instructions||[],serves:ex.serves||result.serves||'',time:ex.time||result.time||'',tags,
-          notes:[ex.notes,result.notes].filter(Boolean).join('\n\n')});
-      }
-    }
-    openEdit(draft,isNew);
-  }catch(e){ msg.textContent=e.message; msg.hidden=false; }
-  finally{ btn.disabled=false; btn.textContent=label; }
+function impMsg(m){ const el=$('#imp-msg'); el.textContent=m||''; el.hidden=!m; }
+function runImport(){
+  const t=$('#imp-text').value;
+  if(!t.trim()){ impMsg('Paste ChatGPT\'s reply, or some recipe text, first.'); return; }
+  let drafts=parseTemplate(t);
+  if(!drafts) drafts=[parsePlain(t.replace(/^\s*```.*$/gm,''))];
+  drafts=drafts.filter(d=>d.title || d.ingredients.length || d.instructions.length);
+  if(!drafts.length){ impMsg('Couldn\'t find a recipe in that text. Check it\'s the whole reply.'); return; }
+  $('#dlg-import').close();
+  const base=impMode?state.db.recipes.find(x=>x.id===impMode.versionOf):null;
+  if(base){
+    const linkOnly=base.type==='External' && !base.ingredients.length;
+    openEdit(versionDraft(base,drafts[0]),false,{versionOf:base.id,label:linkOnly?'Full recipe':'',note:'Pasted from ChatGPT'});
+    if(drafts.length>1) toast('Only the first recipe was used');
+    return;
+  }
+  impQueue=drafts.slice(1); impTotal=drafts.length;
+  openEdit(drafts[0],true,{title:impTotal>1?'New recipe (1 of '+impTotal+')':'New recipe'});
+}
+function openNextImport(){
+  if(!impQueue.length || state.locked) return;
+  const d=impQueue.shift(), n=impTotal-impQueue.length;
+  openEdit(d,true,{title:'New recipe ('+n+' of '+impTotal+')'});
 }
 
 /* ── Tag manager ─────────────────────────────────────── */
@@ -2126,8 +2261,6 @@ function renderSourceView(){
 /* ── Settings ────────────────────────────────────────── */
 function openSettings(){
   $('#s-viewonly').checked=!!ls.get('viewOnly',false);
-  $('#s-key').value=ls.get('apiKey','');
-  $('#s-model').value=ls.get('model','')||CONFIG.defaultModel;
   $('#s-file').innerHTML='Dropbox › Apps › <em>your app name</em> › '+esc(FILE.replace(/^\//,''))+(TEST?' (test mode: remove ?test from the address to use your real book)':'');
   $('#s-ver').textContent='App version '+APP_VERSION+', build '+BUILD+', data format '+DATA_VERSION+(TEST?', using the test file':'')+
     (state.locked?'. The recipe file is format '+state.locked+', so this copy needs updating.':'');
@@ -2135,8 +2268,6 @@ function openSettings(){
 }
 function saveSettings(){
   ls.set('viewOnly',$('#s-viewonly').checked);
-  ls.set('apiKey',$('#s-key').value.trim());
-  const m=$('#s-model').value.trim(); ls.set('model',m===CONFIG.defaultModel?'':m);
   $('#dlg-settings').close(); render();
 }
 function downloadBackup(){
@@ -2172,7 +2303,7 @@ function bind(){
   $('#sync').addEventListener('click',syncNow);
   $('#lock-retry').addEventListener('click',()=>location.reload());
   $('#btn-add').addEventListener('click',()=>openEdit({type:'Full'},true));
-  $('#btn-import').addEventListener('click',()=>openImport('photo'));
+  $('#btn-import').addEventListener('click',()=>openImport(null));
   $('#btn-settings').addEventListener('click',openSettings);
 
   $('#detail').addEventListener('click',e=>{
@@ -2197,7 +2328,7 @@ function bind(){
       toast('Recorded for '+fmtDate(date));
     }
     if(act==='unlog'){ if(confirm('Remove this entry from the cooking history?')) commit({t:'unlog',id:r.id,eid:el.dataset.eid}); }
-    if(act==='import-link'){ openImport('url',recipeUrl(r)); impMerge=r.id; }
+    if(act==='paste-version'){ openImport({versionOf:r.id}); return; }
     if(act==='srcpage'){ openSourceView(el.dataset.sid); return; }
     if(act==='note') openNote(r,el.dataset.target,null);
     if(act==='note-edit') openNote(r,null,el.dataset.aid);
@@ -2227,6 +2358,20 @@ function bind(){
       editing.tags[g]=sel.some(x=>tagMatch(x,v))?sel.filter(x=>!tagMatch(x,v)):sel.concat(v); renderTagPickers(); return; }
     const a=e.target.closest('[data-addbtn]'); if(a) pickerAdd(a.dataset.addbtn);
   });
+  $('#f-tagreview').addEventListener('click',e=>{
+    const b=e.target.closest('[data-tr]'); if(!b || !editing) return;
+    const x=editing.importNew[Number(b.dataset.i)]; if(!x) return;
+    if(b.dataset.tr==='drop') editing.tags[x.g]=editing.tags[x.g].filter(y=>!tagMatch(y,x.v));
+    editing.importNew.splice(Number(b.dataset.i),1); renderTagPickers();
+  });
+  $('#f-tagreview').addEventListener('change',e=>{
+    const s=e.target.closest('.trmap'); if(!s || !s.value || !editing) return;
+    const x=editing.importNew[Number(s.dataset.i)]; if(!x) return;
+    editing.tags[x.g]=editing.tags[x.g].filter(y=>!tagMatch(y,x.v)); addTag(editing.tags,x.g,s.value);
+    editing.importNew.splice(Number(s.dataset.i),1); renderTagPickers();
+  });
+  /* Several recipes in one paste: the next one opens when this one is saved or cancelled */
+  $('#dlg-edit').addEventListener('close',()=>{ if(impQueue.length) setTimeout(openNextImport,250); });
   $('#f-taggroups').addEventListener('keydown',e=>{ const i=e.target.closest('[data-add]'); if(i && e.key==='Enter'){ e.preventDefault(); pickerAdd(i.dataset.add); } });
   $('#edit-save').addEventListener('click',saveEdit);
 
@@ -2247,11 +2392,7 @@ function bind(){
     commit({t:'delete',id:r.id}); state.selected=null; render(); toast('Recipe deleted');
   });
 
-  $('#imp-tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) impTab(b.dataset.v); });
-  $('#imp-files').addEventListener('change',async e=>{
-    const files=Array.from(e.target.files||[]).slice(0,4); impImages=[]; $('#imp-thumbs').innerHTML='';
-    for(const f of files){ try{ const d=await prepImage(f); impImages.push(d); $('#imp-thumbs').insertAdjacentHTML('beforeend','<img alt="" src="'+d+'">'); }catch(err){ $('#imp-msg').textContent=err.message; $('#imp-msg').hidden=false; } }
-  });
+  $('#imp-copy').addEventListener('click',copyPrompt);
   $('#imp-go').addEventListener('click',runImport);
 
   $('#s-save').addEventListener('click',saveSettings);
@@ -2292,6 +2433,8 @@ function bind(){
 
 /* ── Start ───────────────────────────────────────────── */
 async function init(){
+  /* Release 1 removed Claude API import: clear any saved key and model */
+  ls.del('apiKey'); ls.del('model');
   if(ls.get('viewOnly',null)===null) ls.set('viewOnly',window.matchMedia('(max-width: 600px)').matches);
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
   bind();
