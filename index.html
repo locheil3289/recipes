@@ -120,6 +120,52 @@ dialog.sheet .dlg-foot{position:static}
 .tile-meta .badge{margin:0 4px 0 0}
 .tile-meta .stars{display:block;margin-bottom:2px}
 .list.grid .empty{grid-column:1/-1}
+/* Photos */
+.photos-sec h3{display:flex;align-items:center;gap:10px}
+.photos-sec h3 .n{font:400 .85rem var(--sans);color:var(--muted)}
+.strip{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.ph{flex:none;width:124px;border:none;padding:0;background:none;text-align:left;color:inherit}
+.ph img,.ph .phbox{display:block;width:124px;height:124px;object-fit:cover;border-radius:8px;background:var(--paper);border:1px solid var(--line)}
+.ph .cap{display:block;font-size:.75rem;color:var(--muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.phadd{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.phstatus{font-size:.85rem;color:var(--muted)}
+dialog.viewer{position:fixed;inset:0;margin:0;width:100vw;height:100%;max-width:100vw;max-height:100%;border-radius:0;background:#111;color:#fff;padding:0;flex-direction:column;box-shadow:none}
+dialog.viewer[open]{display:flex}
+dialog.viewer::backdrop{background:#111}
+.vw-top{display:flex;align-items:center;gap:8px;padding:calc(6px + var(--st)) 8px 6px 16px}
+.vw-top .t{flex:1;min-width:0;font-size:.9rem;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vw-top .btn,.vw-bar .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff}
+.vw-top .btn.ghost{background:transparent;border-color:transparent}
+.vw-stage{flex:1;min-height:0;position:relative;overflow:hidden;touch-action:none;display:flex;align-items:center;justify-content:center}
+.vw-stage img{max-width:100%;max-height:100%;transform-origin:center center;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;will-change:transform}
+.vw-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;border:none;border-radius:8px;background:rgba(0,0,0,.35);color:#fff;font-size:1.6rem}
+.vw-nav.prev{left:8px}.vw-nav.next{right:8px}
+@media (hover:none){.vw-nav{display:none}}
+.vw-bar{padding:10px 12px calc(12px + var(--sb));display:grid;gap:8px;background:#111}
+.vw-cap{margin:0;font-size:.95rem;white-space:pre-wrap}
+#vw-capin{background:#222;border-color:#444;color:#fff}
+#vw-capin::placeholder{color:#999}
+.vw-acts{display:flex;gap:6px;flex-wrap:wrap}
+.vw-acts .btn{min-height:38px;font-size:.85rem}
+.vw-acts .btn.danger{color:#F0A096}
+/* Covers */
+.tile.has-img{padding:0;background:var(--paper)}
+.tile.has-img img{display:block;width:100%;height:100%;object-fit:cover}
+.tile.has-img.book img{object-fit:contain;padding:6px}
+.tile-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font:600 .95rem/1.25 var(--serif);color:var(--ink);margin-bottom:3px}
+.hero{display:block;width:100%;aspect-ratio:16/9;max-height:340px;margin:6px 0 12px;padding:0;border:none;border-radius:12px;overflow:hidden;background:var(--paper)}
+.hero img{display:block;width:100%;height:100%;object-fit:cover}
+.hero.book{aspect-ratio:auto;height:220px}
+.hero.book img{object-fit:contain}
+.secover{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.secv{width:84px;height:110px;border-radius:6px;border:1px solid var(--line);background:var(--paper);overflow:hidden;display:grid;place-items:center;color:var(--muted);font-size:.75rem;text-align:center}
+.secv img{width:100%;height:100%;object-fit:cover}
+.svcover{width:120px;height:160px;border-radius:8px;border:1px solid var(--line);background:var(--paper);overflow:hidden}
+.svcover img{width:100%;height:100%;object-fit:cover}
+.srcrecipes .sth{display:block;flex:none;width:48px;height:48px;border-radius:6px;background:var(--paper);overflow:hidden}
+.srcrecipes .sth img{width:100%;height:100%;object-fit:cover}
+.photolink{margin:10px 0 0}
+.linkbtn{border:none;background:none;padding:6px 0;min-height:36px;color:var(--basil);font-weight:600;font-size:.9rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 /* Sources */
 .srcbtn{display:flex;align-items:center;gap:8px;width:100%;min-height:var(--tap);padding:6px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);text-align:left}
 .srcbtn::after{content:"";margin-left:auto;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
@@ -140,7 +186,7 @@ dialog.sheet .dlg-foot{position:static}
 .fsubh{font:600 .72rem/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
 .fsites{margin:6px 0 0 14px;padding-left:10px;border-left:2px solid var(--line)}
 .srcrecipes{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
-.srcrecipes button{display:block;width:100%;padding:10px 4px;border:none;border-bottom:1px solid var(--line);background:none;text-align:left;font:600 1rem/1.3 var(--serif)}
+.srcrecipes button{display:flex;gap:12px;align-items:center;width:100%;padding:10px 4px;border:none;border-bottom:1px solid var(--line);background:none;text-align:left;font:600 1rem/1.3 var(--serif)}
 .srcrecipes .m{display:block;font:.8rem var(--sans);color:var(--muted)}
 /* Tag manager */
 .tmlist{list-style:none;margin:0 0 10px;padding:0}
@@ -315,7 +361,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 @media (max-width:520px){.row2{grid-template-columns:1fr}.detail h2{font-size:1.8rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{
-  .active,.topbar,.lockbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
+  .hero,.photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
   .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
@@ -460,9 +506,17 @@ window.RECIPE_CONFIG = {
     <div class="field"><label for="v-label">Version name</label><input id="v-label" type="text" placeholder="e.g. With chicken thighs"></div>
     <div class="field"><label for="v-note">What's changing</label><input id="v-note" type="text" placeholder="One line, optional"></div>
     <label id="v-copywrap" class="check"><input id="v-copynotes" type="checkbox" checked><span><strong>Bring the margin notes across</strong></span></label>
+    <label id="v-photowrap" class="check"><input id="v-copyphotos" type="checkbox" checked><span><strong>Bring photos across from the previous version</strong><br><span class="muted">Each version gets its own copies, so deleting a photo from one doesn't affect the other. Needs a connection.</span></span></label>
     <p id="v-msg" class="msg err" hidden></p>
   </div>
   <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="v-go" class="btn primary" type="button">Create and edit</button></div>
+</dialog>
+
+<!-- Remove unused photos -->
+<dialog id="dlg-clean" aria-labelledby="cl-h">
+  <div class="dlg-head"><h2 id="cl-h">Remove unused photos</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body"><p id="cl-text"></p><p id="cl-msg" class="msg err" hidden></p></div>
+  <div class="dlg-foot"><button id="cl-cancel" class="btn" data-close type="button">Close</button><button id="cl-go" class="btn danger" type="button" hidden>Delete</button></div>
 </dialog>
 
 <!-- Delete or archive -->
@@ -534,6 +588,11 @@ window.RECIPE_CONFIG = {
     <div class="field" id="se-kindwrap"><span class="lbl">Kind</span><div class="seg" id="se-kind"><button type="button" data-v="Book">Book</button><button type="button" data-v="Homemade">Homemade</button><button type="button" data-v="Other">Other</button></div></div>
     <div class="field" id="se-authwrap"><label for="se-author">Author</label><input id="se-author" type="text" autocomplete="off"></div>
     <div class="field"><label for="se-notes">Notes</label><textarea id="se-notes" rows="3"></textarea></div>
+    <div class="field" id="se-coverwrap" hidden><span class="lbl">Cover photo</span>
+      <div class="secover"><span id="se-coverimg" class="secv">No cover</span>
+        <div class="stack"><button id="se-coveradd" class="btn" type="button">Add cover photo</button><button id="se-coverdel" class="btn danger" type="button">Remove</button></div></div>
+      <p id="se-coverhint" class="hint"></p>
+    </div>
     <p id="se-builtin" class="hint" hidden>Online is built in. It covers every website, so it can't be renamed or deleted.</p>
     <p id="se-msg" class="msg err" hidden></p>
   </div>
@@ -570,14 +629,41 @@ window.RECIPE_CONFIG = {
       <p id="s-file" class="hint" style="margin:0"></p>
       <div class="stack" style="margin-top:10px">
         <button id="s-reload" class="btn" type="button">Reload from Dropbox</button>
-        <button id="s-backup" class="btn" type="button">Download a backup</button>
+        <button id="s-backup" class="btn" type="button">Download a backup (recipes only)</button>
         <button id="s-disconnect" class="btn danger" type="button">Disconnect Dropbox</button>
       </div>
+      <p class="hint">Photos stay in Dropbox, which keeps its own version history of them. The backup covers recipes only.</p>
+    </div>
+    <div class="field"><span class="lbl">Photos on this device</span>
+      <p class="hint" style="margin:0 0 10px">Photos you've viewed are kept on this device so they open quickly. Clearing them is safe; they download again from Dropbox.</p>
+      <button id="s-photocache" class="btn" type="button">Clear saved photos</button>
+    </div>
+    <div class="field edit-only"><span class="lbl">Unused photos in Dropbox</span>
+      <p class="hint" style="margin:0 0 10px">Finds photo files no recipe or book uses any more, for example after deleting while offline, and removes them.</p>
+      <button id="s-clean" class="btn" type="button">Remove unused photos</button>
     </div>
     <p id="s-ver" class="hint"></p>
   </div>
   <div class="dlg-foot"><button id="s-save" class="btn primary" type="button">Done</button></div>
 </dialog>
+
+<!-- Photo viewer -->
+<dialog id="dlg-viewer" class="viewer" aria-label="Photo">
+  <div class="vw-top"><span id="vw-title" class="t"></span><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div id="vw-stage" class="vw-stage"><img id="vw-img" alt=""><button id="vw-prev" class="vw-nav prev" type="button" aria-label="Previous photo">‹</button><button id="vw-next" class="vw-nav next" type="button" aria-label="Next photo">›</button></div>
+  <div class="vw-bar">
+    <p id="vw-cap" class="vw-cap"></p>
+    <input id="vw-capin" type="text" placeholder="Add a caption" aria-label="Caption" autocomplete="off">
+    <div id="vw-acts" class="vw-acts">
+      <button id="vw-type" class="btn" type="button"></button>
+      <button id="vw-left" class="btn" type="button">Move earlier</button>
+      <button id="vw-right" class="btn" type="button">Move later</button>
+      <button id="vw-del" class="btn danger" type="button">Delete photo</button>
+    </div>
+  </div>
+</dialog>
+<input id="ph-input" type="file" accept="image/*" multiple hidden>
+<input id="cover-input" type="file" accept="image/*" hidden>
 
 <div id="toast" class="toast" role="status" hidden></div>
 
@@ -585,20 +671,23 @@ window.RECIPE_CONFIG = {
 (function(){
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
-const APP_VERSION = '3.0';
-const BUILD = 'R1';
-const DATA_VERSION = 4;
+const APP_VERSION = '4.0';
+const BUILD = 'R2';
+const DATA_VERSION = 5;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
 const MAX_DATA_VERSION = DATA_VERSION;
 /* Test mode: add ?test to the address to use /recipes-test.json in that tab only.
    Cache and unsaved changes are kept separately for a test file, so testing never mixes with the real book. */
-/* DEV_BUILD: set to true for a test build kept in the /test/ folder, so it only ever uses the test file.
-   The live build has it false; adding ?test to the address still switches a single tab to the test file. */
+/* DEV_BUILD: set to true for a test build kept in the /test/ folder, so it only ever uses the test file
+   and the photos-test folder. The live build has it false; adding ?test to the address still switches
+   a single tab to the test file. */
 const DEV_BUILD = false;
 const TEST = DEV_BUILD || new URLSearchParams(location.search).has('test');
 const FILE = TEST ? '/recipes-test.json' : CONFIG.filePath;
 const DK = FILE === '/recipes.json' ? '' : ':' + FILE;
+/* Photos live as separate files in Dropbox; the test file gets its own folder */
+const PHOTO_ROOT = TEST ? '/photos-test' : '/photos';
 
 /* ── Tag groups, sources and time (data format 4) ────── */
 const GROUPS = [['course','Course'],['mainIngredient','Main ingredient'],['cuisine','Cuisine'],['diet','Diet'],['effort','Effort'],['occasion','Occasion or season']];
@@ -778,7 +867,7 @@ function ensureSource(d,spec){
 function fixSources(d,addHomemade){
   const seen=new Set();
   d.sources=(Array.isArray(d.sources)?d.sources:[]).filter(s=>s && s.id && !seen.has(String(s.id)) && seen.add(String(s.id)))
-    .map(s=>Object.assign({},s,{id:String(s.id),name:String(s.name||'Untitled source'),kind:SOURCE_KINDS.includes(s.kind)?s.kind:'Other',author:String(s.author||''),notes:String(s.notes||'')}));
+    .map(s=>Object.assign({},s,{id:String(s.id),name:String(s.name||'Untitled source'),kind:SOURCE_KINDS.includes(s.kind)?s.kind:'Other',author:String(s.author||''),notes:String(s.notes||''),coverPhoto:String(s.coverPhoto||'')}));
   const on=d.sources.find(s=>s.id===ONLINE_ID);
   if(on) Object.assign(on,{name:'Online',kind:'Online',builtIn:true});
   else d.sources.unshift({id:ONLINE_ID,name:'Online',kind:'Online',author:'',notes:'',builtIn:true});
@@ -886,6 +975,9 @@ function normRecipe(r,i,seen,d){
   if('dateMade' in o){ delete o.dateMade; changed=true; }
   o.cookLog=o.cookLog.filter(e=>e&&e.date).sort((a,b)=>b.date.localeCompare(a.date));
   if(!Array.isArray(o.annotations)){ o.annotations=[]; changed=true; }
+  /* Photos belong to a version: [{id, path, type: Page | Dish, caption, order}] */
+  if(!Array.isArray(o.photos)){ o.photos=[]; changed=true; }
+  o.photos=o.photos.filter(p=>p && p.id && p.path).map(p=>Object.assign({},p,{id:String(p.id),path:String(p.path),type:p.type==='Page'?'Page':'Dish',caption:String(p.caption||''),order:Number(p.order)||0})).sort((a,b)=>a.order-b.order);
   o.annotations=o.annotations.filter(a=>a&&a.id&&a.target&&a.text!=null);
   if(!o.familyId){ o.familyId=o.id; o.parentId=null; o.versionNo=1; changed=true; }
   if(!o.versionNo){ o.versionNo=1; changed=true; }
@@ -1060,6 +1152,27 @@ function applyOp(d,op){
       d.sources=d.sources.filter(x=>x.id!==op.id);
       break;
     }
+    /* Photos: the file is uploaded first, then one queued change records it */
+    case 'photoAdd': {
+      const r=find(op.id); if(!r || !op.p) break; r.photos=r.photos||[];
+      if(r.photos.some(p=>p.id===op.p.id)) break;
+      const p=Object.assign(clone(op.p),{order:r.photos.reduce((m,x)=>Math.max(m,Number(x.order)||0),-1)+1});
+      r.photos.push(p); break;
+    }
+    case 'photoEdit': {
+      const r=find(op.id), p=r && (r.photos||[]).find(x=>x.id===op.pid); if(!p) break;
+      if(op.f.caption!=null) p.caption=String(op.f.caption);
+      if(op.f.type==='Page' || op.f.type==='Dish') p.type=op.f.type;
+      break;
+    }
+    case 'photoOrder': {
+      const r=find(op.id); if(!r) break; const ps=r.photos||[], out=[];
+      (op.order||[]).forEach(id=>{ const p=ps.find(x=>x.id===id); if(p && !out.includes(p)) out.push(p); });
+      ps.forEach(p=>{ if(!out.includes(p)) out.push(p); });
+      out.forEach((p,i)=>{ p.order=i; }); r.photos=out; break;
+    }
+    case 'sourceCover': { const x=(d.sources||[]).find(y=>y.id===op.id); if(x && x.id!==ONLINE_ID) x.coverPhoto=String(op.path||''); break; }
+    case 'photoDel': { const r=find(op.id); if(r) r.photos=(r.photos||[]).filter(p=>p.id!==op.pid); break; }
     case 'applyNote': {
       const r=find(op.id); if(!r) break;
       const it=r.ingredients.concat(r.instructions).find(x=>x.id===op.target);
@@ -1483,10 +1596,10 @@ function render(){
   $('#list').classList.toggle('grid',grid);
   $('#list').innerHTML=rs.length?rs.map(g=>{
     const r=g.def, n=g.logs.length;
-    const meta=n?'Made '+times(n)+', last '+fmtDate(g.logs[0].date):'Not made yet';
+    const meta=n?'Made '+times(n)+', last '+fmtDate(g.logs[0].date):'Not made yet', cov=grid?coverOf(r):null;
     if(grid) return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
-      '<span class="tile" style="background:'+tileColour(g.fid)+'"><span class="tile-t">'+esc(r.title)+'</span></span>'+
-      '<span class="tile-meta">'+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+
+      (cov?'<span class="tile has-img'+(cov.book?' book':'')+'"><img data-thumb="'+esc(cov.path)+'" alt=""></span>':'<span class="tile" style="background:'+tileColour(g.fid)+'"><span class="tile-t">'+esc(r.title)+'</span></span>')+
+      '<span class="tile-meta">'+(cov?'<span class="tile-name">'+esc(r.title)+'</span>':'')+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+
         (r.type==='External'?'<span class="badge">Link</span>':'')+(g.active.length>1?'<span class="badge ver-badge">'+g.active.length+' versions</span>':'')+
         esc(n?'Made '+times(n):'Not made yet')+'</span></button></li>';
     return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
@@ -1497,6 +1610,7 @@ function render(){
       '</button></li>';
   }).join(''):'<li class="empty">'+(total?'No recipes match. Try fewer words or remove a filter.':(canEdit()?'No recipes yet. Tap Add or Import to start.':'No recipes yet.'))+'</li>';
   renderDetail();
+  loadThumbs();
 }
 
 function renderFilterButton(){
@@ -1603,6 +1717,9 @@ function renderDetail(){
       (ed&&r.archived?'<button type="button" class="btn" data-act="restore" data-id="'+esc(r.id)+'">Restore this version</button>':'')+
       '</div></div>';
   }
+  const hc=coverOf(r);
+  if(hc) h+=hc.book?'<div class="hero book"><img data-thumb="'+esc(hc.path)+'" data-size="w960h640" alt="Book cover"></div>'
+    :'<button type="button" class="hero" data-act="photo" data-pid="'+esc(hc.pid)+'" aria-label="Open photo"><img data-thumb="'+esc(hc.path)+'" data-size="w960h640" alt=""></button>';
   h+='<h2>'+esc(r.title)+'</h2>';
   if(multi) h+='<p class="verline"><strong>'+esc(vName(r))+'</strong>'+(r.changeNote?'<br>'+esc(r.changeNote):'')+'</p>';
   const sl=srcLine(r,ed), url=recipeUrl(r);
@@ -1614,6 +1731,8 @@ function renderDetail(){
   const tl=TAG_KEYS.reduce((a,k)=>a.concat((r.tags[k]||[]).map(v=>({v,u:k==='unsorted'}))),[]);
   if(tl.length) h+='<div class="tags">'+tl.map(t=>'<span class="tag'+(t.u?' unsorted':'')+'"'+(t.u?' title="Unsorted"':'')+'>'+esc(t.v)+'</span>').join('')+'</div>';
   if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="newver">New version</button><button type="button" class="btn" data-act="paste-version">Paste as new version</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
+
+  h+=photoTop(r);
 
   if(ed){
     h+='<section class="logbox" aria-labelledby="log-h"><h3 id="log-h">Made it?</h3><div class="logrow">'+
@@ -1656,6 +1775,8 @@ function renderDetail(){
       '<div class="orphan"><p class="quote">'+esc(a.quote||'A line that has since been removed')+'</p>'+annoList([a],ed)+'</div>').join('')+'</section>';
   }
 
+  h+=photoSection(r,ed);
+
   if(multi){
     const activeCount=fam.filter(x=>!x.archived).length;
     h+='<section class="section versions-sec"><h3>Versions</h3><ul class="vers">'+versionTree(fam).map(node=>{
@@ -1692,6 +1813,7 @@ function renderDetail(){
   }
   h+='</section></article>';
   pane.innerHTML=h; pane.dataset.rid=r.id; pane.scrollTop=scrollTop;
+  loadThumbs();
 }
 
 function select(id){
@@ -1885,7 +2007,7 @@ function saveEdit(){
     if(!label){ const m=$('#edit-msg'); m.textContent='Give the new version a name, for example "Full recipe".'; m.hidden=false; $('#f-vlabel').focus(); return; }
     const now=new Date().toISOString(), nr=clone(base);
     Object.assign(nr,r,{familyId:base.familyId,parentId:base.id,versionLabel:label,changeNote:$('#f-vnote').value.trim(),
-      cookLog:[],archived:false,created:now,updated:now,annotations:[],tags:applyTagDiff(base.tags,r.tagDiff)});
+      cookLog:[],archived:false,created:now,updated:now,annotations:[],photos:[],tags:applyTagDiff(base.tags,r.tagDiff)});
     delete nr.tagDiff; delete nr.versionNo;
     $('#dlg-edit').close(); editing=null;
     commitMany(src.ops.concat([{t:'newVersion',r:nr}]));
@@ -1960,18 +2082,29 @@ function openNewVersion(r){
   $('#v-from').textContent='Starts as a copy of '+(familyOf(r).length>1?vName(r):'this recipe')+'. Everything comes across except the cooking history and the rating, and the new version becomes the one shown in your list.';
   $('#v-label').value=''; $('#v-note').value='';
   $('#v-copywrap').hidden=!r.annotations.length; $('#v-copynotes').checked=true;
+  $('#v-photowrap').hidden=!(r.photos||[]).length; $('#v-copyphotos').checked=true;
   $('#v-msg').hidden=true;
   $('#dlg-version').showModal();
 }
-function createVersion(){
+async function createVersion(){
   const base=state.db.recipes.find(x=>x.id===verBase);
   if(!base || state.locked){ $('#dlg-version').close(); if(state.locked) toast('Update this app before editing'); return; }
   const label=$('#v-label').value.trim();
   if(!label){ const m=$('#v-msg'); m.textContent='Give the new version a name, for example "With chicken thighs".'; m.hidden=false; $('#v-label').focus(); return; }
-  const now=new Date().toISOString(), nr=clone(base);
+  const now=new Date().toISOString(), nr=clone(base), nid=uid('r-');
   const keepNotes=!$('#v-copywrap').hidden && $('#v-copynotes').checked;
-  Object.assign(nr,{id:uid('r-'),familyId:base.familyId,parentId:base.id,versionLabel:label,changeNote:$('#v-note').value.trim(),
-    rating:0,cookLog:[],archived:false,created:now,updated:now,
+  const copyPhotos=!$('#v-photowrap').hidden && $('#v-copyphotos').checked;
+  let photos=[];
+  if(copyPhotos){
+    const m=$('#v-msg');
+    if(!navigator.onLine){ m.textContent='Bringing photos across needs a connection. Untick it, or try again when you\'re online.'; m.hidden=false; return; }
+    const btn=$('#v-go'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Copying photos…';
+    try{ photos=await copyPhotosTo(base,nid); }
+    catch(e){ console.error(e); if(e && e.auth){ syncError(e); return; } m.textContent=e.message||'The photos couldn\'t be copied.'; m.hidden=false; return; }
+    finally{ btn.disabled=false; btn.textContent='Create and edit'; }
+  }
+  Object.assign(nr,{id:nid,familyId:base.familyId,parentId:base.id,versionLabel:label,changeNote:$('#v-note').value.trim(),
+    rating:0,cookLog:[],archived:false,created:now,updated:now,photos,
     annotations:keepNotes?base.annotations.map(a=>Object.assign(clone(a),{id:uid('a-')})):[]});
   delete nr.versionNo;
   $('#dlg-version').close();
@@ -2316,12 +2449,53 @@ function openSourceEdit(id){
   $('#se-h').textContent=x?'Edit source':'Add a source';
   $('#se-name').value=x?x.name:''; $('#se-author').value=x?x.author:''; $('#se-notes').value=x?x.notes:'';
   setSeg('#se-kind',x?x.kind:'Book');
+  renderSeCover();
   $('#se-namewrap').hidden=online; $('#se-kindwrap').hidden=online; $('#se-builtin').hidden=!online;
   syncSeKind();
   $('#dlg-srcedit').showModal();
   if(!online) setTimeout(()=>$('#se-name').focus(),60);
 }
-function syncSeKind(){ $('#se-authwrap').hidden=segVal('#se-kind')!=='Book' || (seCtx&&seCtx.id===ONLINE_ID); }
+function syncSeKind(){
+  const book=segVal('#se-kind')==='Book' && !(seCtx && seCtx.id===ONLINE_ID);
+  $('#se-authwrap').hidden=!book; $('#se-coverwrap').hidden=!book;
+}
+/* Book cover photo: saved straight away (it needs a connection), separate from the Save button */
+function renderSeCover(){
+  const c=seCtx, x=c&&c.id?(state.db.sources||[]).find(s=>s.id===c.id):null, has=!!(x && x.coverPhoto);
+  $('#se-coverimg').innerHTML=has?'<img data-thumb="'+esc(x.coverPhoto)+'" alt="Book cover">':'No cover';
+  $('#se-coveradd').hidden=!x; $('#se-coverdel').hidden=!has;
+  $('#se-coveradd').textContent=c&&c.busy?'Uploading…':has?'Replace cover photo':'Add cover photo';
+  $('#se-coveradd').disabled=!!(c&&c.busy);
+  $('#se-coverhint').textContent=x?'Shown for this book\'s recipes until they have a dish photo. Cover changes are saved straight away.':'Save the source first, then add a cover photo.';
+  loadThumbs();
+}
+async function setSourceCover(sid,file){
+  if(!needOnline('Adding a cover photo')) return;
+  const x=(state.db.sources||[]).find(s=>s.id===sid); if(!x) return;
+  if(seCtx && seCtx.id===sid){ seCtx.busy=true; renderSeCover(); }
+  try{
+    const blob=await resizeImage(file,1600,0.85), thumb=await resizeImage(blob,480,0.8);
+    /* A new file name each time, so other devices never show an old cover from their saved copies */
+    const path=PHOTO_ROOT+'/sources/'+sid+'-'+Date.now().toString(36)+'.jpg';
+    const up=await dbxPut(path,blob,'add',false); if(up.conflict) throw new Error('Couldn\'t save the cover. Try again.');
+    cachePut('f:'+path,blob); cachePut(thumbKey(path),thumb); blobUrl(thumbKey(path),thumb);
+    const old=x.coverPhoto;
+    commit({t:'sourceCover',id:sid,path});
+    if(old){ cacheDel(thumbKey(old)); cacheDel('f:'+old); dbxDelete(old).catch(e=>console.error(e)); }
+    toast('Cover photo saved');
+  }catch(e){ console.error(e); if(e && e.auth) syncError(e); else toast(e.message||'The cover couldn\'t be uploaded'); }
+  finally{ if(seCtx && seCtx.id===sid){ seCtx.busy=false; renderSeCover(); } if($('#dlg-srcview').open) renderSourceView(); }
+}
+async function removeSourceCover(sid){
+  const x=(state.db.sources||[]).find(s=>s.id===sid); if(!x || !x.coverPhoto) return;
+  if(!needOnline('Removing a cover photo')) return;
+  if(!confirm('Remove this cover photo? It will be deleted from Dropbox too.')) return;
+  const old=x.coverPhoto;
+  commit({t:'sourceCover',id:sid,path:''});
+  cacheDel(thumbKey(old)); cacheDel('f:'+old);
+  try{ await dbxDelete(old); }catch(e){ console.error(e); }
+  renderSeCover(); if($('#dlg-srcview').open) renderSourceView(); toast('Cover photo removed');
+}
 function saveSourceEdit(){
   const c=seCtx; if(!c) return;
   const online=c.id===ONLINE_ID, name=$('#se-name').value.replace(/\s+/g,' ').trim(), kind=segVal('#se-kind')||'Other';
@@ -2350,7 +2524,9 @@ function runSourceDelete(){
   const c=sdCtx; if(!c) return;
   const n=srcUse(c.id), to=$('#sd-to').value;
   if(n && !to){ toast('Choose where the recipes should go first'); return; }
+  const cover=((state.db.sources||[]).find(x=>x.id===c.id)||{}).coverPhoto||'';
   commit({t:'sourceDelete',id:c.id,to:to==='__none'?'':to});
+  if(cover){ if(navigator.onLine) dbxDelete(cover).catch(e=>console.error(e)); }
   $('#dlg-srcdel').close(); sdCtx=null; toast('Source deleted'); renderSourceManager();
   if($('#dlg-srcview').open) $('#dlg-srcview').close();
 }
@@ -2362,17 +2538,354 @@ function renderSourceView(){
   if(!x){ $('#dlg-srcview').close(); return; }
   const gs=groups().filter(g=>g.def.sourceId===x.id).sort((a,b)=>a.def.title.localeCompare(b.def.title,'en-GB',{sensitivity:'base'}));
   $('#sv-h').textContent=x.id===ONLINE_ID?'Online':x.name;
-  let h='<p class="muted" style="margin:0">'+esc(x.id===ONLINE_ID?'Recipes from websites':x.kind+(x.author?' by '+x.author:''))+'</p>';
+  let h=(x.kind==='Book' && x.coverPhoto?'<div class="svcover"><img data-thumb="'+esc(x.coverPhoto)+'" alt="Book cover"></div>':'')+
+    '<p class="muted" style="margin:0">'+esc(x.id===ONLINE_ID?'Recipes from websites':x.kind+(x.author?' by '+x.author:''))+'</p>';
   if(x.notes) h+='<p class="notes" style="margin:0">'+esc(x.notes)+'</p>';
   h+=gs.length?'<ul class="srcrecipes">'+gs.map(g=>{
     const r=g.def, bits=[];
     if(x.kind==='Book' && r.sourceRef) bits.push('page '+r.sourceRef);
     if(x.kind==='Online' && r.siteName) bits.push(r.siteName);
     bits.push(g.logs.length?'made '+times(g.logs.length):'not made yet');
-    return '<li><button type="button" data-svopen="'+esc(r.id)+'">'+esc(r.title)+'<span class="m">'+esc(bits.join(', '))+'</span></button></li>';
+    const cv=coverOf(r);
+    return '<li><button type="button" data-svopen="'+esc(r.id)+'"><span class="sth">'+(cv?'<img data-thumb="'+esc(cv.path)+'" alt="">':'')+'</span><span>'+esc(r.title)+'<span class="m">'+esc(bits.join(', '))+'</span></span></button></li>';
   }).join('')+'</ul>':'<p class="muted" style="margin:0">No recipes use this source yet.</p>';
-  $('#sv-body').innerHTML=h;
+  $('#sv-body').innerHTML=h; loadThumbs();
   $('#sv-edit').hidden=!canEdit();
+}
+
+/* ── Photos ──────────────────────────────────────────── */
+const DBX_API='https://api.dropboxapi.com/2/files/';
+const urlCache=new Map(), photoBusy={};
+/* Viewed photos and thumbnails are kept in IndexedDB on this device; clearing it is safe */
+let idbP=null;
+function idb(){
+  if(idbP) return idbP;
+  idbP=new Promise((res,rej)=>{
+    if(!window.indexedDB) return rej(new Error('No IndexedDB'));
+    const q=indexedDB.open('rb-photos',1);
+    q.onupgradeneeded=()=>q.result.createObjectStore('blobs');
+    q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error);
+  });
+  idbP.catch(()=>{ idbP=null; });
+  return idbP;
+}
+async function cacheGet(k){ try{ const db=await idb(); return await new Promise(res=>{ const q=db.transaction('blobs').objectStore('blobs').get(k); q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null); }); }catch(e){ return null; } }
+async function cachePut(k,b){ try{ const db=await idb(); await new Promise(res=>{ const t=db.transaction('blobs','readwrite'); t.objectStore('blobs').put(b,k); t.oncomplete=res; t.onerror=res; t.onabort=res; }); }catch(e){} }
+async function cacheDel(k){ try{ const db=await idb(); await new Promise(res=>{ const t=db.transaction('blobs','readwrite'); t.objectStore('blobs').delete(k); t.oncomplete=res; t.onerror=res; t.onabort=res; }); }catch(e){} }
+async function cacheClear(){
+  try{ const db=await idb(); await new Promise(res=>{ const t=db.transaction('blobs','readwrite'); t.objectStore('blobs').clear(); t.oncomplete=res; t.onerror=res; t.onabort=res; }); }catch(e){}
+  urlCache.forEach(u=>URL.revokeObjectURL(u)); urlCache.clear();
+}
+function b64Blob(b64,type){ const bin=atob(b64), a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return new Blob([a],{type}); }
+function blobUrl(k,b){ if(urlCache.has(k)) return urlCache.get(k); const u=URL.createObjectURL(b); urlCache.set(k,u); return u; }
+function photosOf(r,type){ return (r.photos||[]).filter(p=>!type || p.type===type).sort((a,b)=>a.order-b.order); }
+/* New photos are recipe pages for book recipes, dish photos otherwise */
+function defaultPhotoType(r){ const x=srcOf(r); return x && x.kind==='Book'?'Page':'Dish'; }
+function photoStrip(list,label){
+  return list.length?'<h3>'+label+'<span class="n">'+list.length+'</span></h3><div class="strip">'+list.map(p=>
+    '<button type="button" class="ph" data-act="photo" data-pid="'+esc(p.id)+'" aria-label="'+esc((p.caption||label)+', open')+'"><img data-thumb="'+esc(p.path)+'" alt="">'+(p.caption?'<span class="cap">'+esc(p.caption)+'</span>':'')+'</button>').join('')+'</div>':'';
+}
+/* Recipe pages stay near the top only when they are the recipe (nothing typed in) */
+function pagesOnTop(r){ return !r.ingredients.length && !r.instructions.length && photosOf(r,'Page').length>0; }
+function photoTop(r){
+  const dish=photosOf(r,'Dish'), pages=photosOf(r,'Page'), top=pagesOnTop(r);
+  let h='';
+  if(top) h+='<section class="section photos-sec">'+photoStrip(pages,'Recipe pages')+'</section>';
+  const below=dish.length+(top?0:pages.length);
+  if(below){
+    const bits=[]; if(dish.length) bits.push(dish.length+' photo'+(dish.length>1?'s':'')); if(!top && pages.length) bits.push(pages.length+' recipe page'+(pages.length>1?'s':''));
+    h+='<p class="photolink"><button type="button" class="linkbtn" data-act="jump-photos">'+esc(bits.join(' and '))+' ↓</button></p>';
+  }
+  return h;
+}
+function photoSection(r,ed){
+  const dish=photosOf(r,'Dish'), pages=pagesOnTop(r)?[]:photosOf(r,'Page'), busy=photoBusy[r.id];
+  if(!dish.length && !pages.length && !ed) return '';
+  let h='<section class="section photos-sec" id="photos-sec">'+photoStrip(dish,'Photos')+photoStrip(pages,'Recipe pages');
+  if(!dish.length && !pages.length) h+='<h3>Photos</h3>';
+  if(ed) h+='<div class="phadd">'+(busy?'<span class="phstatus"><span class="spinner"></span> '+esc(busy)+'</span>':'<button type="button" class="btn" data-act="addphotos">＋ Add photos</button><span class="phstatus">'+(defaultPhotoType(r)==='Page'?'New photos are saved as recipe pages':'New photos are saved as dish photos')+'. You can change each one.</span>')+'</div>';
+  return h+'</section>';
+}
+/* Thumbnails: from memory, then this device, then Dropbox in batches of up to 25 */
+/* Cover rule: the version's first dish photo, else the book's cover for book recipes, else none.
+   Recipe pages are never used as covers. */
+function coverOf(r){
+  const d=photosOf(r,'Dish')[0]; if(d) return {path:d.path,pid:d.id,book:false};
+  const x=srcOf(r); if(x && x.kind==='Book' && x.coverPhoto) return {path:x.coverPhoto,pid:null,book:true};
+  return null;
+}
+const THUMB_SIZE='w480h320';
+function thumbKey(p,size){ return !size || size===THUMB_SIZE?'t:'+p:'t'+size+':'+p; }
+const thumbFlight=new Set();
+function setThumb(path,size,u){ $$('img[data-thumb]').forEach(im=>{ if(im.dataset.thumb===path && (im.dataset.size||THUMB_SIZE)===size && im.getAttribute('src')!==u) im.src=u; }); }
+/* Thumbnails: from memory, then this device, then Dropbox in batches of up to 25 */
+async function loadThumbs(){
+  const want=[];
+  $$('img[data-thumb]').forEach(im=>{ if(im.getAttribute('src')) return; const p=im.dataset.thumb, z=im.dataset.size||THUMB_SIZE; if(!want.some(w=>w.p===p && w.z===z)) want.push({p,z}); });
+  const need=[];
+  for(const w of want){
+    const k=thumbKey(w.p,w.z);
+    if(urlCache.has(k)){ setThumb(w.p,w.z,urlCache.get(k)); continue; }
+    const b=await cacheGet(k);
+    if(b){ setThumb(w.p,w.z,blobUrl(k,b)); continue; }
+    if(!thumbFlight.has(k)) need.push(w);
+  }
+  if(!need.length || !navigator.onLine || !ls.get('token',null)) return;
+  for(let i=0;i<need.length;i+=25){
+    const chunk=need.slice(i,i+25); chunk.forEach(w=>thumbFlight.add(thumbKey(w.p,w.z)));
+    try{
+      const res=await dbxFetch(DBX_CONTENT+'get_thumbnail_batch',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({entries:chunk.map(w=>({path:w.p,format:'jpeg',size:w.z,mode:'bestfit'}))})});
+      if(res.ok){
+        const j=await res.json();
+        (j.entries||[]).forEach((e,ix)=>{ if(e['.tag']!=='success' || !e.thumbnail) return;
+          const w=chunk[ix], k=thumbKey(w.p,w.z), b=b64Blob(e.thumbnail,'image/jpeg'); cachePut(k,b); setThumb(w.p,w.z,blobUrl(k,b)); });
+      }
+    }catch(e){ console.error(e); }
+    finally{ chunk.forEach(w=>thumbFlight.delete(thumbKey(w.p,w.z))); }
+  }
+}
+async function fullPhotoUrl(path){
+  const k='f:'+path;
+  if(urlCache.has(k)) return urlCache.get(k);
+  const c=await cacheGet(k); if(c) return blobUrl(k,c);
+  const res=await dbxFetch(DBX_CONTENT+'download',{method:'POST',headers:{'Dropbox-API-Arg':headerArg({path})}});
+  if(!res.ok) throw new Error('Couldn\'t load that photo ('+res.status+').');
+  const b=await res.blob(); cachePut(k,b); return blobUrl(k,b);
+}
+async function dbxDelete(path){
+  const res=await dbxFetch(DBX_API+'delete_v2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path})});
+  if(res.status===409) return; /* already gone */
+  if(!res.ok) throw new Error('Dropbox couldn\'t delete the photo ('+res.status+').');
+}
+/* Resize to about 2000px on the longest side, JPEG quality 0.85, so pages stay readable */
+function resizeImage(file,max,q){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      const sc=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+      const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(img.naturalWidth*sc)); c.height=Math.max(1,Math.round(img.naturalHeight*sc));
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(b=>b?resolve(b):reject(new Error('Couldn\'t prepare that photo.')),'image/jpeg',q);
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('Couldn\'t read that photo.')); };
+    img.src=url;
+  });
+}
+function needOnline(what){
+  if(state.locked){ toast('Update this app before editing'); return false; }
+  if(!navigator.onLine){ toast(what+' needs a connection. Try again when you\'re online.'); return false; }
+  return true;
+}
+let addTarget=null;
+function startAddPhotos(r){ if(!needOnline('Adding photos')) return; addTarget=r.id; $('#ph-input').value=''; $('#ph-input').click(); }
+async function addPhotos(rid,files){
+  let r=state.db.recipes.find(x=>x.id===rid); if(!r || !files.length) return;
+  if(!needOnline('Adding photos')) return;
+  const type=defaultPhotoType(r), n=files.length; let done=0, failed=0;
+  for(const f of files){
+    photoBusy[rid]='Uploading '+(done+failed+1)+' of '+n+'…'; renderDetail();
+    try{
+      const blob=await resizeImage(f,2000,0.85), thumb=await resizeImage(blob,480,0.8);
+      r=state.db.recipes.find(x=>x.id===rid); if(!r) break;
+      const pid=uid('p-'), path=PHOTO_ROOT+'/'+r.familyId+'/'+r.id+'/'+pid+'.jpg';
+      const up=await dbxPut(path,blob,'add',false);
+      if(up.conflict) throw new Error('A photo with that name already exists.');
+      cachePut('f:'+path,blob); cachePut('t:'+path,thumb); blobUrl('t:'+path,thumb);
+      commit({t:'photoAdd',id:rid,p:{id:pid,path,type,caption:''}});
+      done++;
+    }catch(e){
+      failed++; console.error(e);
+      if(e && e.auth){ delete photoBusy[rid]; syncError(e); return; }
+    }
+  }
+  delete photoBusy[rid]; renderDetail();
+  toast(failed?(done?done+' added, '+failed+' couldn\'t be uploaded':'The photo couldn\'t be uploaded. Check your connection.'):(done===1?'Photo added':done+' photos added'));
+}
+
+/* ── Photo viewer: swipe between photos, pinch or double-tap to zoom ── */
+const vw={rid:null,pid:null,s:1,x:0,y:0,pts:new Map(),pinch:null,pan:null,swipe:null,lastTap:0};
+function vwList(){
+  const r=state.db.recipes.find(x=>x.id===vw.rid); if(!r) return {r:null,list:[],p:null};
+  const p=(r.photos||[]).find(x=>x.id===vw.pid)||null;
+  return {r,list:p?photosOf(r,p.type):[],p};
+}
+function vwApply(){ $('#vw-img').style.transform='translate('+vw.x+'px,'+vw.y+'px) scale('+vw.s+')'; }
+function vwReset(){ vw.s=1; vw.x=0; vw.y=0; vwApply(); }
+function openViewer(rid,pid){ vw.rid=rid; vw.pid=pid; $('#dlg-viewer').showModal(); renderViewer(true); }
+async function renderViewer(load){
+  const {r,list,p}=vwList();
+  if(!r || !p){ if($('#dlg-viewer').open) $('#dlg-viewer').close(); return; }
+  const i=list.indexOf(p), ed=canEdit(), label=p.type==='Page'?'Recipe page':'Photo';
+  $('#vw-title').textContent=label+' '+(i+1)+' of '+list.length+' · '+r.title;
+  $('#vw-prev').hidden=i<=0; $('#vw-next').hidden=i>=list.length-1;
+  $('#vw-cap').textContent=p.caption; $('#vw-cap').hidden=ed || !p.caption;
+  $('#vw-capin').hidden=!ed; if(ed && document.activeElement!==$('#vw-capin')) $('#vw-capin').value=p.caption;
+  $('#vw-acts').hidden=!ed;
+  $('#vw-type').textContent=p.type==='Page'?'Make it a dish photo':'Make it a recipe page';
+  $('#vw-left').disabled=i<=0; $('#vw-right').disabled=i>=list.length-1;
+  if(!load) return;
+  vwReset();
+  const img=$('#vw-img'), want=p.path;
+  const t=urlCache.get('t:'+p.path) || (await cacheGet('t:'+p.path).then(b=>b?blobUrl('t:'+p.path,b):''));
+  if(vw.pid===p.id){ if(t) img.src=t; else img.removeAttribute('src'); }
+  try{ const u=await fullPhotoUrl(want); if(vw.pid===p.id) img.src=u; }
+  catch(e){ if(!t) toast(navigator.onLine?e.message:'This photo isn\'t saved on this device yet. Connect to view it.'); }
+}
+function vwGo(step){
+  const {list,p}=vwList(); if(!p) return;
+  const j=list.indexOf(p)+step; if(j<0 || j>=list.length) return;
+  saveCaption(); vw.pid=list[j].id; renderViewer(true);
+}
+function saveCaption(){
+  const {r,p}=vwList(); if(!r || !p || !canEdit() || $('#vw-capin').hidden) return;
+  const v=$('#vw-capin').value.replace(/\s+/g,' ').trim();
+  if(v!==p.caption) commit({t:'photoEdit',id:r.id,pid:p.id,f:{caption:v}});
+}
+function vwMove(step){
+  const {r,list,p}=vwList(); if(!p) return;
+  const i=list.indexOf(p), j=i+step; if(j<0 || j>=list.length) return;
+  const all=photosOf(r), a=all.indexOf(p), b=all.indexOf(list[j]);
+  [all[a],all[b]]=[all[b],all[a]];
+  commit({t:'photoOrder',id:r.id,order:all.map(x=>x.id)}); renderViewer(false);
+}
+function vwType(){
+  const {r,p}=vwList(); if(!p) return;
+  const to=p.type==='Page'?'Dish':'Page';
+  commit({t:'photoEdit',id:r.id,pid:p.id,f:{type:to}});
+  toast(to==='Dish'?'Now a dish photo':'Now a recipe page'); renderViewer(false);
+}
+async function vwDelete(){
+  const {r,list,p}=vwList(); if(!p) return;
+  if(!needOnline('Deleting photos')) return;
+  if(!confirm('Delete this photo? It will be removed from Dropbox too.')) return;
+  const i=list.indexOf(p), next=list[i+1]||list[i-1]||null;
+  commit({t:'photoDel',id:r.id,pid:p.id});
+  cacheDel('t:'+p.path); cacheDel('f:'+p.path);
+  try{ await dbxDelete(p.path); }catch(e){ console.error(e); toast('Photo removed from the recipe, but the file is still in Dropbox'); }
+  if(next){ vw.pid=next.id; renderViewer(true); } else $('#dlg-viewer').close();
+}
+function vwBind(){
+  const st=$('#vw-stage');
+  const dist=()=>{ const a=Array.from(vw.pts.values()); return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y); };
+  st.addEventListener('pointerdown',e=>{
+    if(e.target.closest('.vw-nav')) return;
+    st.setPointerCapture(e.pointerId); vw.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(vw.pts.size===2){ vw.pinch={d:dist(),s:vw.s}; vw.swipe=null; vw.pan=null; }
+    else if(vw.pts.size===1){ if(vw.s>1) vw.pan={x:e.clientX-vw.x,y:e.clientY-vw.y}; else vw.swipe={x:e.clientX,y:e.clientY}; }
+  });
+  st.addEventListener('pointermove',e=>{
+    if(!vw.pts.has(e.pointerId)) return;
+    vw.pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(vw.pinch && vw.pts.size===2){ vw.s=Math.min(5,Math.max(1,vw.pinch.s*dist()/vw.pinch.d)); if(vw.s===1){ vw.x=0; vw.y=0; } vwApply(); }
+    else if(vw.pan){ vw.x=e.clientX-vw.pan.x; vw.y=e.clientY-vw.pan.y; vwApply(); }
+  });
+  const end=e=>{
+    if(!vw.pts.has(e.pointerId)) return;
+    const pt=vw.pts.get(e.pointerId); vw.pts.delete(e.pointerId);
+    if(vw.pts.size<2) vw.pinch=null;
+    if(vw.swipe && vw.pts.size===0){
+      const dx=e.clientX-vw.swipe.x, dy=e.clientY-vw.swipe.y; vw.swipe=null;
+      if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.5){ vwGo(dx<0?1:-1); return; }
+      if(Math.abs(dx)<10 && Math.abs(dy)<10){
+        const now=Date.now();
+        if(now-vw.lastTap<320){ vw.lastTap=0; if(vw.s>1) vwReset(); else { vw.s=2.5; vwApply(); } }
+        else vw.lastTap=now;
+      }
+    }
+    if(vw.pts.size===0) vw.pan=null;
+  };
+  st.addEventListener('pointerup',end); st.addEventListener('pointercancel',end);
+  $('#vw-prev').addEventListener('click',()=>vwGo(-1));
+  $('#vw-next').addEventListener('click',()=>vwGo(1));
+  $('#vw-left').addEventListener('click',()=>vwMove(-1));
+  $('#vw-right').addEventListener('click',()=>vwMove(1));
+  $('#vw-type').addEventListener('click',vwType);
+  $('#vw-del').addEventListener('click',vwDelete);
+  $('#vw-capin').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); saveCaption(); $('#vw-capin').blur(); toast('Caption saved'); } });
+  $('#vw-capin').addEventListener('blur',saveCaption);
+  $('#dlg-viewer').addEventListener('keydown',e=>{ if(e.target===$('#vw-capin')) return; if(e.key==='ArrowLeft') vwGo(-1); if(e.key==='ArrowRight') vwGo(1); });
+  $('#dlg-viewer').addEventListener('close',()=>{ saveCaption(); vw.pts.clear(); vw.rid=null; vw.pid=null; });
+  $('#ph-input').addEventListener('change',e=>{ const files=Array.from(e.target.files||[]); if(addTarget && files.length) addPhotos(addTarget,files); });
+}
+
+/* ── Photo housekeeping ─────────────────────────────── */
+async function dbxCopy(from,to){
+  const res=await dbxFetch(DBX_API+'copy_v2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from_path:from,to_path:to,autorename:false})});
+  if(!res.ok){ const j=await res.json().catch(()=>({})); throw new Error('Dropbox couldn\'t copy a photo'+(j.error_summary?' ('+j.error_summary+')':'')+'.'); }
+}
+/* A new version gets its own copy of each photo file; if any copy fails, the copies made so far are removed */
+async function copyPhotosTo(base,nid){
+  const out=[], made=[];
+  try{
+    for(const p of photosOf(base)){
+      const pid=uid('p-'), to=PHOTO_ROOT+'/'+base.familyId+'/'+nid+'/'+pid+'.jpg';
+      await dbxCopy(p.path,to); made.push(to);
+      out.push({id:pid,path:to,type:p.type,caption:p.caption,order:p.order});
+      for(const k of [thumbKey(p.path),thumbKey(p.path,'w960h640'),'f:'+p.path]){ const b=await cacheGet(k); if(b) cachePut(k.replace(p.path,to),b); }
+    }
+  }catch(e){ made.forEach(x=>dbxDelete(x).catch(()=>{})); throw e; }
+  return out;
+}
+function familyHasPhotos(fid){ return state.db.recipes.some(r=>r.familyId===fid && (r.photos||[]).length); }
+/* Deleting a recipe removes its photo folder (every version's photos) */
+function removeFamilyPhotos(fid){
+  if(!navigator.onLine){ setTimeout(()=>toast('Its photos stay in Dropbox for now. Use Remove unused photos in Settings later.'),2700); return; }
+  dbxDelete(PHOTO_ROOT+'/'+fid).catch(e=>console.error(e));
+}
+async function dbxListAll(path){
+  const call=async(url,body)=>{ const res=await dbxFetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(res.status===409) return null; if(!res.ok) throw new Error('Dropbox couldn\'t list the photos ('+res.status+').'); return res.json(); };
+  let j=await call(DBX_API+'list_folder',{path,recursive:true,include_deleted:false}); if(!j) return [];
+  let out=j.entries||[];
+  while(j.has_more){ j=await call(DBX_API+'list_folder/continue',{cursor:j.cursor}); if(!j) break; out=out.concat(j.entries||[]); }
+  return out;
+}
+/* Remove unused photos: anything under the photos folder that no recipe version or book uses.
+   Files added in the last day are left alone, in case another device is still saving them. */
+let cleanPlan=null;
+function clText(t,err){ $('#cl-text').textContent=t; const m=$('#cl-msg'); m.textContent=err||''; m.hidden=!err; }
+async function openCleanup(){
+  cleanPlan=null; $('#cl-go').hidden=true; $('#cl-cancel').textContent='Close';
+  $('#dlg-clean').showModal();
+  if(state.locked){ clText('','Update this app first.'); return; }
+  if(!navigator.onLine){ clText('','This needs a connection.'); return; }
+  $('#cl-text').innerHTML='<span class="spinner"></span> Checking Dropbox…'; $('#cl-msg').hidden=true;
+  try{
+    if(state.queue.length) await flush();
+    await pull();
+    if(state.queue.length){ clText('','Some changes are still waiting to save. Try again once the status says Saved.'); return; }
+    const used=new Set();
+    state.db.recipes.forEach(r=>(r.photos||[]).forEach(p=>used.add(p.path.toLowerCase())));
+    (state.db.sources||[]).forEach(x=>{ if(x.coverPhoto) used.add(x.coverPhoto.toLowerCase()); });
+    const usedList=Array.from(used), entries=await dbxListAll(PHOTO_ROOT), cutoff=Date.now()-86400000;
+    const files=entries.filter(e=>e['.tag']==='file'), folders=entries.filter(e=>e['.tag']==='folder').map(e=>e.path_lower);
+    const recent=f=>Date.parse(f.server_modified||0)>cutoff;
+    const under=(p,f)=>p.indexOf(f+'/')===0;
+    let delFolders=folders.filter(f=>!usedList.some(u=>under(u,f)) && !files.some(x=>under(x.path_lower,f) && recent(x)));
+    delFolders=delFolders.filter(f=>!delFolders.some(g=>g!==f && under(f,g)));
+    const inDel=p=>delFolders.some(f=>under(p,f));
+    const delFiles=files.filter(x=>!used.has(x.path_lower) && !recent(x) && !inDel(x.path_lower));
+    const gone=files.filter(x=>inDel(x.path_lower)).concat(delFiles);
+    const n=gone.length, mb=(gone.reduce((t,x)=>t+(x.size||0),0)/1048576).toFixed(1);
+    if(!n && !delFolders.length){ clText('No unused photos. Every photo file in Dropbox belongs to a recipe or a book.'); return; }
+    cleanPlan={folders:delFolders,files:delFiles.map(x=>x.path_lower)};
+    clText(n?n+' unused photo'+(n>1?'s':'')+(Number(mb)>=0.1?' ('+mb+' MB)':'')+' found, left over from deleted recipes or replaced photos. Delete them from Dropbox? Photos added in the last day are left alone.'
+      :'Only empty photo folders were found. Delete them?');
+    $('#cl-go').textContent=n?'Delete '+n+' photo'+(n>1?'s':''):'Delete empty folders'; $('#cl-go').hidden=false; $('#cl-cancel').textContent='Cancel';
+  }catch(e){ console.error(e); if(e && e.auth){ $('#dlg-clean').close(); syncError(e); return; } clText('',e.message||'Something went wrong checking Dropbox.'); }
+}
+async function runCleanup(){
+  const p=cleanPlan; if(!p) return;
+  const btn=$('#cl-go'); btn.disabled=true; let ok=0, bad=0;
+  const all=p.folders.concat(p.files);
+  for(const path of all){
+    $('#cl-text').innerHTML='<span class="spinner"></span> Deleting '+(ok+bad+1)+' of '+all.length+'…';
+    try{ await dbxDelete(path); ok++; }catch(e){ bad++; console.error(e); }
+  }
+  btn.disabled=false; btn.hidden=true; cleanPlan=null; $('#cl-cancel').textContent='Close';
+  clText(bad?'Done, but '+bad+' item'+(bad>1?'s':'')+' couldn\'t be deleted. You can run this again.':'Done. Unused photos have been removed from Dropbox.');
 }
 
 /* ── Settings ────────────────────────────────────────── */
@@ -2439,7 +2952,7 @@ function bind(){
     if(act==='print') window.print();
     if(act==='delete'){
       if(familyOf(r).length>1){ openDelete(r); return; }
-      if(confirm('Delete "'+r.title+'" and its cooking history? This can\'t be undone.')){ commit({t:'delete',id:r.id}); state.selected=null; render(); toast('Recipe deleted'); }
+      if(confirm('Delete "'+r.title+'" and its cooking history? This can\'t be undone.')){ const fid=r.familyId, had=familyHasPhotos(fid); commit({t:'delete',id:r.id}); state.selected=null; render(); if(had) removeFamilyPhotos(fid); toast('Recipe deleted'); }
     }
     if(act==='log'){
       const date=$('#log-date').value||today(), comment=$('#log-comment').value.trim();
@@ -2450,6 +2963,9 @@ function bind(){
     if(act==='unlog'){ if(confirm('Remove this entry from the cooking history?')) commit({t:'unlog',id:r.id,eid:el.dataset.eid}); }
     if(act==='paste-version'){ openImport({versionOf:r.id}); return; }
     if(act==='srcpage'){ openSourceView(el.dataset.sid); return; }
+    if(act==='photo'){ openViewer(r.id,el.dataset.pid); return; }
+    if(act==='addphotos'){ startAddPhotos(r); return; }
+    if(act==='jump-photos'){ const sec=$('#photos-sec'); if(sec) sec.scrollIntoView({behavior:'smooth',block:'start'}); return; }
     if(act==='note') openNote(r,el.dataset.target,null);
     if(act==='note-edit') openNote(r,null,el.dataset.aid);
     if(act==='note-recipe') openNote(r,'recipe',null);
@@ -2509,7 +3025,8 @@ function bind(){
     const n=familyOf(r).length;
     if(!confirm('Delete "'+r.title+'" and all '+n+' versions, including their cooking history? This can\'t be undone.')) return;
     $('#dlg-delete').close();
-    commit({t:'delete',id:r.id}); state.selected=null; render(); toast('Recipe deleted');
+    const fid=r.familyId, had=familyHasPhotos(fid);
+    commit({t:'delete',id:r.id}); state.selected=null; render(); if(had) removeFamilyPhotos(fid); toast('Recipe deleted');
   });
 
   $('#imp-copy').addEventListener('click',copyPrompt);
@@ -2525,6 +3042,9 @@ function bind(){
     if(b.dataset.sm==='delete') openSourceDelete(b.dataset.sid); });
   $('#se-kind').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ setSeg('#se-kind',b.dataset.v); syncSeKind(); } });
   $('#se-save').addEventListener('click',saveSourceEdit);
+  $('#se-coveradd').addEventListener('click',()=>{ if(!seCtx || !seCtx.id || !needOnline('Adding a cover photo')) return; $('#cover-input').value=''; $('#cover-input').click(); });
+  $('#cover-input').addEventListener('change',e=>{ const f=(e.target.files||[])[0]; if(f && seCtx && seCtx.id) setSourceCover(seCtx.id,f); });
+  $('#se-coverdel').addEventListener('click',()=>{ if(seCtx && seCtx.id) removeSourceCover(seCtx.id); });
   $('#sd-go').addEventListener('click',runSourceDelete);
   $('#sv-edit').addEventListener('click',()=>{ if(svCtx) openSourceEdit(svCtx.id); });
   $('#sv-filter').addEventListener('click',()=>{ if(!svCtx) return; FILTER_KEYS.forEach(g=>fsel(g).clear()); clearColl(); fsel('source').add('id:'+svCtx.id);
@@ -2538,6 +3058,10 @@ function bind(){
   $('#ta-name').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); runTagAction(); } });
   $('#s-reload').addEventListener('click',()=>{ $('#dlg-settings').close(); pull(); });
   $('#s-backup').addEventListener('click',downloadBackup);
+  $('#s-clean').addEventListener('click',()=>{ saveSettings(); openCleanup(); });
+  $('#cl-go').addEventListener('click',runCleanup);
+  $('#s-photocache').addEventListener('click',async()=>{ await cacheClear(); toast('Saved photos cleared from this device'); renderDetail(); });
+  vwBind();
   $('#s-disconnect').addEventListener('click',()=>{
     const warn=state.queue.length?' You have '+state.queue.length+' unsaved change(s) that will be lost.':'';
     if(!confirm('Disconnect Dropbox on this device?'+warn)) return;
