@@ -162,9 +162,10 @@ dialog.viewer::backdrop{background:#111}
 .secv img{width:100%;height:100%;object-fit:cover}
 .svcover{width:120px;height:160px;border-radius:8px;border:1px solid var(--line);background:var(--paper);overflow:hidden}
 .svcover img{width:100%;height:100%;object-fit:cover}
-.srcrecipes button{display:flex;gap:10px;align-items:center}
-.srcrecipes .sth{flex:none;width:48px;height:48px;border-radius:6px;background:var(--paper);overflow:hidden}
+.srcrecipes .sth{display:block;flex:none;width:48px;height:48px;border-radius:6px;background:var(--paper);overflow:hidden}
 .srcrecipes .sth img{width:100%;height:100%;object-fit:cover}
+.photolink{margin:10px 0 0}
+.linkbtn{border:none;background:none;padding:6px 0;min-height:36px;color:var(--basil);font-weight:600;font-size:.9rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 /* Sources */
 .srcbtn{display:flex;align-items:center;gap:8px;width:100%;min-height:var(--tap);padding:6px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);text-align:left}
 .srcbtn::after{content:"";margin-left:auto;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
@@ -185,7 +186,7 @@ dialog.viewer::backdrop{background:#111}
 .fsubh{font:600 .72rem/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
 .fsites{margin:6px 0 0 14px;padding-left:10px;border-left:2px solid var(--line)}
 .srcrecipes{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
-.srcrecipes button{display:block;width:100%;padding:10px 4px;border:none;border-bottom:1px solid var(--line);background:none;text-align:left;font:600 1rem/1.3 var(--serif)}
+.srcrecipes button{display:flex;gap:12px;align-items:center;width:100%;padding:10px 4px;border:none;border-bottom:1px solid var(--line);background:none;text-align:left;font:600 1rem/1.3 var(--serif)}
 .srcrecipes .m{display:block;font:.8rem var(--sans);color:var(--muted)}
 /* Tag manager */
 .tmlist{list-style:none;margin:0 0 10px;padding:0}
@@ -659,7 +660,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '3.0';
-const BUILD = 'R2 step 2 (test)';
+const BUILD = 'R2 step 2b (test)';
 const DATA_VERSION = 5;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -1718,7 +1719,7 @@ function renderDetail(){
   if(tl.length) h+='<div class="tags">'+tl.map(t=>'<span class="tag'+(t.u?' unsorted':'')+'"'+(t.u?' title="Unsorted"':'')+'>'+esc(t.v)+'</span>').join('')+'</div>';
   if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="newver">New version</button><button type="button" class="btn" data-act="paste-version">Paste as new version</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
 
-  h+=photoSection(r,ed);
+  h+=photoTop(r);
 
   if(ed){
     h+='<section class="logbox" aria-labelledby="log-h"><h3 id="log-h">Made it?</h3><div class="logrow">'+
@@ -1760,6 +1761,8 @@ function renderDetail(){
     h+='<section class="section"><h3>Notes on removed lines</h3>'+orphans.map(a=>
       '<div class="orphan"><p class="quote">'+esc(a.quote||'A line that has since been removed')+'</p>'+annoList([a],ed)+'</div>').join('')+'</section>';
   }
+
+  h+=photoSection(r,ed);
 
   if(multi){
     const activeCount=fam.filter(x=>!x.archived).length;
@@ -2552,12 +2555,27 @@ function blobUrl(k,b){ if(urlCache.has(k)) return urlCache.get(k); const u=URL.c
 function photosOf(r,type){ return (r.photos||[]).filter(p=>!type || p.type===type).sort((a,b)=>a.order-b.order); }
 /* New photos are recipe pages for book recipes, dish photos otherwise */
 function defaultPhotoType(r){ const x=srcOf(r); return x && x.kind==='Book'?'Page':'Dish'; }
-function photoSection(r,ed){
-  const dish=photosOf(r,'Dish'), pages=photosOf(r,'Page'), busy=photoBusy[r.id];
-  if(!dish.length && !pages.length && !ed) return '';
-  const strip=(list,label)=>list.length?'<h3>'+label+'<span class="n">'+list.length+'</span></h3><div class="strip">'+list.map(p=>
+function photoStrip(list,label){
+  return list.length?'<h3>'+label+'<span class="n">'+list.length+'</span></h3><div class="strip">'+list.map(p=>
     '<button type="button" class="ph" data-act="photo" data-pid="'+esc(p.id)+'" aria-label="'+esc((p.caption||label)+', open')+'"><img data-thumb="'+esc(p.path)+'" alt="">'+(p.caption?'<span class="cap">'+esc(p.caption)+'</span>':'')+'</button>').join('')+'</div>':'';
-  let h='<section class="section photos-sec">'+strip(dish,'Photos')+strip(pages,'Recipe pages');
+}
+/* Recipe pages stay near the top only when they are the recipe (nothing typed in) */
+function pagesOnTop(r){ return !r.ingredients.length && !r.instructions.length && photosOf(r,'Page').length>0; }
+function photoTop(r){
+  const dish=photosOf(r,'Dish'), pages=photosOf(r,'Page'), top=pagesOnTop(r);
+  let h='';
+  if(top) h+='<section class="section photos-sec">'+photoStrip(pages,'Recipe pages')+'</section>';
+  const below=dish.length+(top?0:pages.length);
+  if(below){
+    const bits=[]; if(dish.length) bits.push(dish.length+' photo'+(dish.length>1?'s':'')); if(!top && pages.length) bits.push(pages.length+' recipe page'+(pages.length>1?'s':''));
+    h+='<p class="photolink"><button type="button" class="linkbtn" data-act="jump-photos">'+esc(bits.join(' and '))+' ↓</button></p>';
+  }
+  return h;
+}
+function photoSection(r,ed){
+  const dish=photosOf(r,'Dish'), pages=pagesOnTop(r)?[]:photosOf(r,'Page'), busy=photoBusy[r.id];
+  if(!dish.length && !pages.length && !ed) return '';
+  let h='<section class="section photos-sec" id="photos-sec">'+photoStrip(dish,'Photos')+photoStrip(pages,'Recipe pages');
   if(!dish.length && !pages.length) h+='<h3>Photos</h3>';
   if(ed) h+='<div class="phadd">'+(busy?'<span class="phstatus"><span class="spinner"></span> '+esc(busy)+'</span>':'<button type="button" class="btn" data-act="addphotos">＋ Add photos</button><span class="phstatus">'+(defaultPhotoType(r)==='Page'?'New photos are saved as recipe pages':'New photos are saved as dish photos')+'. You can change each one.</span>')+'</div>';
   return h+'</section>';
@@ -2843,6 +2861,7 @@ function bind(){
     if(act==='srcpage'){ openSourceView(el.dataset.sid); return; }
     if(act==='photo'){ openViewer(r.id,el.dataset.pid); return; }
     if(act==='addphotos'){ startAddPhotos(r); return; }
+    if(act==='jump-photos'){ const sec=$('#photos-sec'); if(sec) sec.scrollIntoView({behavior:'smooth',block:'start'}); return; }
     if(act==='note') openNote(r,el.dataset.target,null);
     if(act==='note-edit') openNote(r,null,el.dataset.aid);
     if(act==='note-recipe') openNote(r,'recipe',null);
