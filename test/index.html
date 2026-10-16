@@ -506,9 +506,17 @@ window.RECIPE_CONFIG = {
     <div class="field"><label for="v-label">Version name</label><input id="v-label" type="text" placeholder="e.g. With chicken thighs"></div>
     <div class="field"><label for="v-note">What's changing</label><input id="v-note" type="text" placeholder="One line, optional"></div>
     <label id="v-copywrap" class="check"><input id="v-copynotes" type="checkbox" checked><span><strong>Bring the margin notes across</strong></span></label>
+    <label id="v-photowrap" class="check"><input id="v-copyphotos" type="checkbox" checked><span><strong>Bring photos across from the previous version</strong><br><span class="muted">Each version gets its own copies, so deleting a photo from one doesn't affect the other. Needs a connection.</span></span></label>
     <p id="v-msg" class="msg err" hidden></p>
   </div>
   <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="v-go" class="btn primary" type="button">Create and edit</button></div>
+</dialog>
+
+<!-- Remove unused photos -->
+<dialog id="dlg-clean" aria-labelledby="cl-h">
+  <div class="dlg-head"><h2 id="cl-h">Remove unused photos</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body"><p id="cl-text"></p><p id="cl-msg" class="msg err" hidden></p></div>
+  <div class="dlg-foot"><button id="cl-cancel" class="btn" data-close type="button">Close</button><button id="cl-go" class="btn danger" type="button" hidden>Delete</button></div>
 </dialog>
 
 <!-- Delete or archive -->
@@ -630,6 +638,10 @@ window.RECIPE_CONFIG = {
       <p class="hint" style="margin:0 0 10px">Photos you've viewed are kept on this device so they open quickly. Clearing them is safe; they download again from Dropbox.</p>
       <button id="s-photocache" class="btn" type="button">Clear saved photos</button>
     </div>
+    <div class="field edit-only"><span class="lbl">Unused photos in Dropbox</span>
+      <p class="hint" style="margin:0 0 10px">Finds photo files no recipe or book uses any more, for example after deleting while offline, and removes them.</p>
+      <button id="s-clean" class="btn" type="button">Remove unused photos</button>
+    </div>
     <p id="s-ver" class="hint"></p>
   </div>
   <div class="dlg-foot"><button id="s-save" class="btn primary" type="button">Done</button></div>
@@ -660,7 +672,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '3.0';
-const BUILD = 'R2 step 2b (test)';
+const BUILD = 'R2 step 3 (test)';
 const DATA_VERSION = 5;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -2069,18 +2081,29 @@ function openNewVersion(r){
   $('#v-from').textContent='Starts as a copy of '+(familyOf(r).length>1?vName(r):'this recipe')+'. Everything comes across except the cooking history and the rating, and the new version becomes the one shown in your list.';
   $('#v-label').value=''; $('#v-note').value='';
   $('#v-copywrap').hidden=!r.annotations.length; $('#v-copynotes').checked=true;
+  $('#v-photowrap').hidden=!(r.photos||[]).length; $('#v-copyphotos').checked=true;
   $('#v-msg').hidden=true;
   $('#dlg-version').showModal();
 }
-function createVersion(){
+async function createVersion(){
   const base=state.db.recipes.find(x=>x.id===verBase);
   if(!base || state.locked){ $('#dlg-version').close(); if(state.locked) toast('Update this app before editing'); return; }
   const label=$('#v-label').value.trim();
   if(!label){ const m=$('#v-msg'); m.textContent='Give the new version a name, for example "With chicken thighs".'; m.hidden=false; $('#v-label').focus(); return; }
-  const now=new Date().toISOString(), nr=clone(base);
+  const now=new Date().toISOString(), nr=clone(base), nid=uid('r-');
   const keepNotes=!$('#v-copywrap').hidden && $('#v-copynotes').checked;
-  Object.assign(nr,{id:uid('r-'),familyId:base.familyId,parentId:base.id,versionLabel:label,changeNote:$('#v-note').value.trim(),
-    rating:0,cookLog:[],archived:false,created:now,updated:now,photos:[],
+  const copyPhotos=!$('#v-photowrap').hidden && $('#v-copyphotos').checked;
+  let photos=[];
+  if(copyPhotos){
+    const m=$('#v-msg');
+    if(!navigator.onLine){ m.textContent='Bringing photos across needs a connection. Untick it, or try again when you\'re online.'; m.hidden=false; return; }
+    const btn=$('#v-go'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Copying photos…';
+    try{ photos=await copyPhotosTo(base,nid); }
+    catch(e){ console.error(e); if(e && e.auth){ syncError(e); return; } m.textContent=e.message||'The photos couldn\'t be copied.'; m.hidden=false; return; }
+    finally{ btn.disabled=false; btn.textContent='Create and edit'; }
+  }
+  Object.assign(nr,{id:nid,familyId:base.familyId,parentId:base.id,versionLabel:label,changeNote:$('#v-note').value.trim(),
+    rating:0,cookLog:[],archived:false,created:now,updated:now,photos,
     annotations:keepNotes?base.annotations.map(a=>Object.assign(clone(a),{id:uid('a-')})):[]});
   delete nr.versionNo;
   $('#dlg-version').close();
@@ -2500,7 +2523,9 @@ function runSourceDelete(){
   const c=sdCtx; if(!c) return;
   const n=srcUse(c.id), to=$('#sd-to').value;
   if(n && !to){ toast('Choose where the recipes should go first'); return; }
+  const cover=((state.db.sources||[]).find(x=>x.id===c.id)||{}).coverPhoto||'';
   commit({t:'sourceDelete',id:c.id,to:to==='__none'?'':to});
+  if(cover){ if(navigator.onLine) dbxDelete(cover).catch(e=>console.error(e)); }
   $('#dlg-srcdel').close(); sdCtx=null; toast('Source deleted'); renderSourceManager();
   if($('#dlg-srcview').open) $('#dlg-srcview').close();
 }
@@ -2784,6 +2809,84 @@ function vwBind(){
   $('#ph-input').addEventListener('change',e=>{ const files=Array.from(e.target.files||[]); if(addTarget && files.length) addPhotos(addTarget,files); });
 }
 
+/* ── Photo housekeeping ─────────────────────────────── */
+async function dbxCopy(from,to){
+  const res=await dbxFetch(DBX_API+'copy_v2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({from_path:from,to_path:to,autorename:false})});
+  if(!res.ok){ const j=await res.json().catch(()=>({})); throw new Error('Dropbox couldn\'t copy a photo'+(j.error_summary?' ('+j.error_summary+')':'')+'.'); }
+}
+/* A new version gets its own copy of each photo file; if any copy fails, the copies made so far are removed */
+async function copyPhotosTo(base,nid){
+  const out=[], made=[];
+  try{
+    for(const p of photosOf(base)){
+      const pid=uid('p-'), to=PHOTO_ROOT+'/'+base.familyId+'/'+nid+'/'+pid+'.jpg';
+      await dbxCopy(p.path,to); made.push(to);
+      out.push({id:pid,path:to,type:p.type,caption:p.caption,order:p.order});
+      for(const k of [thumbKey(p.path),thumbKey(p.path,'w960h640'),'f:'+p.path]){ const b=await cacheGet(k); if(b) cachePut(k.replace(p.path,to),b); }
+    }
+  }catch(e){ made.forEach(x=>dbxDelete(x).catch(()=>{})); throw e; }
+  return out;
+}
+function familyHasPhotos(fid){ return state.db.recipes.some(r=>r.familyId===fid && (r.photos||[]).length); }
+/* Deleting a recipe removes its photo folder (every version's photos) */
+function removeFamilyPhotos(fid){
+  if(!navigator.onLine){ setTimeout(()=>toast('Its photos stay in Dropbox for now. Use Remove unused photos in Settings later.'),2700); return; }
+  dbxDelete(PHOTO_ROOT+'/'+fid).catch(e=>console.error(e));
+}
+async function dbxListAll(path){
+  const call=async(url,body)=>{ const res=await dbxFetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(res.status===409) return null; if(!res.ok) throw new Error('Dropbox couldn\'t list the photos ('+res.status+').'); return res.json(); };
+  let j=await call(DBX_API+'list_folder',{path,recursive:true,include_deleted:false}); if(!j) return [];
+  let out=j.entries||[];
+  while(j.has_more){ j=await call(DBX_API+'list_folder/continue',{cursor:j.cursor}); if(!j) break; out=out.concat(j.entries||[]); }
+  return out;
+}
+/* Remove unused photos: anything under the photos folder that no recipe version or book uses.
+   Files added in the last day are left alone, in case another device is still saving them. */
+let cleanPlan=null;
+function clText(t,err){ $('#cl-text').textContent=t; const m=$('#cl-msg'); m.textContent=err||''; m.hidden=!err; }
+async function openCleanup(){
+  cleanPlan=null; $('#cl-go').hidden=true; $('#cl-cancel').textContent='Close';
+  $('#dlg-clean').showModal();
+  if(state.locked){ clText('','Update this app first.'); return; }
+  if(!navigator.onLine){ clText('','This needs a connection.'); return; }
+  $('#cl-text').innerHTML='<span class="spinner"></span> Checking Dropbox…'; $('#cl-msg').hidden=true;
+  try{
+    if(state.queue.length) await flush();
+    await pull();
+    if(state.queue.length){ clText('','Some changes are still waiting to save. Try again once the status says Saved.'); return; }
+    const used=new Set();
+    state.db.recipes.forEach(r=>(r.photos||[]).forEach(p=>used.add(p.path.toLowerCase())));
+    (state.db.sources||[]).forEach(x=>{ if(x.coverPhoto) used.add(x.coverPhoto.toLowerCase()); });
+    const usedList=Array.from(used), entries=await dbxListAll(PHOTO_ROOT), cutoff=Date.now()-86400000;
+    const files=entries.filter(e=>e['.tag']==='file'), folders=entries.filter(e=>e['.tag']==='folder').map(e=>e.path_lower);
+    const recent=f=>Date.parse(f.server_modified||0)>cutoff;
+    const under=(p,f)=>p.indexOf(f+'/')===0;
+    let delFolders=folders.filter(f=>!usedList.some(u=>under(u,f)) && !files.some(x=>under(x.path_lower,f) && recent(x)));
+    delFolders=delFolders.filter(f=>!delFolders.some(g=>g!==f && under(f,g)));
+    const inDel=p=>delFolders.some(f=>under(p,f));
+    const delFiles=files.filter(x=>!used.has(x.path_lower) && !recent(x) && !inDel(x.path_lower));
+    const gone=files.filter(x=>inDel(x.path_lower)).concat(delFiles);
+    const n=gone.length, mb=(gone.reduce((t,x)=>t+(x.size||0),0)/1048576).toFixed(1);
+    if(!n && !delFolders.length){ clText('No unused photos. Every photo file in Dropbox belongs to a recipe or a book.'); return; }
+    cleanPlan={folders:delFolders,files:delFiles.map(x=>x.path_lower)};
+    clText(n?n+' unused photo'+(n>1?'s':'')+(Number(mb)>=0.1?' ('+mb+' MB)':'')+' found, left over from deleted recipes or replaced photos. Delete them from Dropbox? Photos added in the last day are left alone.'
+      :'Only empty photo folders were found. Delete them?');
+    $('#cl-go').textContent=n?'Delete '+n+' photo'+(n>1?'s':''):'Delete empty folders'; $('#cl-go').hidden=false; $('#cl-cancel').textContent='Cancel';
+  }catch(e){ console.error(e); if(e && e.auth){ $('#dlg-clean').close(); syncError(e); return; } clText('',e.message||'Something went wrong checking Dropbox.'); }
+}
+async function runCleanup(){
+  const p=cleanPlan; if(!p) return;
+  const btn=$('#cl-go'); btn.disabled=true; let ok=0, bad=0;
+  const all=p.folders.concat(p.files);
+  for(const path of all){
+    $('#cl-text').innerHTML='<span class="spinner"></span> Deleting '+(ok+bad+1)+' of '+all.length+'…';
+    try{ await dbxDelete(path); ok++; }catch(e){ bad++; console.error(e); }
+  }
+  btn.disabled=false; btn.hidden=true; cleanPlan=null; $('#cl-cancel').textContent='Close';
+  clText(bad?'Done, but '+bad+' item'+(bad>1?'s':'')+' couldn\'t be deleted. You can run this again.':'Done. Unused photos have been removed from Dropbox.');
+}
+
 /* ── Settings ────────────────────────────────────────── */
 function openSettings(){
   $('#s-viewonly').checked=!!ls.get('viewOnly',false);
@@ -2848,7 +2951,7 @@ function bind(){
     if(act==='print') window.print();
     if(act==='delete'){
       if(familyOf(r).length>1){ openDelete(r); return; }
-      if(confirm('Delete "'+r.title+'" and its cooking history? This can\'t be undone.')){ commit({t:'delete',id:r.id}); state.selected=null; render(); toast('Recipe deleted'); }
+      if(confirm('Delete "'+r.title+'" and its cooking history? This can\'t be undone.')){ const fid=r.familyId, had=familyHasPhotos(fid); commit({t:'delete',id:r.id}); state.selected=null; render(); if(had) removeFamilyPhotos(fid); toast('Recipe deleted'); }
     }
     if(act==='log'){
       const date=$('#log-date').value||today(), comment=$('#log-comment').value.trim();
@@ -2921,7 +3024,8 @@ function bind(){
     const n=familyOf(r).length;
     if(!confirm('Delete "'+r.title+'" and all '+n+' versions, including their cooking history? This can\'t be undone.')) return;
     $('#dlg-delete').close();
-    commit({t:'delete',id:r.id}); state.selected=null; render(); toast('Recipe deleted');
+    const fid=r.familyId, had=familyHasPhotos(fid);
+    commit({t:'delete',id:r.id}); state.selected=null; render(); if(had) removeFamilyPhotos(fid); toast('Recipe deleted');
   });
 
   $('#imp-copy').addEventListener('click',copyPrompt);
@@ -2953,6 +3057,8 @@ function bind(){
   $('#ta-name').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); runTagAction(); } });
   $('#s-reload').addEventListener('click',()=>{ $('#dlg-settings').close(); pull(); });
   $('#s-backup').addEventListener('click',downloadBackup);
+  $('#s-clean').addEventListener('click',()=>{ saveSettings(); openCleanup(); });
+  $('#cl-go').addEventListener('click',runCleanup);
   $('#s-photocache').addEventListener('click',async()=>{ await cacheClear(); toast('Saved photos cleared from this device'); renderDetail(); });
   vwBind();
   $('#s-disconnect').addEventListener('click',()=>{
