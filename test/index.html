@@ -148,6 +148,23 @@ dialog.viewer::backdrop{background:#111}
 .vw-acts{display:flex;gap:6px;flex-wrap:wrap}
 .vw-acts .btn{min-height:38px;font-size:.85rem}
 .vw-acts .btn.danger{color:#F0A096}
+/* Covers */
+.tile.has-img{padding:0;background:var(--paper)}
+.tile.has-img img{display:block;width:100%;height:100%;object-fit:cover}
+.tile.has-img.book img{object-fit:contain;padding:6px}
+.tile-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font:600 .95rem/1.25 var(--serif);color:var(--ink);margin-bottom:3px}
+.hero{display:block;width:100%;aspect-ratio:16/9;max-height:340px;margin:6px 0 12px;padding:0;border:none;border-radius:12px;overflow:hidden;background:var(--paper)}
+.hero img{display:block;width:100%;height:100%;object-fit:cover}
+.hero.book{aspect-ratio:auto;height:220px}
+.hero.book img{object-fit:contain}
+.secover{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.secv{width:84px;height:110px;border-radius:6px;border:1px solid var(--line);background:var(--paper);overflow:hidden;display:grid;place-items:center;color:var(--muted);font-size:.75rem;text-align:center}
+.secv img{width:100%;height:100%;object-fit:cover}
+.svcover{width:120px;height:160px;border-radius:8px;border:1px solid var(--line);background:var(--paper);overflow:hidden}
+.svcover img{width:100%;height:100%;object-fit:cover}
+.srcrecipes button{display:flex;gap:10px;align-items:center}
+.srcrecipes .sth{flex:none;width:48px;height:48px;border-radius:6px;background:var(--paper);overflow:hidden}
+.srcrecipes .sth img{width:100%;height:100%;object-fit:cover}
 /* Sources */
 .srcbtn{display:flex;align-items:center;gap:8px;width:100%;min-height:var(--tap);padding:6px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);text-align:left}
 .srcbtn::after{content:"";margin-left:auto;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
@@ -343,7 +360,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 @media (max-width:520px){.row2{grid-template-columns:1fr}.detail h2{font-size:1.8rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{
-  .photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
+  .hero,.photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
   .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
@@ -562,6 +579,11 @@ window.RECIPE_CONFIG = {
     <div class="field" id="se-kindwrap"><span class="lbl">Kind</span><div class="seg" id="se-kind"><button type="button" data-v="Book">Book</button><button type="button" data-v="Homemade">Homemade</button><button type="button" data-v="Other">Other</button></div></div>
     <div class="field" id="se-authwrap"><label for="se-author">Author</label><input id="se-author" type="text" autocomplete="off"></div>
     <div class="field"><label for="se-notes">Notes</label><textarea id="se-notes" rows="3"></textarea></div>
+    <div class="field" id="se-coverwrap" hidden><span class="lbl">Cover photo</span>
+      <div class="secover"><span id="se-coverimg" class="secv">No cover</span>
+        <div class="stack"><button id="se-coveradd" class="btn" type="button">Add cover photo</button><button id="se-coverdel" class="btn danger" type="button">Remove</button></div></div>
+      <p id="se-coverhint" class="hint"></p>
+    </div>
     <p id="se-builtin" class="hint" hidden>Online is built in. It covers every website, so it can't be renamed or deleted.</p>
     <p id="se-msg" class="msg err" hidden></p>
   </div>
@@ -628,6 +650,7 @@ window.RECIPE_CONFIG = {
   </div>
 </dialog>
 <input id="ph-input" type="file" accept="image/*" multiple hidden>
+<input id="cover-input" type="file" accept="image/*" hidden>
 
 <div id="toast" class="toast" role="status" hidden></div>
 
@@ -636,7 +659,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '3.0';
-const BUILD = 'R2 step 1 (test)';
+const BUILD = 'R2 step 2 (test)';
 const DATA_VERSION = 5;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -1134,6 +1157,7 @@ function applyOp(d,op){
       ps.forEach(p=>{ if(!out.includes(p)) out.push(p); });
       out.forEach((p,i)=>{ p.order=i; }); r.photos=out; break;
     }
+    case 'sourceCover': { const x=(d.sources||[]).find(y=>y.id===op.id); if(x && x.id!==ONLINE_ID) x.coverPhoto=String(op.path||''); break; }
     case 'photoDel': { const r=find(op.id); if(r) r.photos=(r.photos||[]).filter(p=>p.id!==op.pid); break; }
     case 'applyNote': {
       const r=find(op.id); if(!r) break;
@@ -1558,10 +1582,10 @@ function render(){
   $('#list').classList.toggle('grid',grid);
   $('#list').innerHTML=rs.length?rs.map(g=>{
     const r=g.def, n=g.logs.length;
-    const meta=n?'Made '+times(n)+', last '+fmtDate(g.logs[0].date):'Not made yet';
+    const meta=n?'Made '+times(n)+', last '+fmtDate(g.logs[0].date):'Not made yet', cov=grid?coverOf(r):null;
     if(grid) return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
-      '<span class="tile" style="background:'+tileColour(g.fid)+'"><span class="tile-t">'+esc(r.title)+'</span></span>'+
-      '<span class="tile-meta">'+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+
+      (cov?'<span class="tile has-img'+(cov.book?' book':'')+'"><img data-thumb="'+esc(cov.path)+'" alt=""></span>':'<span class="tile" style="background:'+tileColour(g.fid)+'"><span class="tile-t">'+esc(r.title)+'</span></span>')+
+      '<span class="tile-meta">'+(cov?'<span class="tile-name">'+esc(r.title)+'</span>':'')+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+
         (r.type==='External'?'<span class="badge">Link</span>':'')+(g.active.length>1?'<span class="badge ver-badge">'+g.active.length+' versions</span>':'')+
         esc(n?'Made '+times(n):'Not made yet')+'</span></button></li>';
     return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
@@ -1572,6 +1596,7 @@ function render(){
       '</button></li>';
   }).join(''):'<li class="empty">'+(total?'No recipes match. Try fewer words or remove a filter.':(canEdit()?'No recipes yet. Tap Add or Import to start.':'No recipes yet.'))+'</li>';
   renderDetail();
+  loadThumbs();
 }
 
 function renderFilterButton(){
@@ -1678,6 +1703,9 @@ function renderDetail(){
       (ed&&r.archived?'<button type="button" class="btn" data-act="restore" data-id="'+esc(r.id)+'">Restore this version</button>':'')+
       '</div></div>';
   }
+  const hc=coverOf(r);
+  if(hc) h+=hc.book?'<div class="hero book"><img data-thumb="'+esc(hc.path)+'" data-size="w960h640" alt="Book cover"></div>'
+    :'<button type="button" class="hero" data-act="photo" data-pid="'+esc(hc.pid)+'" aria-label="Open photo"><img data-thumb="'+esc(hc.path)+'" data-size="w960h640" alt=""></button>';
   h+='<h2>'+esc(r.title)+'</h2>';
   if(multi) h+='<p class="verline"><strong>'+esc(vName(r))+'</strong>'+(r.changeNote?'<br>'+esc(r.changeNote):'')+'</p>';
   const sl=srcLine(r,ed), url=recipeUrl(r);
@@ -2394,12 +2422,53 @@ function openSourceEdit(id){
   $('#se-h').textContent=x?'Edit source':'Add a source';
   $('#se-name').value=x?x.name:''; $('#se-author').value=x?x.author:''; $('#se-notes').value=x?x.notes:'';
   setSeg('#se-kind',x?x.kind:'Book');
+  renderSeCover();
   $('#se-namewrap').hidden=online; $('#se-kindwrap').hidden=online; $('#se-builtin').hidden=!online;
   syncSeKind();
   $('#dlg-srcedit').showModal();
   if(!online) setTimeout(()=>$('#se-name').focus(),60);
 }
-function syncSeKind(){ $('#se-authwrap').hidden=segVal('#se-kind')!=='Book' || (seCtx&&seCtx.id===ONLINE_ID); }
+function syncSeKind(){
+  const book=segVal('#se-kind')==='Book' && !(seCtx && seCtx.id===ONLINE_ID);
+  $('#se-authwrap').hidden=!book; $('#se-coverwrap').hidden=!book;
+}
+/* Book cover photo: saved straight away (it needs a connection), separate from the Save button */
+function renderSeCover(){
+  const c=seCtx, x=c&&c.id?(state.db.sources||[]).find(s=>s.id===c.id):null, has=!!(x && x.coverPhoto);
+  $('#se-coverimg').innerHTML=has?'<img data-thumb="'+esc(x.coverPhoto)+'" alt="Book cover">':'No cover';
+  $('#se-coveradd').hidden=!x; $('#se-coverdel').hidden=!has;
+  $('#se-coveradd').textContent=c&&c.busy?'Uploading…':has?'Replace cover photo':'Add cover photo';
+  $('#se-coveradd').disabled=!!(c&&c.busy);
+  $('#se-coverhint').textContent=x?'Shown for this book\'s recipes until they have a dish photo. Cover changes are saved straight away.':'Save the source first, then add a cover photo.';
+  loadThumbs();
+}
+async function setSourceCover(sid,file){
+  if(!needOnline('Adding a cover photo')) return;
+  const x=(state.db.sources||[]).find(s=>s.id===sid); if(!x) return;
+  if(seCtx && seCtx.id===sid){ seCtx.busy=true; renderSeCover(); }
+  try{
+    const blob=await resizeImage(file,1600,0.85), thumb=await resizeImage(blob,480,0.8);
+    /* A new file name each time, so other devices never show an old cover from their saved copies */
+    const path=PHOTO_ROOT+'/sources/'+sid+'-'+Date.now().toString(36)+'.jpg';
+    const up=await dbxPut(path,blob,'add',false); if(up.conflict) throw new Error('Couldn\'t save the cover. Try again.');
+    cachePut('f:'+path,blob); cachePut(thumbKey(path),thumb); blobUrl(thumbKey(path),thumb);
+    const old=x.coverPhoto;
+    commit({t:'sourceCover',id:sid,path});
+    if(old){ cacheDel(thumbKey(old)); cacheDel('f:'+old); dbxDelete(old).catch(e=>console.error(e)); }
+    toast('Cover photo saved');
+  }catch(e){ console.error(e); if(e && e.auth) syncError(e); else toast(e.message||'The cover couldn\'t be uploaded'); }
+  finally{ if(seCtx && seCtx.id===sid){ seCtx.busy=false; renderSeCover(); } if($('#dlg-srcview').open) renderSourceView(); }
+}
+async function removeSourceCover(sid){
+  const x=(state.db.sources||[]).find(s=>s.id===sid); if(!x || !x.coverPhoto) return;
+  if(!needOnline('Removing a cover photo')) return;
+  if(!confirm('Remove this cover photo? It will be deleted from Dropbox too.')) return;
+  const old=x.coverPhoto;
+  commit({t:'sourceCover',id:sid,path:''});
+  cacheDel(thumbKey(old)); cacheDel('f:'+old);
+  try{ await dbxDelete(old); }catch(e){ console.error(e); }
+  renderSeCover(); if($('#dlg-srcview').open) renderSourceView(); toast('Cover photo removed');
+}
 function saveSourceEdit(){
   const c=seCtx; if(!c) return;
   const online=c.id===ONLINE_ID, name=$('#se-name').value.replace(/\s+/g,' ').trim(), kind=segVal('#se-kind')||'Other';
@@ -2440,16 +2509,18 @@ function renderSourceView(){
   if(!x){ $('#dlg-srcview').close(); return; }
   const gs=groups().filter(g=>g.def.sourceId===x.id).sort((a,b)=>a.def.title.localeCompare(b.def.title,'en-GB',{sensitivity:'base'}));
   $('#sv-h').textContent=x.id===ONLINE_ID?'Online':x.name;
-  let h='<p class="muted" style="margin:0">'+esc(x.id===ONLINE_ID?'Recipes from websites':x.kind+(x.author?' by '+x.author:''))+'</p>';
+  let h=(x.kind==='Book' && x.coverPhoto?'<div class="svcover"><img data-thumb="'+esc(x.coverPhoto)+'" alt="Book cover"></div>':'')+
+    '<p class="muted" style="margin:0">'+esc(x.id===ONLINE_ID?'Recipes from websites':x.kind+(x.author?' by '+x.author:''))+'</p>';
   if(x.notes) h+='<p class="notes" style="margin:0">'+esc(x.notes)+'</p>';
   h+=gs.length?'<ul class="srcrecipes">'+gs.map(g=>{
     const r=g.def, bits=[];
     if(x.kind==='Book' && r.sourceRef) bits.push('page '+r.sourceRef);
     if(x.kind==='Online' && r.siteName) bits.push(r.siteName);
     bits.push(g.logs.length?'made '+times(g.logs.length):'not made yet');
-    return '<li><button type="button" data-svopen="'+esc(r.id)+'">'+esc(r.title)+'<span class="m">'+esc(bits.join(', '))+'</span></button></li>';
+    const cv=coverOf(r);
+    return '<li><button type="button" data-svopen="'+esc(r.id)+'"><span class="sth">'+(cv?'<img data-thumb="'+esc(cv.path)+'" alt="">':'')+'</span><span>'+esc(r.title)+'<span class="m">'+esc(bits.join(', '))+'</span></span></button></li>';
   }).join('')+'</ul>':'<p class="muted" style="margin:0">No recipes use this source yet.</p>';
-  $('#sv-body').innerHTML=h;
+  $('#sv-body').innerHTML=h; loadThumbs();
   $('#sv-edit').hidden=!canEdit();
 }
 
@@ -2492,31 +2563,42 @@ function photoSection(r,ed){
   return h+'</section>';
 }
 /* Thumbnails: from memory, then this device, then Dropbox in batches of up to 25 */
+/* Cover rule: the version's first dish photo, else the book's cover for book recipes, else none.
+   Recipe pages are never used as covers. */
+function coverOf(r){
+  const d=photosOf(r,'Dish')[0]; if(d) return {path:d.path,pid:d.id,book:false};
+  const x=srcOf(r); if(x && x.kind==='Book' && x.coverPhoto) return {path:x.coverPhoto,pid:null,book:true};
+  return null;
+}
+const THUMB_SIZE='w480h320';
+function thumbKey(p,size){ return !size || size===THUMB_SIZE?'t:'+p:'t'+size+':'+p; }
 const thumbFlight=new Set();
-function setThumb(path,u){ $$('img[data-thumb]').forEach(im=>{ if(im.dataset.thumb===path && im.getAttribute('src')!==u) im.src=u; }); }
+function setThumb(path,size,u){ $$('img[data-thumb]').forEach(im=>{ if(im.dataset.thumb===path && (im.dataset.size||THUMB_SIZE)===size && im.getAttribute('src')!==u) im.src=u; }); }
+/* Thumbnails: from memory, then this device, then Dropbox in batches of up to 25 */
 async function loadThumbs(){
-  const paths=[]; $$('img[data-thumb]').forEach(im=>{ if(!im.getAttribute('src') && !paths.includes(im.dataset.thumb)) paths.push(im.dataset.thumb); });
+  const want=[];
+  $$('img[data-thumb]').forEach(im=>{ if(im.getAttribute('src')) return; const p=im.dataset.thumb, z=im.dataset.size||THUMB_SIZE; if(!want.some(w=>w.p===p && w.z===z)) want.push({p,z}); });
   const need=[];
-  for(const p of paths){
-    const k='t:'+p;
-    if(urlCache.has(k)){ setThumb(p,urlCache.get(k)); continue; }
+  for(const w of want){
+    const k=thumbKey(w.p,w.z);
+    if(urlCache.has(k)){ setThumb(w.p,w.z,urlCache.get(k)); continue; }
     const b=await cacheGet(k);
-    if(b){ setThumb(p,blobUrl(k,b)); continue; }
-    if(!thumbFlight.has(p)) need.push(p);
+    if(b){ setThumb(w.p,w.z,blobUrl(k,b)); continue; }
+    if(!thumbFlight.has(k)) need.push(w);
   }
   if(!need.length || !navigator.onLine || !ls.get('token',null)) return;
   for(let i=0;i<need.length;i+=25){
-    const chunk=need.slice(i,i+25); chunk.forEach(p=>thumbFlight.add(p));
+    const chunk=need.slice(i,i+25); chunk.forEach(w=>thumbFlight.add(thumbKey(w.p,w.z)));
     try{
       const res=await dbxFetch(DBX_CONTENT+'get_thumbnail_batch',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({entries:chunk.map(path=>({path,format:'jpeg',size:'w480h320',mode:'bestfit'}))})});
+        body:JSON.stringify({entries:chunk.map(w=>({path:w.p,format:'jpeg',size:w.z,mode:'bestfit'}))})});
       if(res.ok){
         const j=await res.json();
         (j.entries||[]).forEach((e,ix)=>{ if(e['.tag']!=='success' || !e.thumbnail) return;
-          const k='t:'+chunk[ix], b=b64Blob(e.thumbnail,'image/jpeg'); cachePut(k,b); setThumb(chunk[ix],blobUrl(k,b)); });
+          const w=chunk[ix], k=thumbKey(w.p,w.z), b=b64Blob(e.thumbnail,'image/jpeg'); cachePut(k,b); setThumb(w.p,w.z,blobUrl(k,b)); });
       }
     }catch(e){ console.error(e); }
-    finally{ chunk.forEach(p=>thumbFlight.delete(p)); }
+    finally{ chunk.forEach(w=>thumbFlight.delete(thumbKey(w.p,w.z))); }
   }
 }
 async function fullPhotoUrl(path){
@@ -2626,8 +2708,9 @@ function vwMove(step){
 }
 function vwType(){
   const {r,p}=vwList(); if(!p) return;
-  commit({t:'photoEdit',id:r.id,pid:p.id,f:{type:p.type==='Page'?'Dish':'Page'}});
-  toast(p.type==='Page'?'Now a dish photo':'Now a recipe page'); renderViewer(false);
+  const to=p.type==='Page'?'Dish':'Page';
+  commit({t:'photoEdit',id:r.id,pid:p.id,f:{type:to}});
+  toast(to==='Dish'?'Now a dish photo':'Now a recipe page'); renderViewer(false);
 }
 async function vwDelete(){
   const {r,list,p}=vwList(); if(!p) return;
@@ -2835,6 +2918,9 @@ function bind(){
     if(b.dataset.sm==='delete') openSourceDelete(b.dataset.sid); });
   $('#se-kind').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ setSeg('#se-kind',b.dataset.v); syncSeKind(); } });
   $('#se-save').addEventListener('click',saveSourceEdit);
+  $('#se-coveradd').addEventListener('click',()=>{ if(!seCtx || !seCtx.id || !needOnline('Adding a cover photo')) return; $('#cover-input').value=''; $('#cover-input').click(); });
+  $('#cover-input').addEventListener('change',e=>{ const f=(e.target.files||[])[0]; if(f && seCtx && seCtx.id) setSourceCover(seCtx.id,f); });
+  $('#se-coverdel').addEventListener('click',()=>{ if(seCtx && seCtx.id) removeSourceCover(seCtx.id); });
   $('#sd-go').addEventListener('click',runSourceDelete);
   $('#sv-edit').addEventListener('click',()=>{ if(svCtx) openSourceEdit(svCtx.id); });
   $('#sv-filter').addEventListener('click',()=>{ if(!svCtx) return; FILTER_KEYS.forEach(g=>fsel(g).clear()); clearColl(); fsel('source').add('id:'+svCtx.id);
