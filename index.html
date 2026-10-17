@@ -248,17 +248,24 @@ dialog.viewer::backdrop{background:#111}
 .ing input:checked+span{color:var(--muted);text-decoration:line-through}
 .ing .sub .line-row{font-weight:700;padding:10px 0 2px}
 .ing .sub-t{flex:1;min-width:0}
-.method{padding-left:1.5em;margin:0}
-.method li{padding:2px 0 10px;line-height:1.62}
-.method li::marker{font-family:var(--serif);font-weight:700;color:var(--basil)}
+.method{list-style:none;padding:0;margin:0}
+.method li{padding:2px 0 6px;line-height:1.62}
+.method .step-lab{display:flex;align-items:flex-start;flex:1;min-width:0;padding:4px 6px 4px 0;border-radius:var(--r-sm);cursor:pointer}
+.method .step-lab input{width:20px;height:20px;margin:3px 10px 0 0;accent-color:var(--basil);flex:none}
+.method .step-n{flex:none;width:28px;font-family:var(--serif);font-weight:700;color:var(--basil)}
 .method .step-t{flex:1;min-width:0}
+.method li.done .step-t{color:var(--muted);text-decoration:line-through}
+.method li.done .step-n{color:var(--muted)}
+.method li.next>.line-row{background:var(--basil-soft);border-radius:var(--r-sm);box-shadow:-6px 0 0 var(--basil-soft)}
+.tick-clear{display:block;margin-top:2px}
 .notes{white-space:pre-wrap;line-height:1.62;margin:0 0 8px}
 
 /* Margin notes */
 .anno-add{flex:none;border:none;background:none;color:var(--pencil);opacity:.55;width:38px;min-height:34px;font-size:1.05rem;border-radius:var(--r-sm);margin-top:-2px}
 .anno-add:hover,.anno-add:focus-visible{opacity:1;background:var(--pencil-soft)}
 .annos{list-style:none;margin:0 0 8px 30px;padding:0}
-.method .annos,.section>.annos,.orphan .annos{margin-left:0}
+.section>.annos,.orphan .annos{margin-left:0}
+.method .annos{margin-left:58px}
 .anno+.anno{margin-top:6px}
 .anno-body{display:block;width:100%;text-align:left;border:none;background:none;padding:1px 0 3px 10px;border-left:2px solid var(--pencil-edge);color:var(--pencil);font:1.02rem/1.35 var(--hand)}
 button.anno-body{cursor:pointer}
@@ -358,14 +365,82 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
   .cols{display:grid;grid-template-columns:2fr 3fr;gap:34px}
   .cols .section{margin-top:30px}
 }
+/* Bookmarks (Release 5) */
+.titlerow{display:flex;align-items:flex-start;gap:6px}
+.titlerow h2{flex:1;min-width:0}
+.bmk{flex:none;width:var(--tap);height:var(--tap);margin:4px -8px 0 0;border:none;background:none;border-radius:var(--r-sm);color:var(--muted);display:grid;place-items:center}
+.bmk[aria-pressed="true"]{color:var(--basil)}
+.bmk:hover{background:var(--paper)}
+.bm-mark{display:inline-block;color:var(--basil);margin-left:6px;vertical-align:-2px}
+.bm-mark svg{width:14px;height:14px}
+.tile-meta .bm-mark{margin:0 4px 0 0}
+.logact{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin-top:10px}
+.logact .btn{margin-top:0}
+.logbm{font-size:.92rem;align-items:center}
+
+/* Share dialog (Release 5) */
+.shopts{display:grid;gap:8px}
+.shopt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);cursor:pointer}
+.shopt input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--basil);flex:none}
+.shopt:has(input:checked){border-color:var(--basil-edge);background:var(--basil-soft)}
+#share-print{display:none}
+
+/* Swipe between recipes (Release 5): counter and previous/next only show when the recipe fills the screen */
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.swcount{display:none;font-size:.85rem;color:var(--muted);white-space:nowrap}
+.swnav{display:none;gap:10px;margin-top:36px;padding-top:16px;border-top:1px solid var(--line)}
+.swnav button{flex:1;min-width:0;min-height:56px;padding:8px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--card);text-align:left;display:flex;flex-direction:column;justify-content:center}
+.swnav button.next{text-align:right;align-items:flex-end}
+.swnav .dir{font:600 .78rem/1.3 var(--sans);color:var(--basil)}
+.swnav .nm{font:600 1rem/1.3 var(--serif);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.swnav .gap{flex:1}
+@media (max-width:899px){ .swcount{display:inline} .swnav{display:flex} }
+@keyframes swInR{from{transform:translateX(48px);opacity:.2}to{transform:none;opacity:1}}
+@keyframes swInL{from{transform:translateX(-48px);opacity:.2}to{transform:none;opacity:1}}
+@keyframes swBounceL{0%,100%{transform:none}35%{transform:translateX(-18px)}}
+@keyframes swBounceR{0%,100%{transform:none}35%{transform:translateX(18px)}}
+.detail.sw-in-r{animation:swInR .22s ease-out}
+.detail.sw-in-l{animation:swInL .22s ease-out}
+.detail.sw-bounce-l{animation:swBounceL .28s ease-out}
+.detail.sw-bounce-r{animation:swBounceR .28s ease-out}
+
+/* Full screen recipe (Release 5): only where the split view exists. body.fs is the remembered
+   choice; with it on, the screen shows either the list or the recipe, like a phone. */
+.fsbar{display:none}
+@media screen and (min-width:900px){
+  .fsbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:-6px -8px 2px}
+  .fsbar .fs-back{display:none;margin-right:auto}
+  body.fs .layout{grid-template-columns:1fr}
+  body.fs .list-pane{border-right:none;padding-left:max(16px,calc((100% - 980px)/2));padding-right:max(16px,calc((100% - 980px)/2))}
+  body.fs.show-detail .topbar{display:none}
+  body.fs.show-detail .list-pane{display:none}
+  body.fs:not(.show-detail) .detail-pane{display:none}
+  body.fs .detail{max-width:1200px;padding:0 36px calc(56px + var(--sb));font-size:1.125rem}
+  body.fs .fsbar{position:sticky;top:0;z-index:5;margin:0 -36px 8px;padding:calc(8px + var(--st)) 28px 8px;background:var(--card);border-bottom:1px solid var(--line)}
+  body.fs .fsbar .fs-back{display:inline-flex}
+  body.fs .fsbar .swcount{display:inline;margin-right:auto}
+  body.fs .swnav{display:flex}
+  body.fs .detail h2{font-size:2.5rem}
+  body.fs .section h3{font-size:1.45rem}
+  body.fs .cols{grid-template-columns:1fr;gap:0}
+}
+@media screen and (min-width:900px) and (orientation:landscape){
+  body.fs .cols{grid-template-columns:2fr 3fr;gap:44px}
+}
 @media (max-width:520px){.row2{grid-template-columns:1fr}.detail h2{font-size:1.8rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{
-  .hero,.photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
+  body.share-printing>*:not(#share-print){display:none!important}
+  body.share-printing #share-print{display:block!important}
+  .hero,.photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.fsbar,.swnav,.swcount,.bmk,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
   .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
-  .ing input{display:none}
+  .ing input,.method .step-lab input,.tick-clear{display:none!important}
+  body.fs .detail-pane{display:block!important}
+  .ing input:checked+span,.method li.done .step-t,.method li.done .step-n{color:inherit;text-decoration:none}
+  .method li.next>.line-row{background:none;box-shadow:none}
+  .method .annos{margin-left:28px}
 }
 </style>
 </head>
@@ -426,6 +501,7 @@ window.RECIPE_CONFIG = {
           <option value="most">Most made</option>
           <option value="rating">Top rated</option>
           <option value="added">Recently added</option>
+          <option value="bookmarked">Recently bookmarked</option>
         </select>
         <button id="btn-view" class="vbtn" type="button" aria-label="Show as grid">Grid</button>
       </div>
@@ -612,6 +688,23 @@ window.RECIPE_CONFIG = {
   <div class="dlg-foot"><button id="sv-filter" class="btn left" type="button">Show these in the list</button><button id="sv-edit" class="btn edit-only" type="button">Edit source</button><button class="btn primary" data-close type="button">Close</button></div>
 </dialog>
 
+<!-- Share a recipe -->
+<dialog id="dlg-share" aria-labelledby="sh-h">
+  <div class="dlg-head"><h2 id="sh-h">Share this recipe</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <div class="field"><span class="lbl">Send as</span>
+      <div class="shopts" role="radiogroup" aria-label="Send as">
+        <label class="shopt"><input type="radio" name="sh-fmt" value="text" checked><span><strong>Text</strong><br><span class="muted">For Messages and quick sends. No photo.</span></span></label>
+        <label class="shopt"><input type="radio" name="sh-fmt" value="html"><span><strong>Web page</strong><br><span class="muted">One file that opens in any browser, with the photo. Good for email or keeping a copy.</span></span></label>
+        <label class="shopt"><input type="radio" name="sh-fmt" value="pdf"><span><strong>PDF</strong><br><span class="muted">Opens the print screen. Tap Share or Save to Files there to make the PDF.</span></span></label>
+      </div>
+    </div>
+    <label id="sh-noteswrap" class="check"><input id="sh-notes" type="checkbox" checked><span><strong>Include my notes</strong><br><span class="muted">Your notes and margin notes. Cooking history and rating are never shared.</span></span></label>
+    <p id="sh-msg" class="hint" hidden></p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="sh-go" class="btn primary" type="button">Share</button></div>
+</dialog>
+
 <!-- Settings -->
 <dialog id="dlg-settings" aria-labelledby="set-h">
   <div class="dlg-head"><h2 id="set-h">Settings</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
@@ -666,14 +759,15 @@ window.RECIPE_CONFIG = {
 <input id="cover-input" type="file" accept="image/*" hidden>
 
 <div id="toast" class="toast" role="status" hidden></div>
+<div id="share-print"></div>
 
 <script>
 (function(){
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
-const APP_VERSION = '4.0';
-const BUILD = 'R2';
-const DATA_VERSION = 5;
+const APP_VERSION = '5.0';
+const BUILD = 'R5';
+const DATA_VERSION = 6;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
 const MAX_DATA_VERSION = DATA_VERSION;
@@ -993,6 +1087,19 @@ function normRecipe(r,i,seen,d){
   return {r:o,changed};
 }
 /* Each family has one current version (the one shown in the list). */
+/* Bookmarks (data format 6): a top-level list, one entry per recipe family with the date added.
+   Kept outside d.families because new versions and "make current" replace a family entry whole.
+   Entries for families that no longer exist are dropped. */
+function fixBookmarks(d){
+  const fams=new Set(d.recipes.map(r=>r.familyId)), seen=new Set(), out=[];
+  (Array.isArray(d.bookmarks)?d.bookmarks:[]).forEach(b=>{
+    if(!b || typeof b!=='object') return;
+    const fid=String(b.familyId||''); if(!fid || !fams.has(fid) || seen.has(fid)) return;
+    seen.add(fid); out.push({familyId:fid,at:String(b.at||'')});
+  });
+  d.bookmarks=out;
+  return d;
+}
 function fixFamilies(d){
   if(!d.families || typeof d.families!=='object' || Array.isArray(d.families)) d.families={};
   const by={}; d.recipes.forEach(r=>(by[r.familyId]=by[r.familyId]||[]).push(r));
@@ -1015,12 +1122,12 @@ function normalise(raw){
   else { d={version:DATA_VERSION,recipes:[]}; changed=true; }
   const upgrading=fileVersion(raw)<4;
   if(d.version!==DATA_VERSION){ d.version=DATA_VERSION; changed=true; }
-  const snap=()=>JSON.stringify([d.families||null,d.sources||null,d.taxonomy||null]);
+  const snap=()=>JSON.stringify([d.families||null,d.sources||null,d.taxonomy||null,d.bookmarks||null]);
   const before=snap();
   fixSources(d,upgrading); ensureTaxonomy(d);
   const seen=new Set();
   d.recipes=d.recipes.map((r,i)=>{ const x=normRecipe(r,i,seen,d); if(x.changed) changed=true; return x.r; });
-  fixTaxonomy(d); fixFamilies(d);
+  fixTaxonomy(d); fixFamilies(d); fixBookmarks(d);
   if(snap()!==before) changed=true;
   return {d,changed};
 }
@@ -1173,6 +1280,9 @@ function applyOp(d,op){
     }
     case 'sourceCover': { const x=(d.sources||[]).find(y=>y.id===op.id); if(x && x.id!==ONLINE_ID) x.coverPhoto=String(op.path||''); break; }
     case 'photoDel': { const r=find(op.id); if(r) r.photos=(r.photos||[]).filter(p=>p.id!==op.pid); break; }
+    /* Bookmarks: queued like other changes, so offline and two-device changes merge */
+    case 'bookmark': { if(!Array.isArray(d.bookmarks)) d.bookmarks=[]; if(op.fid && !d.bookmarks.some(b=>b.familyId===op.fid)) d.bookmarks.push({familyId:op.fid,at:op.at||new Date().toISOString()}); break; }
+    case 'unbookmark': { if(Array.isArray(d.bookmarks)) d.bookmarks=d.bookmarks.filter(b=>b.familyId!==op.fid); break; }
     case 'applyNote': {
       const r=find(op.id); if(!r) break;
       const it=r.ingredients.concat(r.instructions).find(x=>x.id===op.target);
@@ -1182,12 +1292,12 @@ function applyOp(d,op){
       break;
     }
   }
-  fixTaxonomy(d); fixFamilies(d);
+  fixTaxonomy(d); fixFamilies(d); fixBookmarks(d);
   return d;
 }
 
 /* ── State ───────────────────────────────────────────── */
-const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['source','course']), srcQuery:'', coll:null, view:ls.get('view','list'), sort:ls.get('sort','title'), ticks:{}, lastPull:0, locked:null };
+const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['source','course']), srcQuery:'', coll:null, view:ls.get('view','list'), sort:ls.get('sort','title'), ticks:{}, tickAt:{}, order:[], logDrafts:{}, lastPull:0, locked:null };
 let pulling=false, flushing=false;
 function saveCache(){ ls.set('cache'+DK,{db:state.db}); }
 function queueOp(op){ state.queue.push(op); ls.set('queue'+DK,state.queue); }
@@ -1380,12 +1490,23 @@ function showConnect(msg){
 }
 function showApp(){
   $('#connect').hidden=true; $('#app').hidden=false;
+  loadTicks();
   const c=ls.get('cache'+DK,null);
   if(c&&c.db){ state.db=normalise(c.db).d; state.queue.forEach(op=>applyOp(state.db,op)); }
   render(); pull();
 }
 
 /* ── Families and versions ───────────────────────────── */
+/* ── Bookmarks ───────────────────────────────────────── */
+function bmAt(fid){ const b=(state.db.bookmarks||[]).find(x=>x.familyId===fid); return b?(b.at||'0'):''; }
+function isBookmarked(fid){ return !!bmAt(fid); }
+const BM_SVG=on=>'<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6.5 3.5h11a1 1 0 0 1 1 1v16l-6.5-4.2-6.5 4.2v-16a1 1 0 0 1 1-1z" fill="'+(on?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+function bmMark(){ return '<span class="bm-mark" title="Bookmarked" aria-label="Bookmarked">'+BM_SVG(true)+'</span>'; }
+function toggleBookmark(r){
+  if(isBookmarked(r.familyId)){ commit({t:'unbookmark',fid:r.familyId}); toast('Bookmark removed'); }
+  else { commit({t:'bookmark',fid:r.familyId,at:new Date().toISOString()}); toast('Bookmarked'); }
+}
+
 function familyOf(r){ return state.db.recipes.filter(x=>x.familyId===r.familyId).sort((a,b)=>a.versionNo-b.versionNo); }
 function isCurrent(r){ const f=(state.db.families||{})[r.familyId]; return !!f && f.defaultId===r.id; }
 function vName(r){ return 'v'+r.versionNo+', '+r.versionLabel; }
@@ -1454,14 +1575,14 @@ function searchIndex(r){
   for(const k in f){ const t=normText(f[k]); o[k]={text:t,toks:tokens(t)}; }
   return o;
 }
-function wordScore(idx,w){
+function wordScore(idx,w,fuzzy){
   let best=0;
   SEARCH_WEIGHTS.forEach(([k,wt])=>{
     const f=idx[k]; let sc=0;
     if(f.toks.includes(w)) sc=wt;
     else if(f.toks.some(t=>t.indexOf(w)===0)) sc=wt*.9;
     else if(f.text.indexOf(w)>=0) sc=wt*.75;
-    else if(w.length>=5 && f.toks.some(t=>within1(w,t) || (t.length>w.length && within1(w,t.slice(0,w.length))))) sc=wt*.5;
+    else if(fuzzy && w.length>=5 && f.toks.some(t=>within1(w,t) || (t.length>w.length && within1(w,t.slice(0,w.length))))) sc=wt*.5;
     if(sc>best) best=sc;
   });
   return best;
@@ -1471,6 +1592,16 @@ function searchWords(){
   return w.length>1?w.filter(x=>x.length>1):w;
 }
 let scoreCache=null;
+/* Typo matching (e.g. "chiken" finding chicken) is only used for a word that matches nothing
+   exactly anywhere in the book. Otherwise "chicken" would also find "thicken" and "thickened". */
+function fuzzyOk(words){
+  if(!scoreCache.fuzzy){
+    const gs=groups(), idxs=[];
+    gs.forEach(g=>(g.active.length?g.active:[g.def]).forEach(r=>idxs.push(searchIndex(r))));
+    scoreCache.fuzzy=words.map(w=>w.length>=5 && !idxs.some(ix=>wordScore(ix,w,false)>0));
+  }
+  return scoreCache.fuzzy;
+}
 /* Best score across a recipe's versions; every word has to match within one version. 0 means no match. */
 function searchScore(g,words){
   if(!words.length) return 1;
@@ -1479,8 +1610,8 @@ function searchScore(g,words){
   if(scoreCache.map.has(g.fid)) return scoreCache.map.get(g.fid);
   let best=0;
   (g.active.length?g.active:[g.def]).forEach(r=>{
-    const idx=searchIndex(r); let tot=0;
-    for(const w of words){ const sc=wordScore(idx,w); if(!sc) return; tot+=sc; }
+    const idx=searchIndex(r), fz=fuzzyOk(words); let tot=0;
+    for(let i=0;i<words.length;i++){ const sc=wordScore(idx,words[i],fz[i]); if(!sc) return; tot+=sc; }
     if(idx.title.text.indexOf(key)===0) tot+=50;
     if(r===g.def) tot+=1;
     if(tot>best) best=tot;
@@ -1493,6 +1624,7 @@ function passSearch(g,words){ return searchScore(g,words)>0; }
 /* ── Browse home: collections that apply as a filter ── */
 function monthsAgo(n){ const d=new Date(); d.setHours(0,0,0,0); d.setMonth(d.getMonth()-n); return d; }
 const COLLECTIONS=[
+  {k:'bmk',name:'Bookmarks',sub:'Recipes you plan to make',test:g=>isBookmarked(g.fid),sort:'bookmarked'},
   {k:'fav',name:'Favourites',sub:'Rated 4 or 5 stars',test:g=>g.def.rating>=4,sort:'rating'},
   {k:'recent',name:'Recently made',sub:'Made in the last month',test:g=>!!g.logs[0] && parseIso(g.logs[0].date)>=monthsAgo(1),sort:'recent'},
   {k:'while',name:'Not made in a while',sub:'Last made over 3 months ago',test:g=>!!g.logs[0] && parseIso(g.logs[0].date)<monthsAgo(3),sort:'recent'},
@@ -1561,7 +1693,8 @@ function filtered(gs){
     recent:(a,b)=>last(b).localeCompare(last(a))||byTitle(a,b),
     most:(a,b)=>b.logs.length-a.logs.length||byTitle(a,b),
     rating:(a,b)=>b.def.rating-a.def.rating||byTitle(a,b),
-    added:(a,b)=>added(b).localeCompare(added(a))||byTitle(a,b)
+    added:(a,b)=>added(b).localeCompare(added(a))||byTitle(a,b),
+    bookmarked:(a,b)=>bmAt(b.fid).localeCompare(bmAt(a.fid))||byTitle(a,b)
   };
   const by=sorters[state.sort]||byTitle;
   /* While searching, best matches come first; the chosen sort breaks ties */
@@ -1578,6 +1711,7 @@ function monthStrip(logs){
   return '<span class="months" role="img" aria-label="Made in '+on+' of the last 12 months" title="Made in '+on+' of the last 12 months">'+cells+'</span>';
 }
 function render(){
+  applyFullScreen();
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
   document.title=(TEST?'TEST: ':'')+CONFIG.bookTitle;
   $('#testflag').hidden=!TEST;
@@ -1590,6 +1724,7 @@ function render(){
   $('#sort').value=state.sort;
   const sel=state.db.recipes.find(x=>x.id===state.selected);
   const rs=filtered(gs), total=gs.length;
+  state.order=rs.map(g=>({fid:g.fid,id:g.def.id,title:g.def.title}));
   const searching=searchWords().length>0, grid=state.view==='grid';
   $('#count').textContent=(rs.length===total?total+' recipe'+(total===1?'':'s'):rs.length+' of '+total+' recipes')+(searching&&rs.length>1?', best match first':'');
   const vb=$('#btn-view'); vb.textContent=grid?'List':'Grid'; vb.setAttribute('aria-label',grid?'Show as a list':'Show as a grid');
@@ -1599,11 +1734,11 @@ function render(){
     const meta=n?'Made '+times(n)+', last '+fmtDate(g.logs[0].date):'Not made yet', cov=grid?coverOf(r):null;
     if(grid) return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
       (cov?'<span class="tile has-img'+(cov.book?' book':'')+'"><img data-thumb="'+esc(cov.path)+'" alt=""></span>':'<span class="tile" style="background:'+tileColour(g.fid)+'"><span class="tile-t">'+esc(r.title)+'</span></span>')+
-      '<span class="tile-meta">'+(cov?'<span class="tile-name">'+esc(r.title)+'</span>':'')+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+
+      '<span class="tile-meta">'+(cov?'<span class="tile-name">'+esc(r.title)+'</span>':'')+(isBookmarked(g.fid)?bmMark():'')+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+
         (r.type==='External'?'<span class="badge">Link</span>':'')+(g.active.length>1?'<span class="badge ver-badge">'+g.active.length+' versions</span>':'')+
         esc(n?'Made '+times(n):'Not made yet')+'</span></button></li>';
     return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
-      '<span class="item-title">'+esc(r.title)+(r.type==='External'?'<span class="badge">Link</span>':'')+
+      '<span class="item-title">'+esc(r.title)+(isBookmarked(g.fid)?bmMark():'')+(r.type==='External'?'<span class="badge">Link</span>':'')+
         (g.active.length>1?'<span class="badge ver-badge">'+g.active.length+' versions</span>':'')+'</span>'+
       monthStrip(g.logs)+
       '<span class="item-meta">'+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+esc(meta)+'</span>'+
@@ -1698,10 +1833,12 @@ function renderDetail(){
     pane.innerHTML='<div class="detail-empty"><p>Choose a recipe from the list.</p></div>'; return;
   }
   const oldDate=$('#log-date'), oldCom=$('#log-comment');
-  const keepDate=(oldDate&&oldDate.dataset.rid===r.id)?oldDate.value:today();
-  const keepCom=(oldCom&&oldCom.dataset.rid===r.id)?oldCom.value:'';
+  if(oldCom&&oldCom.dataset.rid) state.logDrafts[oldCom.dataset.rid]={date:oldDate?oldDate.value:'',com:oldCom.value};
+  const draft=state.logDrafts[r.id]||{};
+  const keepDate=draft.date||today();
+  const keepCom=draft.com||'';
   const scrollTop=pane.dataset.rid===r.id?pane.scrollTop:0;
-  const ed=canEdit(), ticks=state.ticks[r.id]||{};
+  const ed=canEdit(), ticks=state.ticks[r.id]||{}, anyTick=Object.keys(ticks).length>0;
   const fam=familyOf(r), multi=fam.length>1, current=isCurrent(r);
   const byT={};
   r.annotations.slice().sort((a,b)=>String(a.at||a.date).localeCompare(String(b.at||b.date))).forEach(a=>(byT[a.target]=byT[a.target]||[]).push(a));
@@ -1709,7 +1846,11 @@ function renderDetail(){
   const orphans=r.annotations.filter(a=>a.target!=='recipe' && !itemIds.has(a.target));
 
   let h='<article class="detail">';
-  h+='<button type="button" class="btn ghost back" data-act="back">‹ All recipes</button>';
+  const pos=state.order.findIndex(o=>o.fid===r.familyId);
+  const cnt=pos>=0&&state.order.length>1?'<span class="swcount">'+(pos+1)+' of '+state.order.length+'</span>':'';
+  h+='<div class="toprow"><button type="button" class="btn ghost back" data-act="back">‹ All recipes</button>'+cnt+'</div>';
+  h+='<div class="fsbar"><button type="button" class="btn ghost fs-back" data-act="back">‹ Back to list</button>'+cnt+
+     '<button type="button" class="btn ghost" data-act="fullscreen">'+(fullScreen()?'Exit full screen':'⤢ Full screen')+'</button></div>';
   if(!current){
     h+='<div class="banner"><p>'+(r.archived?'<strong>'+esc(vName(r))+'</strong> is archived. It\'s hidden from your list but kept here.':'You\'re looking at <strong>'+esc(vName(r))+'</strong>, which isn\'t the current version.')+'</p><div class="stack">'+
       '<button type="button" class="btn" data-act="gocurrent">Show current version</button>'+
@@ -1720,7 +1861,8 @@ function renderDetail(){
   const hc=coverOf(r);
   if(hc) h+=hc.book?'<div class="hero book"><img data-thumb="'+esc(hc.path)+'" data-size="w960h640" alt="Book cover"></div>'
     :'<button type="button" class="hero" data-act="photo" data-pid="'+esc(hc.pid)+'" aria-label="Open photo"><img data-thumb="'+esc(hc.path)+'" data-size="w960h640" alt=""></button>';
-  h+='<h2>'+esc(r.title)+'</h2>';
+  const bm=isBookmarked(r.familyId);
+  h+='<div class="titlerow"><h2>'+esc(r.title)+'</h2><button type="button" class="bmk" data-act="bookmark" aria-pressed="'+bm+'" aria-label="'+(bm?'Remove bookmark':'Bookmark this recipe')+'" title="'+(bm?'Remove bookmark':'Bookmark')+'">'+BM_SVG(bm)+'</button></div>';
   if(multi) h+='<p class="verline"><strong>'+esc(vName(r))+'</strong>'+(r.changeNote?'<br>'+esc(r.changeNote):'')+'</p>';
   const sl=srcLine(r,ed), url=recipeUrl(r);
   if(sl) h+='<p class="source">'+sl+'</p>';
@@ -1730,7 +1872,8 @@ function renderDetail(){
   else if(r.rating) h+='<div class="rate"><span class="stars" aria-label="'+r.rating+' out of 5 stars">'+stars(r.rating)+'</span></div>';
   const tl=TAG_KEYS.reduce((a,k)=>a.concat((r.tags[k]||[]).map(v=>({v,u:k==='unsorted'}))),[]);
   if(tl.length) h+='<div class="tags">'+tl.map(t=>'<span class="tag'+(t.u?' unsorted':'')+'"'+(t.u?' title="Unsorted"':'')+'>'+esc(t.v)+'</span>').join('')+'</div>';
-  if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="newver">New version</button><button type="button" class="btn" data-act="paste-version">Paste as new version</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
+  if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="newver">New version</button><button type="button" class="btn" data-act="paste-version">Paste as new version</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn" data-act="share">Share</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
+  else h+='<div class="actions"><button type="button" class="btn" data-act="share">Share</button></div>';
 
   h+=photoTop(r);
 
@@ -1738,7 +1881,8 @@ function renderDetail(){
     h+='<section class="logbox" aria-labelledby="log-h"><h3 id="log-h">Made it?</h3><div class="logrow">'+
        '<input id="log-date" type="date" data-rid="'+esc(r.id)+'" value="'+esc(keepDate)+'" max="'+today()+'" aria-label="Date made">'+
        '<textarea id="log-comment" data-rid="'+esc(r.id)+'" rows="2" placeholder="How did it go? Anything to change next time?" aria-label="Comment">'+esc(keepCom)+'</textarea>'+
-       '</div><button type="button" class="btn primary" data-act="log">✓ Record that I made it</button></section>';
+       '</div><div class="logact"><button type="button" class="btn primary" data-act="log">✓ Record that I made it</button>'+
+       (bm?'<label class="check logbm"><input id="log-unbm" type="checkbox"><span>Remove bookmark</span></label>':'')+'</div></section>';
   }
 
   if(r.type==='External' && !r.ingredients.length && !r.instructions.length){
@@ -1755,11 +1899,15 @@ function renderDetail(){
           (sub?'<span class="sub-t">'+esc(x.text.replace(/:\s*$/,''))+'</span>':
             '<label><input type="checkbox" data-act="tick" data-i="'+esc(x.id)+'"'+(ticks[x.id]?' checked':'')+'><span>'+esc(x.text)+'</span></label>')+
           (ed?noteBtn(x.id):'')+'</div>'+annoList(byT[x.id],ed)+'</li>';
-      }).join('')+'</ul></section>';
+      }).join('')+'</ul>'+tickClearBtn(anyTick)+'</section>';
     }
     if(r.instructions.length){
-      h+='<section class="section"><h3>Method</h3><ol class="method">'+r.instructions.map(x=>
-        '<li><div class="line-row"><span class="step-t">'+esc(stripStep(x.text))+'</span>'+(ed?noteBtn(x.id):'')+'</div>'+annoList(byT[x.id],ed)+'</li>').join('')+'</ol></section>';
+      const firstOpen=r.instructions.some(x=>ticks[x.id])?(r.instructions.find(x=>!ticks[x.id])||{}).id:null;
+      h+='<section class="section"><h3>Method</h3><ol class="method">'+r.instructions.map((x,i)=>
+        '<li class="step'+(ticks[x.id]?' done':'')+(x.id===firstOpen?' next':'')+'" data-i="'+esc(x.id)+'"><div class="line-row">'+
+          '<label class="step-lab"><input type="checkbox" data-act="tick" data-i="'+esc(x.id)+'"'+(ticks[x.id]?' checked':'')+' aria-label="Step '+(i+1)+' done">'+
+          '<span class="step-n">'+(i+1)+'</span><span class="step-t">'+esc(stripStep(x.text))+'</span></label>'+
+          (ed?noteBtn(x.id):'')+'</div>'+annoList(byT[x.id],ed)+'</li>').join('')+'</ol>'+tickClearBtn(anyTick)+'</section>';
     }
     h+='</div>';
     if(r.type==='External' && url) h+='<p class="source" style="margin-top:14px"><a href="'+esc(url)+'" target="_blank" rel="noopener">Open the original recipe</a></p>';
@@ -1812,11 +1960,129 @@ function renderDetail(){
     }
   }
   h+='</section></article>';
+  if(pos>=0 && state.order.length>1){
+    const pv=state.order[pos-1], nx=state.order[pos+1];
+    h=h.replace(/<\/article>\s*$/,'')+'<nav class="swnav" aria-label="Other recipes">'+
+      (pv?'<button type="button" class="prev" data-act="swipe" data-dir="-1"><span class="dir">‹ Previous</span><span class="nm">'+esc(pv.title)+'</span></button>':'<span class="gap"></span>')+
+      (nx?'<button type="button" class="next" data-act="swipe" data-dir="1"><span class="dir">Next ›</span><span class="nm">'+esc(nx.title)+'</span></button>':'<span class="gap"></span>')+
+      '</nav></article>';
+  }
   pane.innerHTML=h; pane.dataset.rid=r.id; pane.scrollTop=scrollTop;
   loadThumbs();
 }
 
+/* ── Ticks (kept on this device only) ────────────────── */
+/* Ingredient and step ticks are cooking-in-progress state. They are saved per recipe version
+   on this device, never to Dropbox, and forgotten 12 hours after the last tick on that recipe. */
+const TICK_HOURS = 12;
+function tickKey(){ return 'ticks'+DK; }
+function loadTicks(){
+  const saved=ls.get(tickKey(),{}), cutoff=Date.now()-TICK_HOURS*3600000;
+  state.ticks={}; state.tickAt={};
+  Object.keys(saved||{}).forEach(rid=>{
+    const e=saved[rid]; if(!e || !e.t || !(e.at>cutoff)) return;
+    const t={}; Object.keys(e.t).forEach(k=>{ if(e.t[k]) t[k]=true; });
+    if(Object.keys(t).length){ state.ticks[rid]=t; state.tickAt[rid]=e.at; }
+  });
+  saveTicks();
+}
+function saveTicks(){
+  const out={};
+  Object.keys(state.ticks).forEach(rid=>{ const t=state.ticks[rid]; if(t && Object.keys(t).length) out[rid]={at:state.tickAt[rid]||Date.now(),t}; });
+  if(Object.keys(out).length) ls.set(tickKey(),out); else ls.del(tickKey());
+}
+function setTick(rid,id,on){
+  const t=state.ticks[rid]=state.ticks[rid]||{};
+  if(on) t[id]=true; else delete t[id];
+  if(!Object.keys(t).length){ delete state.ticks[rid]; delete state.tickAt[rid]; } else state.tickAt[rid]=Date.now();
+  saveTicks(); refreshTicks();
+}
+function clearTicks(rid){
+  delete state.ticks[rid]; delete state.tickAt[rid]; saveTicks();
+  $$('#detail input[data-act="tick"]').forEach(i=>{ i.checked=false; });
+  refreshTicks();
+}
+/* Updates struck-through steps, the "you are here" highlight and the Clear ticks links without redrawing the page */
+function refreshTicks(){
+  const t=state.ticks[state.selected]||{}, any=Object.keys(t).length>0;
+  const steps=$$('#detail .method li.step');
+  let stepTicked=false;
+  steps.forEach(li=>{ const on=!!t[li.dataset.i]; li.classList.toggle('done',on); if(on) stepTicked=true; });
+  let next=null;
+  if(stepTicked) next=steps.find(li=>!li.classList.contains('done'))||null;
+  steps.forEach(li=>li.classList.toggle('next',li===next));
+  $$('#detail .tick-clear').forEach(b=>{ b.hidden=!any; });
+}
+function tickClearBtn(any){ return '<button type="button" class="linkbtn tick-clear" data-act="clearticks"'+(any?'':' hidden')+'>Clear ticks</button>'; }
+
+/* ── Full screen on iPad (remembered on this device) ── */
+function fullScreen(){ return !!ls.get('fullScreen',false); }
+function wide(){ return window.matchMedia('(min-width:900px)').matches; }
+function applyFullScreen(){ document.body.classList.toggle('fs',fullScreen()); }
+function setFullScreen(on){
+  ls.set('fullScreen',!!on);
+  if(on && state.selected) document.body.classList.add('show-detail');
+  applyFullScreen(); renderDetail();
+}
+function backToList(){
+  document.body.classList.remove('show-detail');
+  if(fullScreen() && wide()){
+    const lp=$('.list-pane'); lp.scrollTop=state.listScroll||0;
+    const it=$('#list .item[aria-current="true"]');
+    if(it){ const r=it.getBoundingClientRect(), pr=lp.getBoundingClientRect(); if(r.top<pr.top||r.bottom>pr.bottom) it.scrollIntoView({block:'center'}); }
+  }
+}
+
+/* ── Swipe between recipes ──────────────────────────── */
+/* Only when the recipe fills the screen: always on a phone-width screen, in full screen on iPad. */
+function recipeFills(){ return wide()?fullScreen():document.body.classList.contains('show-detail'); }
+function goRecipe(dir){
+  const r=state.db.recipes.find(x=>x.id===state.selected); if(!r) return;
+  const pos=state.order.findIndex(o=>o.fid===r.familyId);
+  const to=pos>=0?state.order[pos+dir]:null;
+  if(!to){ swAnim(dir>0?'sw-bounce-l':'sw-bounce-r'); return; }
+  select(to.id);
+  $('#detail').scrollTop=0;
+  swAnim(dir>0?'sw-in-r':'sw-in-l');
+}
+function swAnim(cls){
+  const a=$('#detail .detail'); if(!a) return;
+  a.classList.remove('sw-in-r','sw-in-l','sw-bounce-l','sw-bounce-r'); void a.offsetWidth; a.classList.add(cls);
+  a.addEventListener('animationend',()=>a.classList.remove(cls),{once:true});
+}
+/* True if the touch began in something that scrolls sideways or takes typing */
+function swipeIgnored(el){
+  for(let n=el;n && n.id!=='detail';n=n.parentElement){
+    if(n.matches && n.matches('input,textarea,select,[contenteditable],.hero,.strip,.tags,.colls')) return true;
+    if(n.scrollWidth>n.clientWidth+2){ const ox=getComputedStyle(n).overflowX; if(ox==='auto'||ox==='scroll') return true; }
+  }
+  return false;
+}
+function bindSwipe(){
+  const pane=$('#detail'); let t=null;
+  pane.addEventListener('touchstart',e=>{
+    t=null;
+    if(e.touches.length!==1 || !recipeFills() || !state.selected || $$('dialog[open]').length) return;
+    const p=e.touches[0];
+    if(!isStandalone() && p.clientX<20) return;   /* Safari's own Back gesture */
+    if(swipeIgnored(e.target)) return;
+    t={x:p.clientX,y:p.clientY,st:pane.scrollTop};
+  },{passive:true});
+  pane.addEventListener('touchmove',e=>{ if(t && e.touches.length!==1) t=null; },{passive:true});
+  pane.addEventListener('touchcancel',()=>{ t=null; },{passive:true});
+  pane.addEventListener('touchend',e=>{
+    if(!t) return;
+    const p=e.changedTouches[0], dx=p.clientX-t.x, dy=p.clientY-t.y, scrolled=Math.abs(pane.scrollTop-t.st);
+    t=null;
+    if(Math.abs(dx)<60 || Math.abs(dx)<=Math.abs(dy) || scrolled>20) return;
+    if($$('dialog[open]').length) return;
+    const sel=window.getSelection && window.getSelection(); if(sel && !sel.isCollapsed) return;
+    goRecipe(dx<0?1:-1);
+  },{passive:true});
+}
+
 function select(id){
+  if(fullScreen() && wide() && !document.body.classList.contains('show-detail')) state.listScroll=$('.list-pane').scrollTop;
   const changed=state.selected!==id;
   state.selected=id; render();
   if(changed) $('#detail').scrollTop=0;
@@ -2888,6 +3154,156 @@ async function runCleanup(){
   clText(bad?'Done, but '+bad+' item'+(bad>1?'s':'')+' couldn\'t be deleted. You can run this again.':'Done. Unused photos have been removed from Dropbox.');
 }
 
+/* ── Share a recipe (Release 5) ──────────────────────── */
+/* Three formats, no library or API key: plain text, a self-contained web page with the cover
+   photo embedded, and a PDF made from the iOS print screen. Cooking history, rating and the
+   version list are never shared. Nothing is written to Dropbox. */
+let shareCtx=null;
+const SHARE_PHOTO_MAX=1000, SHARE_PHOTO_Q=0.78;
+function shareSrc(r){
+  const s=srcOf(r), u=recipeUrl(r);
+  if(!s) return {text:'',url:u};
+  if(s.kind==='Online') return {text:r.siteName||(u?host(u):'Online'),url:u};
+  return {text:s.name+(s.kind==='Book'&&s.author?' by '+s.author:'')+(s.kind==='Book'&&r.sourceRef&&!u?', page '+r.sourceRef:'')+(s.kind==='Homemade'?' (homemade)':''),url:u};
+}
+function shareModel(r,withNotes){
+  const fam=familyOf(r), by={};
+  if(withNotes) r.annotations.slice().sort((a,b)=>String(a.at||a.date).localeCompare(String(b.at||b.date))).forEach(a=>(by[a.target]=by[a.target]||[]).push(a.text));
+  const src=shareSrc(r), url=recipeUrl(r);
+  return {
+    title:r.title, ver:fam.length>1?vName(r):'', src, serves:r.serves||'', time:r.time||'',
+    linkOnly:r.type==='External' && !r.ingredients.length && !r.instructions.length, url,
+    ings:r.ingredients.map(x=>({text:x.text.replace(/:\s*$/,''),sub:/:\s*$/.test(x.text),notes:by[x.id]||[]})),
+    steps:r.instructions.map(x=>({text:stripStep(x.text),notes:by[x.id]||[]})),
+    notes:withNotes?[r.notes||''].concat(by['recipe']||[]).map(t=>String(t).trim()).filter(Boolean):[]
+  };
+}
+function shareHasNotes(r){ return !!(String(r.notes||'').trim() || r.annotations.length); }
+function shareText(m){
+  const L=[m.title];
+  if(m.ver) L.push(m.ver);
+  if(m.src.text) L.push('From '+m.src.text);
+  const facts=[m.serves?'Serves '+m.serves:'',m.time].filter(Boolean); if(facts.length) L.push(facts.join(' · '));
+  if(m.linkOnly){ if(m.url) L.push('','Recipe: '+m.url); }
+  else{
+    if(m.ings.length){ L.push('','INGREDIENTS'); m.ings.forEach((x,i)=>{ L.push(x.sub&&i?'':null, x.sub?x.text+':':'• '+x.text); x.notes.forEach(n=>L.push('   Note: '+n)); }); }
+    if(m.steps.length){ L.push('','METHOD'); m.steps.forEach((x,i)=>{ L.push((i+1)+'. '+x.text); x.notes.forEach(n=>L.push('   Note: '+n)); }); }
+    if(m.url) L.push('','Original recipe: '+m.url);
+  }
+  if(m.notes.length){ L.push('','NOTES'); m.notes.forEach(n=>L.push(n)); }
+  return L.filter(x=>x!==null).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+const SHARE_CSS='.sr{max-width:760px;margin:0 auto;padding:28px 22px 40px;font:17px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1F2622}'+
+ '.sr *{box-sizing:border-box}.sr img.ph{display:block;width:100%;max-height:420px;object-fit:cover;border-radius:10px;margin:0 0 20px}'+
+ '.sr h1{font:600 2.1rem/1.15 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;margin:0 0 6px}'+
+ '.sr .ver{color:#2F6B4F;font-weight:600;margin:0 0 6px}.sr .src,.sr .facts{color:#5E6A63;margin:0 0 4px}.sr .src a{color:#2F6B4F}'+
+ '.sr h2{font:600 1.3rem/1.3 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid #D9DED8}'+
+ '.sr ul{list-style:none;margin:0;padding:0}.sr ul li{padding:4px 0 4px 16px;position:relative}.sr ul li:before{content:"•";position:absolute;left:0;color:#2F6B4F}'+
+ '.sr ul li.sub{padding-left:0;font-weight:700;margin-top:8px}.sr ul li.sub:before{content:none}'+
+ '.sr ol{margin:0;padding-left:1.6em}.sr ol li{padding:3px 0 10px}.sr ol li::marker{font-weight:700;color:#2F6B4F}'+
+ '.sr .n{display:block;margin:3px 0 2px;padding-left:10px;border-left:2px solid #9DB6CF;color:#2D5B86;font-style:italic}'+
+ '.sr .notes p{margin:0 0 8px;white-space:pre-wrap}.sr .go{display:inline-block;margin-top:10px;padding:10px 16px;border-radius:6px;background:#2F6B4F;color:#fff;text-decoration:none;font-weight:600}'+
+ '.sr .foot{margin-top:36px;padding-top:12px;border-top:1px solid #D9DED8;color:#5E6A63;font-size:.85rem}'+
+ '@media (min-width:760px){.sr .cols{display:grid;grid-template-columns:2fr 3fr;gap:34px}}'+
+ '@media print{.sr{padding:0;max-width:none}.sr .go{border:1px solid #2F6B4F;color:#2F6B4F;background:none}.sr img.ph{max-height:300px}}';
+function shareBody(m,photo){
+  const nl=a=>a.map(t=>'<span class="n">'+esc(t)+'</span>').join('');
+  let h='<div class="sr">';
+  if(photo) h+='<img class="ph" src="'+photo+'" alt="">';
+  h+='<h1>'+esc(m.title)+'</h1>';
+  if(m.ver) h+='<p class="ver">'+esc(m.ver)+'</p>';
+  if(m.src.text) h+='<p class="src">From '+(m.src.url?'<a href="'+esc(m.src.url)+'">'+esc(m.src.text)+'</a>':esc(m.src.text))+'</p>';
+  const facts=[m.serves?'Serves '+m.serves:'',m.time].filter(Boolean); if(facts.length) h+='<p class="facts">'+esc(facts.join(' · '))+'</p>';
+  if(m.linkOnly){ if(m.url) h+='<p><a class="go" href="'+esc(m.url)+'">Open the recipe</a></p><p class="src">'+esc(m.url)+'</p>'; }
+  else{
+    h+='<div class="cols">';
+    if(m.ings.length) h+='<section><h2>Ingredients</h2><ul>'+m.ings.map(x=>'<li'+(x.sub?' class="sub"':'')+'>'+esc(x.text)+nl(x.notes)+'</li>').join('')+'</ul></section>';
+    if(m.steps.length) h+='<section><h2>Method</h2><ol>'+m.steps.map(x=>'<li>'+esc(x.text)+nl(x.notes)+'</li>').join('')+'</ol></section>';
+    h+='</div>';
+  }
+  if(m.notes.length) h+='<section class="notes"><h2>Notes</h2>'+m.notes.map(n=>'<p>'+esc(n)+'</p>').join('')+'</section>';
+  h+='<p class="foot">Shared from '+esc(CONFIG.bookTitle)+' on '+esc(fmtDate(today(),true))+'</p></div>';
+  return h;
+}
+function sharePage(m,photo){
+  return '<!DOCTYPE html>\n<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'+
+    '<title>'+esc(m.title)+'</title><style>html,body{margin:0;background:#fff}'+SHARE_CSS+'</style></head><body>'+shareBody(m,photo)+'</body></html>';
+}
+/* The cover photo, downsized and embedded so the file stays small (well under 1 MB) */
+async function sharePhoto(r){
+  const c=coverOf(r); if(!c) return null;
+  const size='w960h640', k=thumbKey(c.path,size);
+  let b=await cacheGet(k);
+  if(!b && navigator.onLine && ls.get('token',null)){
+    const res=await dbxFetch(DBX_CONTENT+'get_thumbnail_batch',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({entries:[{path:c.path,format:'jpeg',size,mode:'bestfit'}]})});
+    if(res.ok){ const j=await res.json(), e=(j.entries||[])[0]; if(e && e['.tag']==='success' && e.thumbnail){ b=b64Blob(e.thumbnail,'image/jpeg'); cachePut(k,b); } }
+  }
+  if(!b) return null;
+  const small=await resizeImage(b,SHARE_PHOTO_MAX,SHARE_PHOTO_Q).catch(()=>b);
+  return await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(small); });
+}
+function shareFmt(){ const i=$$('#dlg-share input[name="sh-fmt"]').find(x=>x.checked); return i?i.value:'text'; }
+function shareMsg(t){ const m=$('#sh-msg'); m.textContent=t||''; m.hidden=!t; }
+function syncShareUi(){
+  if(!shareCtx) return;
+  const fmt=shareFmt(), waiting=fmt!=='text' && shareCtx.photo===undefined;
+  $('#sh-go').disabled=waiting;
+  $('#sh-go').textContent=waiting?'Preparing photo…':'Share';
+  shareMsg(fmt!=='text' && shareCtx.photo===null && shareCtx.hadCover?'The photo couldn\'t be loaded (are you offline?), so it will be left out.':'');
+}
+function openShare(r){
+  shareCtx={rid:r.id,photo:coverOf(r)?undefined:null,hadCover:!!coverOf(r)};
+  $('#sh-noteswrap').hidden=!shareHasNotes(r); $('#sh-notes').checked=true;
+  syncShareUi();
+  $('#dlg-share').showModal();
+  /* Load the photo now, so tapping Share can open the share sheet straight away */
+  if(shareCtx.photo===undefined){
+    const ctx=shareCtx;
+    sharePhoto(r).then(d=>{ ctx.photo=d||null; }).catch(e=>{ console.error(e); ctx.photo=null; }).finally(()=>{ if(shareCtx===ctx) syncShareUi(); });
+  }
+}
+function shareFileName(m){ return (m.title.replace(/[\\/:*?"<>|]+/g,'').replace(/\s+/g,' ').trim().slice(0,60)||'Recipe')+'.html'; }
+function downloadFile(name,text,type){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+}
+async function copyText(t){ try{ await navigator.clipboard.writeText(t); return true; }catch(e){ return false; } }
+function shareErr(e){ return e && (e.name==='AbortError'); }
+async function runShare(){
+  if(!shareCtx) return;
+  const r=state.db.recipes.find(x=>x.id===shareCtx.rid); if(!r){ $('#dlg-share').close(); return; }
+  const fmt=shareFmt(), m=shareModel(r,!$('#sh-noteswrap').hidden && $('#sh-notes').checked);
+  const text=shareText(m), photo=shareCtx.photo||null;
+  if(fmt==='text'){
+    if(navigator.share){
+      try{ await navigator.share({title:m.title,text}); $('#dlg-share').close(); }
+      catch(e){ if(!shareErr(e)){ console.error(e); if(await copyText(text)){ $('#dlg-share').close(); toast('Recipe copied. Paste it wherever you like.'); } else shareMsg('Sharing didn\'t work here.'); } }
+    } else if(await copyText(text)){ $('#dlg-share').close(); toast('Recipe copied. Paste it wherever you like.'); }
+    else shareMsg('This browser can\'t share or copy text.');
+    return;
+  }
+  if(fmt==='html'){
+    const page=sharePage(m,photo), name=shareFileName(m);
+    let file=null; try{ file=new File([page],name,{type:'text/html'}); }catch(e){}
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file],title:m.title}); $('#dlg-share').close(); }
+      catch(e){ if(!shareErr(e)){ console.error(e); shareMsg('Sharing the file didn\'t work here.'); } }
+      return;
+    }
+    downloadFile(name,page,'text/html'); const copied=await copyText(text);
+    $('#dlg-share').close(); toast(copied?'Web page downloaded, and the recipe text copied':'Web page downloaded');
+    return;
+  }
+  /* PDF: a clean layout sent to the print screen */
+  const box=$('#share-print');
+  box.innerHTML='<style>'+SHARE_CSS+'</style>'+shareBody(m,photo);
+  $('#dlg-share').close();
+  document.body.classList.add('share-printing');
+  setTimeout(()=>window.print(),60);
+}
+window.addEventListener('afterprint',()=>{ document.body.classList.remove('share-printing'); });
+
 /* ── Settings ────────────────────────────────────────── */
 function openSettings(){
   $('#s-viewonly').checked=!!ls.get('viewOnly',false);
@@ -2939,17 +3355,26 @@ function bind(){
   $('#btn-import').addEventListener('click',()=>openImport(null));
   $('#btn-settings').addEventListener('click',openSettings);
 
+  bindSwipe();
+  $('#sh-go').addEventListener('click',runShare);
+  $$('#dlg-share input[name="sh-fmt"]').forEach(i=>i.addEventListener('change',syncShareUi));
+  $('#dlg-share').addEventListener('close',()=>{ shareCtx=null; });
   $('#detail').addEventListener('click',e=>{
     const el=e.target.closest('[data-act]'); if(!el) return;
     const r=state.db.recipes.find(x=>x.id===state.selected); const act=el.dataset.act;
-    if(act==='back'){ document.body.classList.remove('show-detail'); return; }
+    if(act==='back'){ backToList(); return; }
+    if(act==='swipe'){ goRecipe(Number(el.dataset.dir)); return; }
+    if(act==='fullscreen'){ setFullScreen(!fullScreen()); $('#detail').scrollTop=0; return; }
     if(!r) return;
     const byId=id=>state.db.recipes.find(x=>x.id===id);
-    if(act==='tick'){ (state.ticks[r.id]=state.ticks[r.id]||{})[el.dataset.i]=el.checked; return; }
+    if(act==='tick'){ setTick(r.id,el.dataset.i,el.checked); return; }
+    if(act==='clearticks'){ clearTicks(r.id); return; }
     if(act==='rate'){ const v=Number(el.dataset.v); commit({t:'patch',id:r.id,f:{rating:v===r.rating?0:v},at:new Date().toISOString()}); }
     if(act==='edit') openEdit(r,false);
     if(act==='newver') openNewVersion(r);
-    if(act==='print') window.print();
+    if(act==='print'){ document.body.classList.remove('share-printing'); window.print(); }
+    if(act==='share') openShare(r);
+    if(act==='bookmark') toggleBookmark(r);
     if(act==='delete'){
       if(familyOf(r).length>1){ openDelete(r); return; }
       if(confirm('Delete "'+r.title+'" and its cooking history? This can\'t be undone.')){ const fid=r.familyId, had=familyHasPhotos(fid); commit({t:'delete',id:r.id}); state.selected=null; render(); if(had) removeFamilyPhotos(fid); toast('Recipe deleted'); }
@@ -2957,8 +3382,11 @@ function bind(){
     if(act==='log'){
       const date=$('#log-date').value||today(), comment=$('#log-comment').value.trim();
       $('#log-comment').value='';
-      commit({t:'log',id:r.id,e:{id:uid('l-'),date,comment,at:new Date().toISOString()}});
-      toast('Recorded for '+fmtDate(date));
+      const unbm=!!($('#log-unbm') && $('#log-unbm').checked && isBookmarked(r.familyId));
+      const ops=[{t:'log',id:r.id,e:{id:uid('l-'),date,comment,at:new Date().toISOString()}}];
+      if(unbm) ops.push({t:'unbookmark',fid:r.familyId});
+      commitMany(ops);
+      toast('Recorded for '+fmtDate(date)+(unbm?', bookmark removed':''));
     }
     if(act==='unlog'){ if(confirm('Remove this entry from the cooking history?')) commit({t:'unlog',id:r.id,eid:el.dataset.eid}); }
     if(act==='paste-version'){ openImport({versionOf:r.id}); return; }
@@ -3071,6 +3499,10 @@ function bind(){
 
   window.addEventListener('online',()=>{ if(ls.get('token',null)) syncNow(); });
   document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'){
+      const before=JSON.stringify(state.ticks); loadTicks();
+      if(JSON.stringify(state.ticks)!==before && !$('#app').hidden) renderDetail();
+    }
     if(document.visibilityState==='visible' && ls.get('token',null) && !$('#app').hidden && Date.now()-state.lastPull>30000) pull();
   });
 }
@@ -3079,6 +3511,8 @@ function bind(){
 async function init(){
   /* Release 1 removed Claude API import: clear any saved key and model */
   ls.del('apiKey'); ls.del('model');
+  /* Release 5 step 2 dropped the keep-screen-awake switch tried in step 1 */
+  ls.del('keepAwake');
   if(ls.get('viewOnly',null)===null) ls.set('viewOnly',window.matchMedia('(max-width: 600px)').matches);
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
   bind();
