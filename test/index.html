@@ -365,6 +365,25 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
   .cols{display:grid;grid-template-columns:2fr 3fr;gap:34px}
   .cols .section{margin-top:30px}
 }
+/* Swipe between recipes (Release 5): counter and previous/next only show when the recipe fills the screen */
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.swcount{display:none;font-size:.85rem;color:var(--muted);white-space:nowrap}
+.swnav{display:none;gap:10px;margin-top:36px;padding-top:16px;border-top:1px solid var(--line)}
+.swnav button{flex:1;min-width:0;min-height:56px;padding:8px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--card);text-align:left;display:flex;flex-direction:column;justify-content:center}
+.swnav button.next{text-align:right;align-items:flex-end}
+.swnav .dir{font:600 .78rem/1.3 var(--sans);color:var(--basil)}
+.swnav .nm{font:600 1rem/1.3 var(--serif);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.swnav .gap{flex:1}
+@media (max-width:899px){ .swcount{display:inline} .swnav{display:flex} }
+@keyframes swInR{from{transform:translateX(48px);opacity:.2}to{transform:none;opacity:1}}
+@keyframes swInL{from{transform:translateX(-48px);opacity:.2}to{transform:none;opacity:1}}
+@keyframes swBounceL{0%,100%{transform:none}35%{transform:translateX(-18px)}}
+@keyframes swBounceR{0%,100%{transform:none}35%{transform:translateX(18px)}}
+.detail.sw-in-r{animation:swInR .22s ease-out}
+.detail.sw-in-l{animation:swInL .22s ease-out}
+.detail.sw-bounce-l{animation:swBounceL .28s ease-out}
+.detail.sw-bounce-r{animation:swBounceR .28s ease-out}
+
 /* Full screen recipe (Release 5): only where the split view exists. body.fs is the remembered
    choice; with it on, the screen shows either the list or the recipe, like a phone. */
 .fsbar{display:none}
@@ -379,6 +398,8 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
   body.fs .detail{max-width:1200px;padding:0 36px calc(56px + var(--sb));font-size:1.125rem}
   body.fs .fsbar{position:sticky;top:0;z-index:5;margin:0 -36px 8px;padding:calc(8px + var(--st)) 28px 8px;background:var(--card);border-bottom:1px solid var(--line)}
   body.fs .fsbar .fs-back{display:inline-flex}
+  body.fs .fsbar .swcount{display:inline;margin-right:auto}
+  body.fs .swnav{display:flex}
   body.fs .detail h2{font-size:2.5rem}
   body.fs .section h3{font-size:1.45rem}
   body.fs .cols{grid-template-columns:1fr;gap:0}
@@ -389,7 +410,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 @media (max-width:520px){.row2{grid-template-columns:1fr}.detail h2{font-size:1.8rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{
-  .hero,.photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.fsbar,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
+  .hero,.photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.fsbar,.swnav,.swcount,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
   .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
@@ -704,7 +725,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '5.0';
-const BUILD = 'R5 step 2 (test)';
+const BUILD = 'R5 step 3 (test)';
 const DATA_VERSION = 5;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -1219,7 +1240,7 @@ function applyOp(d,op){
 }
 
 /* ── State ───────────────────────────────────────────── */
-const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['source','course']), srcQuery:'', coll:null, view:ls.get('view','list'), sort:ls.get('sort','title'), ticks:{}, tickAt:{}, lastPull:0, locked:null };
+const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['source','course']), srcQuery:'', coll:null, view:ls.get('view','list'), sort:ls.get('sort','title'), ticks:{}, tickAt:{}, order:[], logDrafts:{}, lastPull:0, locked:null };
 let pulling=false, flushing=false;
 function saveCache(){ ls.set('cache'+DK,{db:state.db}); }
 function queueOp(op){ state.queue.push(op); ls.set('queue'+DK,state.queue); }
@@ -1624,6 +1645,7 @@ function render(){
   $('#sort').value=state.sort;
   const sel=state.db.recipes.find(x=>x.id===state.selected);
   const rs=filtered(gs), total=gs.length;
+  state.order=rs.map(g=>({fid:g.fid,id:g.def.id,title:g.def.title}));
   const searching=searchWords().length>0, grid=state.view==='grid';
   $('#count').textContent=(rs.length===total?total+' recipe'+(total===1?'':'s'):rs.length+' of '+total+' recipes')+(searching&&rs.length>1?', best match first':'');
   const vb=$('#btn-view'); vb.textContent=grid?'List':'Grid'; vb.setAttribute('aria-label',grid?'Show as a list':'Show as a grid');
@@ -1732,8 +1754,10 @@ function renderDetail(){
     pane.innerHTML='<div class="detail-empty"><p>Choose a recipe from the list.</p></div>'; return;
   }
   const oldDate=$('#log-date'), oldCom=$('#log-comment');
-  const keepDate=(oldDate&&oldDate.dataset.rid===r.id)?oldDate.value:today();
-  const keepCom=(oldCom&&oldCom.dataset.rid===r.id)?oldCom.value:'';
+  if(oldCom&&oldCom.dataset.rid) state.logDrafts[oldCom.dataset.rid]={date:oldDate?oldDate.value:'',com:oldCom.value};
+  const draft=state.logDrafts[r.id]||{};
+  const keepDate=draft.date||today();
+  const keepCom=draft.com||'';
   const scrollTop=pane.dataset.rid===r.id?pane.scrollTop:0;
   const ed=canEdit(), ticks=state.ticks[r.id]||{}, anyTick=Object.keys(ticks).length>0;
   const fam=familyOf(r), multi=fam.length>1, current=isCurrent(r);
@@ -1743,8 +1767,10 @@ function renderDetail(){
   const orphans=r.annotations.filter(a=>a.target!=='recipe' && !itemIds.has(a.target));
 
   let h='<article class="detail">';
-  h+='<button type="button" class="btn ghost back" data-act="back">‹ All recipes</button>';
-  h+='<div class="fsbar"><button type="button" class="btn ghost fs-back" data-act="back">‹ Back to list</button>'+
+  const pos=state.order.findIndex(o=>o.fid===r.familyId);
+  const cnt=pos>=0&&state.order.length>1?'<span class="swcount">'+(pos+1)+' of '+state.order.length+'</span>':'';
+  h+='<div class="toprow"><button type="button" class="btn ghost back" data-act="back">‹ All recipes</button>'+cnt+'</div>';
+  h+='<div class="fsbar"><button type="button" class="btn ghost fs-back" data-act="back">‹ Back to list</button>'+cnt+
      '<button type="button" class="btn ghost" data-act="fullscreen">'+(fullScreen()?'Exit full screen':'⤢ Full screen')+'</button></div>';
   if(!current){
     h+='<div class="banner"><p>'+(r.archived?'<strong>'+esc(vName(r))+'</strong> is archived. It\'s hidden from your list but kept here.':'You\'re looking at <strong>'+esc(vName(r))+'</strong>, which isn\'t the current version.')+'</p><div class="stack">'+
@@ -1852,6 +1878,13 @@ function renderDetail(){
     }
   }
   h+='</section></article>';
+  if(pos>=0 && state.order.length>1){
+    const pv=state.order[pos-1], nx=state.order[pos+1];
+    h=h.replace(/<\/article>\s*$/,'')+'<nav class="swnav" aria-label="Other recipes">'+
+      (pv?'<button type="button" class="prev" data-act="swipe" data-dir="-1"><span class="dir">‹ Previous</span><span class="nm">'+esc(pv.title)+'</span></button>':'<span class="gap"></span>')+
+      (nx?'<button type="button" class="next" data-act="swipe" data-dir="1"><span class="dir">Next ›</span><span class="nm">'+esc(nx.title)+'</span></button>':'<span class="gap"></span>')+
+      '</nav></article>';
+  }
   pane.innerHTML=h; pane.dataset.rid=r.id; pane.scrollTop=scrollTop;
   loadThumbs();
 }
@@ -1916,6 +1949,54 @@ function backToList(){
     const it=$('#list .item[aria-current="true"]');
     if(it){ const r=it.getBoundingClientRect(), pr=lp.getBoundingClientRect(); if(r.top<pr.top||r.bottom>pr.bottom) it.scrollIntoView({block:'center'}); }
   }
+}
+
+/* ── Swipe between recipes ──────────────────────────── */
+/* Only when the recipe fills the screen: always on a phone-width screen, in full screen on iPad. */
+function recipeFills(){ return wide()?fullScreen():document.body.classList.contains('show-detail'); }
+function goRecipe(dir){
+  const r=state.db.recipes.find(x=>x.id===state.selected); if(!r) return;
+  const pos=state.order.findIndex(o=>o.fid===r.familyId);
+  const to=pos>=0?state.order[pos+dir]:null;
+  if(!to){ swAnim(dir>0?'sw-bounce-l':'sw-bounce-r'); return; }
+  select(to.id);
+  $('#detail').scrollTop=0;
+  swAnim(dir>0?'sw-in-r':'sw-in-l');
+}
+function swAnim(cls){
+  const a=$('#detail .detail'); if(!a) return;
+  a.classList.remove('sw-in-r','sw-in-l','sw-bounce-l','sw-bounce-r'); void a.offsetWidth; a.classList.add(cls);
+  a.addEventListener('animationend',()=>a.classList.remove(cls),{once:true});
+}
+/* True if the touch began in something that scrolls sideways or takes typing */
+function swipeIgnored(el){
+  for(let n=el;n && n.id!=='detail';n=n.parentElement){
+    if(n.matches && n.matches('input,textarea,select,[contenteditable],.hero,.strip,.tags,.colls')) return true;
+    if(n.scrollWidth>n.clientWidth+2){ const ox=getComputedStyle(n).overflowX; if(ox==='auto'||ox==='scroll') return true; }
+  }
+  return false;
+}
+function bindSwipe(){
+  const pane=$('#detail'); let t=null;
+  pane.addEventListener('touchstart',e=>{
+    t=null;
+    if(e.touches.length!==1 || !recipeFills() || !state.selected || $$('dialog[open]').length) return;
+    const p=e.touches[0];
+    if(!isStandalone() && p.clientX<20) return;   /* Safari's own Back gesture */
+    if(swipeIgnored(e.target)) return;
+    t={x:p.clientX,y:p.clientY,st:pane.scrollTop};
+  },{passive:true});
+  pane.addEventListener('touchmove',e=>{ if(t && e.touches.length!==1) t=null; },{passive:true});
+  pane.addEventListener('touchcancel',()=>{ t=null; },{passive:true});
+  pane.addEventListener('touchend',e=>{
+    if(!t) return;
+    const p=e.changedTouches[0], dx=p.clientX-t.x, dy=p.clientY-t.y, scrolled=Math.abs(pane.scrollTop-t.st);
+    t=null;
+    if(Math.abs(dx)<60 || Math.abs(dx)<=Math.abs(dy) || scrolled>20) return;
+    if($$('dialog[open]').length) return;
+    const sel=window.getSelection && window.getSelection(); if(sel && !sel.isCollapsed) return;
+    goRecipe(dx<0?1:-1);
+  },{passive:true});
 }
 
 function select(id){
@@ -3042,10 +3123,12 @@ function bind(){
   $('#btn-import').addEventListener('click',()=>openImport(null));
   $('#btn-settings').addEventListener('click',openSettings);
 
+  bindSwipe();
   $('#detail').addEventListener('click',e=>{
     const el=e.target.closest('[data-act]'); if(!el) return;
     const r=state.db.recipes.find(x=>x.id===state.selected); const act=el.dataset.act;
     if(act==='back'){ backToList(); return; }
+    if(act==='swipe'){ goRecipe(Number(el.dataset.dir)); return; }
     if(act==='fullscreen'){ setFullScreen(!fullScreen()); $('#detail').scrollTop=0; return; }
     if(!r) return;
     const byId=id=>state.db.recipes.find(x=>x.id===id);
