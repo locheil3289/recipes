@@ -365,6 +365,13 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
   .cols{display:grid;grid-template-columns:2fr 3fr;gap:34px}
   .cols .section{margin-top:30px}
 }
+/* Share dialog (Release 5) */
+.shopts{display:grid;gap:8px}
+.shopt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);cursor:pointer}
+.shopt input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--basil);flex:none}
+.shopt:has(input:checked){border-color:var(--basil-edge);background:var(--basil-soft)}
+#share-print{display:none}
+
 /* Swipe between recipes (Release 5): counter and previous/next only show when the recipe fills the screen */
 .toprow{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .swcount{display:none;font-size:.85rem;color:var(--muted);white-space:nowrap}
@@ -410,6 +417,8 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 @media (max-width:520px){.row2{grid-template-columns:1fr}.detail h2{font-size:1.8rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{
+  body.share-printing>*:not(#share-print){display:none!important}
+  body.share-printing #share-print{display:block!important}
   .hero,.photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.fsbar,.swnav,.swcount,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
@@ -665,6 +674,23 @@ window.RECIPE_CONFIG = {
   <div class="dlg-foot"><button id="sv-filter" class="btn left" type="button">Show these in the list</button><button id="sv-edit" class="btn edit-only" type="button">Edit source</button><button class="btn primary" data-close type="button">Close</button></div>
 </dialog>
 
+<!-- Share a recipe -->
+<dialog id="dlg-share" aria-labelledby="sh-h">
+  <div class="dlg-head"><h2 id="sh-h">Share this recipe</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <div class="field"><span class="lbl">Send as</span>
+      <div class="shopts" role="radiogroup" aria-label="Send as">
+        <label class="shopt"><input type="radio" name="sh-fmt" value="text" checked><span><strong>Text</strong><br><span class="muted">For Messages and quick sends. No photo.</span></span></label>
+        <label class="shopt"><input type="radio" name="sh-fmt" value="html"><span><strong>Web page</strong><br><span class="muted">One file that opens in any browser, with the photo. Good for email or keeping a copy.</span></span></label>
+        <label class="shopt"><input type="radio" name="sh-fmt" value="pdf"><span><strong>PDF</strong><br><span class="muted">Opens the print screen. Tap Share or Save to Files there to make the PDF.</span></span></label>
+      </div>
+    </div>
+    <label id="sh-noteswrap" class="check"><input id="sh-notes" type="checkbox" checked><span><strong>Include my notes</strong><br><span class="muted">Your notes and margin notes. Cooking history and rating are never shared.</span></span></label>
+    <p id="sh-msg" class="hint" hidden></p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="sh-go" class="btn primary" type="button">Share</button></div>
+</dialog>
+
 <!-- Settings -->
 <dialog id="dlg-settings" aria-labelledby="set-h">
   <div class="dlg-head"><h2 id="set-h">Settings</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
@@ -719,13 +745,14 @@ window.RECIPE_CONFIG = {
 <input id="cover-input" type="file" accept="image/*" hidden>
 
 <div id="toast" class="toast" role="status" hidden></div>
+<div id="share-print"></div>
 
 <script>
 (function(){
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '5.0';
-const BUILD = 'R5 step 3 (test)';
+const BUILD = 'R5 step 4 (test)';
 const DATA_VERSION = 5;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -1508,14 +1535,14 @@ function searchIndex(r){
   for(const k in f){ const t=normText(f[k]); o[k]={text:t,toks:tokens(t)}; }
   return o;
 }
-function wordScore(idx,w){
+function wordScore(idx,w,fuzzy){
   let best=0;
   SEARCH_WEIGHTS.forEach(([k,wt])=>{
     const f=idx[k]; let sc=0;
     if(f.toks.includes(w)) sc=wt;
     else if(f.toks.some(t=>t.indexOf(w)===0)) sc=wt*.9;
     else if(f.text.indexOf(w)>=0) sc=wt*.75;
-    else if(w.length>=5 && f.toks.some(t=>within1(w,t) || (t.length>w.length && within1(w,t.slice(0,w.length))))) sc=wt*.5;
+    else if(fuzzy && w.length>=5 && f.toks.some(t=>within1(w,t) || (t.length>w.length && within1(w,t.slice(0,w.length))))) sc=wt*.5;
     if(sc>best) best=sc;
   });
   return best;
@@ -1525,6 +1552,16 @@ function searchWords(){
   return w.length>1?w.filter(x=>x.length>1):w;
 }
 let scoreCache=null;
+/* Typo matching (e.g. "chiken" finding chicken) is only used for a word that matches nothing
+   exactly anywhere in the book. Otherwise "chicken" would also find "thicken" and "thickened". */
+function fuzzyOk(words){
+  if(!scoreCache.fuzzy){
+    const gs=groups(), idxs=[];
+    gs.forEach(g=>(g.active.length?g.active:[g.def]).forEach(r=>idxs.push(searchIndex(r))));
+    scoreCache.fuzzy=words.map(w=>w.length>=5 && !idxs.some(ix=>wordScore(ix,w,false)>0));
+  }
+  return scoreCache.fuzzy;
+}
 /* Best score across a recipe's versions; every word has to match within one version. 0 means no match. */
 function searchScore(g,words){
   if(!words.length) return 1;
@@ -1533,8 +1570,8 @@ function searchScore(g,words){
   if(scoreCache.map.has(g.fid)) return scoreCache.map.get(g.fid);
   let best=0;
   (g.active.length?g.active:[g.def]).forEach(r=>{
-    const idx=searchIndex(r); let tot=0;
-    for(const w of words){ const sc=wordScore(idx,w); if(!sc) return; tot+=sc; }
+    const idx=searchIndex(r), fz=fuzzyOk(words); let tot=0;
+    for(let i=0;i<words.length;i++){ const sc=wordScore(idx,words[i],fz[i]); if(!sc) return; tot+=sc; }
     if(idx.title.text.indexOf(key)===0) tot+=50;
     if(r===g.def) tot+=1;
     if(tot>best) best=tot;
@@ -1792,7 +1829,8 @@ function renderDetail(){
   else if(r.rating) h+='<div class="rate"><span class="stars" aria-label="'+r.rating+' out of 5 stars">'+stars(r.rating)+'</span></div>';
   const tl=TAG_KEYS.reduce((a,k)=>a.concat((r.tags[k]||[]).map(v=>({v,u:k==='unsorted'}))),[]);
   if(tl.length) h+='<div class="tags">'+tl.map(t=>'<span class="tag'+(t.u?' unsorted':'')+'"'+(t.u?' title="Unsorted"':'')+'>'+esc(t.v)+'</span>').join('')+'</div>';
-  if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="newver">New version</button><button type="button" class="btn" data-act="paste-version">Paste as new version</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
+  if(ed) h+='<div class="actions"><button type="button" class="btn" data-act="edit">Edit</button><button type="button" class="btn" data-act="newver">New version</button><button type="button" class="btn" data-act="paste-version">Paste as new version</button><button type="button" class="btn" data-act="print">Print</button><button type="button" class="btn" data-act="share">Share</button><button type="button" class="btn danger" data-act="delete">Delete</button></div>';
+  else h+='<div class="actions"><button type="button" class="btn" data-act="share">Share</button></div>';
 
   h+=photoTop(r);
 
@@ -3072,6 +3110,156 @@ async function runCleanup(){
   clText(bad?'Done, but '+bad+' item'+(bad>1?'s':'')+' couldn\'t be deleted. You can run this again.':'Done. Unused photos have been removed from Dropbox.');
 }
 
+/* ── Share a recipe (Release 5) ──────────────────────── */
+/* Three formats, no library or API key: plain text, a self-contained web page with the cover
+   photo embedded, and a PDF made from the iOS print screen. Cooking history, rating and the
+   version list are never shared. Nothing is written to Dropbox. */
+let shareCtx=null;
+const SHARE_PHOTO_MAX=1000, SHARE_PHOTO_Q=0.78;
+function shareSrc(r){
+  const s=srcOf(r), u=recipeUrl(r);
+  if(!s) return {text:'',url:u};
+  if(s.kind==='Online') return {text:r.siteName||(u?host(u):'Online'),url:u};
+  return {text:s.name+(s.kind==='Book'&&s.author?' by '+s.author:'')+(s.kind==='Book'&&r.sourceRef&&!u?', page '+r.sourceRef:'')+(s.kind==='Homemade'?' (homemade)':''),url:u};
+}
+function shareModel(r,withNotes){
+  const fam=familyOf(r), by={};
+  if(withNotes) r.annotations.slice().sort((a,b)=>String(a.at||a.date).localeCompare(String(b.at||b.date))).forEach(a=>(by[a.target]=by[a.target]||[]).push(a.text));
+  const src=shareSrc(r), url=recipeUrl(r);
+  return {
+    title:r.title, ver:fam.length>1?vName(r):'', src, serves:r.serves||'', time:r.time||'',
+    linkOnly:r.type==='External' && !r.ingredients.length && !r.instructions.length, url,
+    ings:r.ingredients.map(x=>({text:x.text.replace(/:\s*$/,''),sub:/:\s*$/.test(x.text),notes:by[x.id]||[]})),
+    steps:r.instructions.map(x=>({text:stripStep(x.text),notes:by[x.id]||[]})),
+    notes:withNotes?[r.notes||''].concat(by['recipe']||[]).map(t=>String(t).trim()).filter(Boolean):[]
+  };
+}
+function shareHasNotes(r){ return !!(String(r.notes||'').trim() || r.annotations.length); }
+function shareText(m){
+  const L=[m.title];
+  if(m.ver) L.push(m.ver);
+  if(m.src.text) L.push('From '+m.src.text);
+  const facts=[m.serves?'Serves '+m.serves:'',m.time].filter(Boolean); if(facts.length) L.push(facts.join(' · '));
+  if(m.linkOnly){ if(m.url) L.push('','Recipe: '+m.url); }
+  else{
+    if(m.ings.length){ L.push('','INGREDIENTS'); m.ings.forEach((x,i)=>{ L.push(x.sub&&i?'':null, x.sub?x.text+':':'• '+x.text); x.notes.forEach(n=>L.push('   Note: '+n)); }); }
+    if(m.steps.length){ L.push('','METHOD'); m.steps.forEach((x,i)=>{ L.push((i+1)+'. '+x.text); x.notes.forEach(n=>L.push('   Note: '+n)); }); }
+    if(m.url) L.push('','Original recipe: '+m.url);
+  }
+  if(m.notes.length){ L.push('','NOTES'); m.notes.forEach(n=>L.push(n)); }
+  return L.filter(x=>x!==null).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+const SHARE_CSS='.sr{max-width:760px;margin:0 auto;padding:28px 22px 40px;font:17px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1F2622}'+
+ '.sr *{box-sizing:border-box}.sr img.ph{display:block;width:100%;max-height:420px;object-fit:cover;border-radius:10px;margin:0 0 20px}'+
+ '.sr h1{font:600 2.1rem/1.15 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;margin:0 0 6px}'+
+ '.sr .ver{color:#2F6B4F;font-weight:600;margin:0 0 6px}.sr .src,.sr .facts{color:#5E6A63;margin:0 0 4px}.sr .src a{color:#2F6B4F}'+
+ '.sr h2{font:600 1.3rem/1.3 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid #D9DED8}'+
+ '.sr ul{list-style:none;margin:0;padding:0}.sr ul li{padding:4px 0 4px 16px;position:relative}.sr ul li:before{content:"•";position:absolute;left:0;color:#2F6B4F}'+
+ '.sr ul li.sub{padding-left:0;font-weight:700;margin-top:8px}.sr ul li.sub:before{content:none}'+
+ '.sr ol{margin:0;padding-left:1.6em}.sr ol li{padding:3px 0 10px}.sr ol li::marker{font-weight:700;color:#2F6B4F}'+
+ '.sr .n{display:block;margin:3px 0 2px;padding-left:10px;border-left:2px solid #9DB6CF;color:#2D5B86;font-style:italic}'+
+ '.sr .notes p{margin:0 0 8px;white-space:pre-wrap}.sr .go{display:inline-block;margin-top:10px;padding:10px 16px;border-radius:6px;background:#2F6B4F;color:#fff;text-decoration:none;font-weight:600}'+
+ '.sr .foot{margin-top:36px;padding-top:12px;border-top:1px solid #D9DED8;color:#5E6A63;font-size:.85rem}'+
+ '@media (min-width:760px){.sr .cols{display:grid;grid-template-columns:2fr 3fr;gap:34px}}'+
+ '@media print{.sr{padding:0;max-width:none}.sr .go{border:1px solid #2F6B4F;color:#2F6B4F;background:none}.sr img.ph{max-height:300px}}';
+function shareBody(m,photo){
+  const nl=a=>a.map(t=>'<span class="n">'+esc(t)+'</span>').join('');
+  let h='<div class="sr">';
+  if(photo) h+='<img class="ph" src="'+photo+'" alt="">';
+  h+='<h1>'+esc(m.title)+'</h1>';
+  if(m.ver) h+='<p class="ver">'+esc(m.ver)+'</p>';
+  if(m.src.text) h+='<p class="src">From '+(m.src.url?'<a href="'+esc(m.src.url)+'">'+esc(m.src.text)+'</a>':esc(m.src.text))+'</p>';
+  const facts=[m.serves?'Serves '+m.serves:'',m.time].filter(Boolean); if(facts.length) h+='<p class="facts">'+esc(facts.join(' · '))+'</p>';
+  if(m.linkOnly){ if(m.url) h+='<p><a class="go" href="'+esc(m.url)+'">Open the recipe</a></p><p class="src">'+esc(m.url)+'</p>'; }
+  else{
+    h+='<div class="cols">';
+    if(m.ings.length) h+='<section><h2>Ingredients</h2><ul>'+m.ings.map(x=>'<li'+(x.sub?' class="sub"':'')+'>'+esc(x.text)+nl(x.notes)+'</li>').join('')+'</ul></section>';
+    if(m.steps.length) h+='<section><h2>Method</h2><ol>'+m.steps.map(x=>'<li>'+esc(x.text)+nl(x.notes)+'</li>').join('')+'</ol></section>';
+    h+='</div>';
+  }
+  if(m.notes.length) h+='<section class="notes"><h2>Notes</h2>'+m.notes.map(n=>'<p>'+esc(n)+'</p>').join('')+'</section>';
+  h+='<p class="foot">Shared from '+esc(CONFIG.bookTitle)+' on '+esc(fmtDate(today(),true))+'</p></div>';
+  return h;
+}
+function sharePage(m,photo){
+  return '<!DOCTYPE html>\n<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'+
+    '<title>'+esc(m.title)+'</title><style>html,body{margin:0;background:#fff}'+SHARE_CSS+'</style></head><body>'+shareBody(m,photo)+'</body></html>';
+}
+/* The cover photo, downsized and embedded so the file stays small (well under 1 MB) */
+async function sharePhoto(r){
+  const c=coverOf(r); if(!c) return null;
+  const size='w960h640', k=thumbKey(c.path,size);
+  let b=await cacheGet(k);
+  if(!b && navigator.onLine && ls.get('token',null)){
+    const res=await dbxFetch(DBX_CONTENT+'get_thumbnail_batch',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({entries:[{path:c.path,format:'jpeg',size,mode:'bestfit'}]})});
+    if(res.ok){ const j=await res.json(), e=(j.entries||[])[0]; if(e && e['.tag']==='success' && e.thumbnail){ b=b64Blob(e.thumbnail,'image/jpeg'); cachePut(k,b); } }
+  }
+  if(!b) return null;
+  const small=await resizeImage(b,SHARE_PHOTO_MAX,SHARE_PHOTO_Q).catch(()=>b);
+  return await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(small); });
+}
+function shareFmt(){ const i=$$('#dlg-share input[name="sh-fmt"]').find(x=>x.checked); return i?i.value:'text'; }
+function shareMsg(t){ const m=$('#sh-msg'); m.textContent=t||''; m.hidden=!t; }
+function syncShareUi(){
+  if(!shareCtx) return;
+  const fmt=shareFmt(), waiting=fmt!=='text' && shareCtx.photo===undefined;
+  $('#sh-go').disabled=waiting;
+  $('#sh-go').textContent=waiting?'Preparing photo…':'Share';
+  shareMsg(fmt!=='text' && shareCtx.photo===null && shareCtx.hadCover?'The photo couldn\'t be loaded (are you offline?), so it will be left out.':'');
+}
+function openShare(r){
+  shareCtx={rid:r.id,photo:coverOf(r)?undefined:null,hadCover:!!coverOf(r)};
+  $('#sh-noteswrap').hidden=!shareHasNotes(r); $('#sh-notes').checked=true;
+  syncShareUi();
+  $('#dlg-share').showModal();
+  /* Load the photo now, so tapping Share can open the share sheet straight away */
+  if(shareCtx.photo===undefined){
+    const ctx=shareCtx;
+    sharePhoto(r).then(d=>{ ctx.photo=d||null; }).catch(e=>{ console.error(e); ctx.photo=null; }).finally(()=>{ if(shareCtx===ctx) syncShareUi(); });
+  }
+}
+function shareFileName(m){ return (m.title.replace(/[\\/:*?"<>|]+/g,'').replace(/\s+/g,' ').trim().slice(0,60)||'Recipe')+'.html'; }
+function downloadFile(name,text,type){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+}
+async function copyText(t){ try{ await navigator.clipboard.writeText(t); return true; }catch(e){ return false; } }
+function shareErr(e){ return e && (e.name==='AbortError'); }
+async function runShare(){
+  if(!shareCtx) return;
+  const r=state.db.recipes.find(x=>x.id===shareCtx.rid); if(!r){ $('#dlg-share').close(); return; }
+  const fmt=shareFmt(), m=shareModel(r,!$('#sh-noteswrap').hidden && $('#sh-notes').checked);
+  const text=shareText(m), photo=shareCtx.photo||null;
+  if(fmt==='text'){
+    if(navigator.share){
+      try{ await navigator.share({title:m.title,text}); $('#dlg-share').close(); }
+      catch(e){ if(!shareErr(e)){ console.error(e); if(await copyText(text)){ $('#dlg-share').close(); toast('Recipe copied. Paste it wherever you like.'); } else shareMsg('Sharing didn\'t work here.'); } }
+    } else if(await copyText(text)){ $('#dlg-share').close(); toast('Recipe copied. Paste it wherever you like.'); }
+    else shareMsg('This browser can\'t share or copy text.');
+    return;
+  }
+  if(fmt==='html'){
+    const page=sharePage(m,photo), name=shareFileName(m);
+    let file=null; try{ file=new File([page],name,{type:'text/html'}); }catch(e){}
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file],title:m.title}); $('#dlg-share').close(); }
+      catch(e){ if(!shareErr(e)){ console.error(e); shareMsg('Sharing the file didn\'t work here.'); } }
+      return;
+    }
+    downloadFile(name,page,'text/html'); const copied=await copyText(text);
+    $('#dlg-share').close(); toast(copied?'Web page downloaded, and the recipe text copied':'Web page downloaded');
+    return;
+  }
+  /* PDF: a clean layout sent to the print screen */
+  const box=$('#share-print');
+  box.innerHTML='<style>'+SHARE_CSS+'</style>'+shareBody(m,photo);
+  $('#dlg-share').close();
+  document.body.classList.add('share-printing');
+  setTimeout(()=>window.print(),60);
+}
+window.addEventListener('afterprint',()=>{ document.body.classList.remove('share-printing'); });
+
 /* ── Settings ────────────────────────────────────────── */
 function openSettings(){
   $('#s-viewonly').checked=!!ls.get('viewOnly',false);
@@ -3124,6 +3312,9 @@ function bind(){
   $('#btn-settings').addEventListener('click',openSettings);
 
   bindSwipe();
+  $('#sh-go').addEventListener('click',runShare);
+  $$('#dlg-share input[name="sh-fmt"]').forEach(i=>i.addEventListener('change',syncShareUi));
+  $('#dlg-share').addEventListener('close',()=>{ shareCtx=null; });
   $('#detail').addEventListener('click',e=>{
     const el=e.target.closest('[data-act]'); if(!el) return;
     const r=state.db.recipes.find(x=>x.id===state.selected); const act=el.dataset.act;
@@ -3137,7 +3328,8 @@ function bind(){
     if(act==='rate'){ const v=Number(el.dataset.v); commit({t:'patch',id:r.id,f:{rating:v===r.rating?0:v},at:new Date().toISOString()}); }
     if(act==='edit') openEdit(r,false);
     if(act==='newver') openNewVersion(r);
-    if(act==='print') window.print();
+    if(act==='print'){ document.body.classList.remove('share-printing'); window.print(); }
+    if(act==='share') openShare(r);
     if(act==='delete'){
       if(familyOf(r).length>1){ openDelete(r); return; }
       if(confirm('Delete "'+r.title+'" and its cooking history? This can\'t be undone.')){ const fid=r.familyId, had=familyHasPhotos(fid); commit({t:'delete',id:r.id}); state.selected=null; render(); if(had) removeFamilyPhotos(fid); toast('Recipe deleted'); }
