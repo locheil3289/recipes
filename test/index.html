@@ -248,17 +248,24 @@ dialog.viewer::backdrop{background:#111}
 .ing input:checked+span{color:var(--muted);text-decoration:line-through}
 .ing .sub .line-row{font-weight:700;padding:10px 0 2px}
 .ing .sub-t{flex:1;min-width:0}
-.method{padding-left:1.5em;margin:0}
-.method li{padding:2px 0 10px;line-height:1.62}
-.method li::marker{font-family:var(--serif);font-weight:700;color:var(--basil)}
+.method{list-style:none;padding:0;margin:0}
+.method li{padding:2px 0 6px;line-height:1.62}
+.method .step-lab{display:flex;align-items:flex-start;flex:1;min-width:0;padding:4px 6px 4px 0;border-radius:var(--r-sm);cursor:pointer}
+.method .step-lab input{width:20px;height:20px;margin:3px 10px 0 0;accent-color:var(--basil);flex:none}
+.method .step-n{flex:none;width:28px;font-family:var(--serif);font-weight:700;color:var(--basil)}
 .method .step-t{flex:1;min-width:0}
+.method li.done .step-t{color:var(--muted);text-decoration:line-through}
+.method li.done .step-n{color:var(--muted)}
+.method li.next>.line-row{background:var(--basil-soft);border-radius:var(--r-sm);box-shadow:-6px 0 0 var(--basil-soft)}
+.tick-clear{display:block;margin-top:2px}
 .notes{white-space:pre-wrap;line-height:1.62;margin:0 0 8px}
 
 /* Margin notes */
 .anno-add{flex:none;border:none;background:none;color:var(--pencil);opacity:.55;width:38px;min-height:34px;font-size:1.05rem;border-radius:var(--r-sm);margin-top:-2px}
 .anno-add:hover,.anno-add:focus-visible{opacity:1;background:var(--pencil-soft)}
 .annos{list-style:none;margin:0 0 8px 30px;padding:0}
-.method .annos,.section>.annos,.orphan .annos{margin-left:0}
+.section>.annos,.orphan .annos{margin-left:0}
+.method .annos{margin-left:58px}
 .anno+.anno{margin-top:6px}
 .anno-body{display:block;width:100%;text-align:left;border:none;background:none;padding:1px 0 3px 10px;border-left:2px solid var(--pencil-edge);color:var(--pencil);font:1.02rem/1.35 var(--hand)}
 button.anno-body{cursor:pointer}
@@ -365,7 +372,10 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
   .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
-  .ing input{display:none}
+  .ing input,.method .step-lab input,.tick-clear{display:none!important}
+  .ing input:checked+span,.method li.done .step-t,.method li.done .step-n{color:inherit;text-decoration:none}
+  .method li.next>.line-row{background:none;box-shadow:none}
+  .method .annos{margin-left:28px}
 }
 </style>
 </head>
@@ -375,7 +385,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
      SETUP: paste your Dropbox App key between the quotes below.
      (Dropbox App Console → your app → Settings → "App key")
      filePath is the recipe file inside your Dropbox app folder.
-     For a test copy, use e.g. '/recipes-test.json'.
+     For testing, add ?test to the address to use '/recipes-test.json' instead.
      ═══════════════════════════════════════════════════════════════ -->
 <script>
 window.RECIPE_CONFIG = {
@@ -617,6 +627,7 @@ window.RECIPE_CONFIG = {
   <div class="dlg-head"><h2 id="set-h">Settings</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
   <div class="dlg-body">
     <label class="check"><input id="s-viewonly" type="checkbox"><span><strong>View only on this device</strong><br><span class="muted">Hides adding, editing, notes and logging. Useful on your phone.</span></span></label>
+    <label class="check" style="margin-top:14px"><input id="s-awake" type="checkbox"><span><strong>Keep the screen awake while a recipe is open</strong><br><span id="s-awake-hint" class="muted">Stops this device dimming or locking while you cook. Uses more battery.</span></span></label>
     <div class="field edit-only"><span class="lbl">Tags</span>
       <p class="hint" style="margin:0 0 10px">Rename, merge, reorder or delete tag values, and sort out Unsorted tags.</p>
       <button id="s-tags" class="btn" type="button">Manage tags</button>
@@ -671,16 +682,17 @@ window.RECIPE_CONFIG = {
 (function(){
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
-const APP_VERSION = '3.0';
-const BUILD = 'R2 step 3 (test)';
+const APP_VERSION = '5.0';
+const BUILD = 'R5 step 1 (test)';
 const DATA_VERSION = 5;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
 const MAX_DATA_VERSION = DATA_VERSION;
 /* Test mode: add ?test to the address to use /recipes-test.json in that tab only.
    Cache and unsaved changes are kept separately for a test file, so testing never mixes with the real book. */
-/* DEV_BUILD: while Release 1 is being built, this copy only ever uses the test file, so it can't
-   upgrade your real book by accident. Set to false when Release 1 is finished and goes live. */
+/* DEV_BUILD: set to true for a test build kept in the /test/ folder, so it only ever uses the test file
+   and the photos-test folder. The live build has it false; adding ?test to the address still switches
+   a single tab to the test file. */
 const DEV_BUILD = true;
 const TEST = DEV_BUILD || new URLSearchParams(location.search).has('test');
 const FILE = TEST ? '/recipes-test.json' : CONFIG.filePath;
@@ -1186,7 +1198,7 @@ function applyOp(d,op){
 }
 
 /* ── State ───────────────────────────────────────────── */
-const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['source','course']), srcQuery:'', coll:null, view:ls.get('view','list'), sort:ls.get('sort','title'), ticks:{}, lastPull:0, locked:null };
+const state={ db:emptyDb(), queue:ls.get('queue'+DK,[]), selected:null, search:'', filters:{}, fOpen:new Set(['source','course']), srcQuery:'', coll:null, view:ls.get('view','list'), sort:ls.get('sort','title'), ticks:{}, tickAt:{}, lastPull:0, locked:null };
 let pulling=false, flushing=false;
 function saveCache(){ ls.set('cache'+DK,{db:state.db}); }
 function queueOp(op){ state.queue.push(op); ls.set('queue'+DK,state.queue); }
@@ -1379,6 +1391,7 @@ function showConnect(msg){
 }
 function showApp(){
   $('#connect').hidden=true; $('#app').hidden=false;
+  loadTicks();
   const c=ls.get('cache'+DK,null);
   if(c&&c.db){ state.db=normalise(c.db).d; state.queue.forEach(op=>applyOp(state.db,op)); }
   render(); pull();
@@ -1577,6 +1590,7 @@ function monthStrip(logs){
   return '<span class="months" role="img" aria-label="Made in '+on+' of the last 12 months" title="Made in '+on+' of the last 12 months">'+cells+'</span>';
 }
 function render(){
+  setTimeout(updateWake,0);
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
   document.title=(TEST?'TEST: ':'')+CONFIG.bookTitle;
   $('#testflag').hidden=!TEST;
@@ -1700,7 +1714,7 @@ function renderDetail(){
   const keepDate=(oldDate&&oldDate.dataset.rid===r.id)?oldDate.value:today();
   const keepCom=(oldCom&&oldCom.dataset.rid===r.id)?oldCom.value:'';
   const scrollTop=pane.dataset.rid===r.id?pane.scrollTop:0;
-  const ed=canEdit(), ticks=state.ticks[r.id]||{};
+  const ed=canEdit(), ticks=state.ticks[r.id]||{}, anyTick=Object.keys(ticks).length>0;
   const fam=familyOf(r), multi=fam.length>1, current=isCurrent(r);
   const byT={};
   r.annotations.slice().sort((a,b)=>String(a.at||a.date).localeCompare(String(b.at||b.date))).forEach(a=>(byT[a.target]=byT[a.target]||[]).push(a));
@@ -1754,11 +1768,15 @@ function renderDetail(){
           (sub?'<span class="sub-t">'+esc(x.text.replace(/:\s*$/,''))+'</span>':
             '<label><input type="checkbox" data-act="tick" data-i="'+esc(x.id)+'"'+(ticks[x.id]?' checked':'')+'><span>'+esc(x.text)+'</span></label>')+
           (ed?noteBtn(x.id):'')+'</div>'+annoList(byT[x.id],ed)+'</li>';
-      }).join('')+'</ul></section>';
+      }).join('')+'</ul>'+tickClearBtn(anyTick)+'</section>';
     }
     if(r.instructions.length){
-      h+='<section class="section"><h3>Method</h3><ol class="method">'+r.instructions.map(x=>
-        '<li><div class="line-row"><span class="step-t">'+esc(stripStep(x.text))+'</span>'+(ed?noteBtn(x.id):'')+'</div>'+annoList(byT[x.id],ed)+'</li>').join('')+'</ol></section>';
+      const firstOpen=r.instructions.some(x=>ticks[x.id])?(r.instructions.find(x=>!ticks[x.id])||{}).id:null;
+      h+='<section class="section"><h3>Method</h3><ol class="method">'+r.instructions.map((x,i)=>
+        '<li class="step'+(ticks[x.id]?' done':'')+(x.id===firstOpen?' next':'')+'" data-i="'+esc(x.id)+'"><div class="line-row">'+
+          '<label class="step-lab"><input type="checkbox" data-act="tick" data-i="'+esc(x.id)+'"'+(ticks[x.id]?' checked':'')+' aria-label="Step '+(i+1)+' done">'+
+          '<span class="step-n">'+(i+1)+'</span><span class="step-t">'+esc(stripStep(x.text))+'</span></label>'+
+          (ed?noteBtn(x.id):'')+'</div>'+annoList(byT[x.id],ed)+'</li>').join('')+'</ol>'+tickClearBtn(anyTick)+'</section>';
     }
     h+='</div>';
     if(r.type==='External' && url) h+='<p class="source" style="margin-top:14px"><a href="'+esc(url)+'" target="_blank" rel="noopener">Open the original recipe</a></p>';
@@ -1813,6 +1831,70 @@ function renderDetail(){
   h+='</section></article>';
   pane.innerHTML=h; pane.dataset.rid=r.id; pane.scrollTop=scrollTop;
   loadThumbs();
+}
+
+/* ── Ticks (kept on this device only) ────────────────── */
+/* Ingredient and step ticks are cooking-in-progress state. They are saved per recipe version
+   on this device, never to Dropbox, and forgotten 12 hours after the last tick on that recipe. */
+const TICK_HOURS = 12;
+function tickKey(){ return 'ticks'+DK; }
+function loadTicks(){
+  const saved=ls.get(tickKey(),{}), cutoff=Date.now()-TICK_HOURS*3600000;
+  state.ticks={}; state.tickAt={};
+  Object.keys(saved||{}).forEach(rid=>{
+    const e=saved[rid]; if(!e || !e.t || !(e.at>cutoff)) return;
+    const t={}; Object.keys(e.t).forEach(k=>{ if(e.t[k]) t[k]=true; });
+    if(Object.keys(t).length){ state.ticks[rid]=t; state.tickAt[rid]=e.at; }
+  });
+  saveTicks();
+}
+function saveTicks(){
+  const out={};
+  Object.keys(state.ticks).forEach(rid=>{ const t=state.ticks[rid]; if(t && Object.keys(t).length) out[rid]={at:state.tickAt[rid]||Date.now(),t}; });
+  if(Object.keys(out).length) ls.set(tickKey(),out); else ls.del(tickKey());
+}
+function setTick(rid,id,on){
+  const t=state.ticks[rid]=state.ticks[rid]||{};
+  if(on) t[id]=true; else delete t[id];
+  if(!Object.keys(t).length){ delete state.ticks[rid]; delete state.tickAt[rid]; } else state.tickAt[rid]=Date.now();
+  saveTicks(); refreshTicks();
+}
+function clearTicks(rid){
+  delete state.ticks[rid]; delete state.tickAt[rid]; saveTicks();
+  $$('#detail input[data-act="tick"]').forEach(i=>{ i.checked=false; });
+  refreshTicks();
+}
+/* Updates struck-through steps, the "you are here" highlight and the Clear ticks links without redrawing the page */
+function refreshTicks(){
+  const t=state.ticks[state.selected]||{}, any=Object.keys(t).length>0;
+  const steps=$$('#detail .method li.step');
+  let stepTicked=false;
+  steps.forEach(li=>{ const on=!!t[li.dataset.i]; li.classList.toggle('done',on); if(on) stepTicked=true; });
+  let next=null;
+  if(stepTicked) next=steps.find(li=>!li.classList.contains('done'))||null;
+  steps.forEach(li=>li.classList.toggle('next',li===next));
+  $$('#detail .tick-clear').forEach(b=>{ b.hidden=!any; });
+}
+function tickClearBtn(any){ return '<button type="button" class="linkbtn tick-clear" data-act="clearticks"'+(any?'':' hidden')+'>Clear ticks</button>'; }
+
+/* ── Keep the screen awake (optional, per device) ────── */
+let wakeLock=null, wakeBusy=false;
+function wakeSupported(){ return !!(navigator.wakeLock && navigator.wakeLock.request); }
+function recipeOpen(){
+  if(!state.selected || $('#app').hidden || document.visibilityState!=='visible') return false;
+  return window.matchMedia('(min-width:900px)').matches || document.body.classList.contains('show-detail');
+}
+async function updateWake(){
+  const want=ls.get('keepAwake',false) && wakeSupported() && recipeOpen();
+  if(want && !wakeLock && !wakeBusy){
+    wakeBusy=true;
+    try{ wakeLock=await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release',()=>{ wakeLock=null; }); }
+    catch(e){ wakeLock=null; console.warn('Wake lock not available',e); }
+    finally{ wakeBusy=false; }
+    if(wakeLock && !(ls.get('keepAwake',false) && recipeOpen())) updateWake();
+  } else if(!want && wakeLock){
+    const w=wakeLock; wakeLock=null; try{ await w.release(); }catch(e){}
+  }
 }
 
 function select(id){
@@ -2890,6 +2972,8 @@ async function runCleanup(){
 /* ── Settings ────────────────────────────────────────── */
 function openSettings(){
   $('#s-viewonly').checked=!!ls.get('viewOnly',false);
+  $('#s-awake').checked=wakeSupported() && !!ls.get('keepAwake',false); $('#s-awake').disabled=!wakeSupported();
+  $('#s-awake-hint').textContent=wakeSupported()?'Stops this device dimming or locking while you cook. Uses more battery.':'This browser can\'t keep the screen awake, so this is switched off.';
   $('#s-file').innerHTML='Dropbox › Apps › <em>your app name</em> › '+esc(FILE.replace(/^\//,''))+(TEST?' (test mode: remove ?test from the address to use your real book)':'');
   $('#s-ver').textContent='App version '+APP_VERSION+', build '+BUILD+', data format '+DATA_VERSION+(TEST?', using the test file':'')+
     (state.locked?'. The recipe file is format '+state.locked+', so this copy needs updating.':'');
@@ -2897,6 +2981,7 @@ function openSettings(){
 }
 function saveSettings(){
   ls.set('viewOnly',$('#s-viewonly').checked);
+  ls.set('keepAwake',wakeSupported() && $('#s-awake').checked);
   $('#dlg-settings').close(); render();
 }
 function downloadBackup(){
@@ -2941,10 +3026,11 @@ function bind(){
   $('#detail').addEventListener('click',e=>{
     const el=e.target.closest('[data-act]'); if(!el) return;
     const r=state.db.recipes.find(x=>x.id===state.selected); const act=el.dataset.act;
-    if(act==='back'){ document.body.classList.remove('show-detail'); return; }
+    if(act==='back'){ document.body.classList.remove('show-detail'); updateWake(); return; }
     if(!r) return;
     const byId=id=>state.db.recipes.find(x=>x.id===id);
-    if(act==='tick'){ (state.ticks[r.id]=state.ticks[r.id]||{})[el.dataset.i]=el.checked; return; }
+    if(act==='tick'){ setTick(r.id,el.dataset.i,el.checked); return; }
+    if(act==='clearticks'){ clearTicks(r.id); return; }
     if(act==='rate'){ const v=Number(el.dataset.v); commit({t:'patch',id:r.id,f:{rating:v===r.rating?0:v},at:new Date().toISOString()}); }
     if(act==='edit') openEdit(r,false);
     if(act==='newver') openNewVersion(r);
@@ -3070,6 +3156,11 @@ function bind(){
 
   window.addEventListener('online',()=>{ if(ls.get('token',null)) syncNow(); });
   document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'){
+      const before=JSON.stringify(state.ticks); loadTicks();
+      if(JSON.stringify(state.ticks)!==before && !$('#app').hidden) renderDetail();
+    }
+    updateWake();
     if(document.visibilityState==='visible' && ls.get('token',null) && !$('#app').hidden && Date.now()-state.lastPull>30000) pull();
   });
 }
