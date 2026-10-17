@@ -365,6 +365,19 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
   .cols{display:grid;grid-template-columns:2fr 3fr;gap:34px}
   .cols .section{margin-top:30px}
 }
+/* Bookmarks (Release 5) */
+.titlerow{display:flex;align-items:flex-start;gap:6px}
+.titlerow h2{flex:1;min-width:0}
+.bmk{flex:none;width:var(--tap);height:var(--tap);margin:4px -8px 0 0;border:none;background:none;border-radius:var(--r-sm);color:var(--muted);display:grid;place-items:center}
+.bmk[aria-pressed="true"]{color:var(--basil)}
+.bmk:hover{background:var(--paper)}
+.bm-mark{display:inline-block;color:var(--basil);margin-left:6px;vertical-align:-2px}
+.bm-mark svg{width:14px;height:14px}
+.tile-meta .bm-mark{margin:0 4px 0 0}
+.logact{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin-top:10px}
+.logact .btn{margin-top:0}
+.logbm{font-size:.92rem;align-items:center}
+
 /* Share dialog (Release 5) */
 .shopts{display:grid;gap:8px}
 .shopt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);cursor:pointer}
@@ -419,7 +432,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
 @media print{
   body.share-printing>*:not(#share-print){display:none!important}
   body.share-printing #share-print{display:block!important}
-  .hero,.photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.fsbar,.swnav,.swcount,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
+  .hero,.photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.fsbar,.swnav,.swcount,.bmk,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
   .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
@@ -488,6 +501,7 @@ window.RECIPE_CONFIG = {
           <option value="most">Most made</option>
           <option value="rating">Top rated</option>
           <option value="added">Recently added</option>
+          <option value="bookmarked">Recently bookmarked</option>
         </select>
         <button id="btn-view" class="vbtn" type="button" aria-label="Show as grid">Grid</button>
       </div>
@@ -752,8 +766,8 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '5.0';
-const BUILD = 'R5 step 4 (test)';
-const DATA_VERSION = 5;
+const BUILD = 'R5 step 5 (test)';
+const DATA_VERSION = 6;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
 const MAX_DATA_VERSION = DATA_VERSION;
@@ -1073,6 +1087,19 @@ function normRecipe(r,i,seen,d){
   return {r:o,changed};
 }
 /* Each family has one current version (the one shown in the list). */
+/* Bookmarks (data format 6): a top-level list, one entry per recipe family with the date added.
+   Kept outside d.families because new versions and "make current" replace a family entry whole.
+   Entries for families that no longer exist are dropped. */
+function fixBookmarks(d){
+  const fams=new Set(d.recipes.map(r=>r.familyId)), seen=new Set(), out=[];
+  (Array.isArray(d.bookmarks)?d.bookmarks:[]).forEach(b=>{
+    if(!b || typeof b!=='object') return;
+    const fid=String(b.familyId||''); if(!fid || !fams.has(fid) || seen.has(fid)) return;
+    seen.add(fid); out.push({familyId:fid,at:String(b.at||'')});
+  });
+  d.bookmarks=out;
+  return d;
+}
 function fixFamilies(d){
   if(!d.families || typeof d.families!=='object' || Array.isArray(d.families)) d.families={};
   const by={}; d.recipes.forEach(r=>(by[r.familyId]=by[r.familyId]||[]).push(r));
@@ -1095,12 +1122,12 @@ function normalise(raw){
   else { d={version:DATA_VERSION,recipes:[]}; changed=true; }
   const upgrading=fileVersion(raw)<4;
   if(d.version!==DATA_VERSION){ d.version=DATA_VERSION; changed=true; }
-  const snap=()=>JSON.stringify([d.families||null,d.sources||null,d.taxonomy||null]);
+  const snap=()=>JSON.stringify([d.families||null,d.sources||null,d.taxonomy||null,d.bookmarks||null]);
   const before=snap();
   fixSources(d,upgrading); ensureTaxonomy(d);
   const seen=new Set();
   d.recipes=d.recipes.map((r,i)=>{ const x=normRecipe(r,i,seen,d); if(x.changed) changed=true; return x.r; });
-  fixTaxonomy(d); fixFamilies(d);
+  fixTaxonomy(d); fixFamilies(d); fixBookmarks(d);
   if(snap()!==before) changed=true;
   return {d,changed};
 }
@@ -1253,6 +1280,9 @@ function applyOp(d,op){
     }
     case 'sourceCover': { const x=(d.sources||[]).find(y=>y.id===op.id); if(x && x.id!==ONLINE_ID) x.coverPhoto=String(op.path||''); break; }
     case 'photoDel': { const r=find(op.id); if(r) r.photos=(r.photos||[]).filter(p=>p.id!==op.pid); break; }
+    /* Bookmarks: queued like other changes, so offline and two-device changes merge */
+    case 'bookmark': { if(!Array.isArray(d.bookmarks)) d.bookmarks=[]; if(op.fid && !d.bookmarks.some(b=>b.familyId===op.fid)) d.bookmarks.push({familyId:op.fid,at:op.at||new Date().toISOString()}); break; }
+    case 'unbookmark': { if(Array.isArray(d.bookmarks)) d.bookmarks=d.bookmarks.filter(b=>b.familyId!==op.fid); break; }
     case 'applyNote': {
       const r=find(op.id); if(!r) break;
       const it=r.ingredients.concat(r.instructions).find(x=>x.id===op.target);
@@ -1262,7 +1292,7 @@ function applyOp(d,op){
       break;
     }
   }
-  fixTaxonomy(d); fixFamilies(d);
+  fixTaxonomy(d); fixFamilies(d); fixBookmarks(d);
   return d;
 }
 
@@ -1467,6 +1497,16 @@ function showApp(){
 }
 
 /* ── Families and versions ───────────────────────────── */
+/* ── Bookmarks ───────────────────────────────────────── */
+function bmAt(fid){ const b=(state.db.bookmarks||[]).find(x=>x.familyId===fid); return b?(b.at||'0'):''; }
+function isBookmarked(fid){ return !!bmAt(fid); }
+const BM_SVG=on=>'<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6.5 3.5h11a1 1 0 0 1 1 1v16l-6.5-4.2-6.5 4.2v-16a1 1 0 0 1 1-1z" fill="'+(on?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+function bmMark(){ return '<span class="bm-mark" title="Bookmarked" aria-label="Bookmarked">'+BM_SVG(true)+'</span>'; }
+function toggleBookmark(r){
+  if(isBookmarked(r.familyId)){ commit({t:'unbookmark',fid:r.familyId}); toast('Bookmark removed'); }
+  else { commit({t:'bookmark',fid:r.familyId,at:new Date().toISOString()}); toast('Bookmarked'); }
+}
+
 function familyOf(r){ return state.db.recipes.filter(x=>x.familyId===r.familyId).sort((a,b)=>a.versionNo-b.versionNo); }
 function isCurrent(r){ const f=(state.db.families||{})[r.familyId]; return !!f && f.defaultId===r.id; }
 function vName(r){ return 'v'+r.versionNo+', '+r.versionLabel; }
@@ -1584,6 +1624,7 @@ function passSearch(g,words){ return searchScore(g,words)>0; }
 /* ── Browse home: collections that apply as a filter ── */
 function monthsAgo(n){ const d=new Date(); d.setHours(0,0,0,0); d.setMonth(d.getMonth()-n); return d; }
 const COLLECTIONS=[
+  {k:'bmk',name:'Bookmarks',sub:'Recipes you plan to make',test:g=>isBookmarked(g.fid),sort:'bookmarked'},
   {k:'fav',name:'Favourites',sub:'Rated 4 or 5 stars',test:g=>g.def.rating>=4,sort:'rating'},
   {k:'recent',name:'Recently made',sub:'Made in the last month',test:g=>!!g.logs[0] && parseIso(g.logs[0].date)>=monthsAgo(1),sort:'recent'},
   {k:'while',name:'Not made in a while',sub:'Last made over 3 months ago',test:g=>!!g.logs[0] && parseIso(g.logs[0].date)<monthsAgo(3),sort:'recent'},
@@ -1652,7 +1693,8 @@ function filtered(gs){
     recent:(a,b)=>last(b).localeCompare(last(a))||byTitle(a,b),
     most:(a,b)=>b.logs.length-a.logs.length||byTitle(a,b),
     rating:(a,b)=>b.def.rating-a.def.rating||byTitle(a,b),
-    added:(a,b)=>added(b).localeCompare(added(a))||byTitle(a,b)
+    added:(a,b)=>added(b).localeCompare(added(a))||byTitle(a,b),
+    bookmarked:(a,b)=>bmAt(b.fid).localeCompare(bmAt(a.fid))||byTitle(a,b)
   };
   const by=sorters[state.sort]||byTitle;
   /* While searching, best matches come first; the chosen sort breaks ties */
@@ -1692,11 +1734,11 @@ function render(){
     const meta=n?'Made '+times(n)+', last '+fmtDate(g.logs[0].date):'Not made yet', cov=grid?coverOf(r):null;
     if(grid) return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
       (cov?'<span class="tile has-img'+(cov.book?' book':'')+'"><img data-thumb="'+esc(cov.path)+'" alt=""></span>':'<span class="tile" style="background:'+tileColour(g.fid)+'"><span class="tile-t">'+esc(r.title)+'</span></span>')+
-      '<span class="tile-meta">'+(cov?'<span class="tile-name">'+esc(r.title)+'</span>':'')+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+
+      '<span class="tile-meta">'+(cov?'<span class="tile-name">'+esc(r.title)+'</span>':'')+(isBookmarked(g.fid)?bmMark():'')+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+
         (r.type==='External'?'<span class="badge">Link</span>':'')+(g.active.length>1?'<span class="badge ver-badge">'+g.active.length+' versions</span>':'')+
         esc(n?'Made '+times(n):'Not made yet')+'</span></button></li>';
     return '<li><button type="button" class="item" data-id="'+esc(r.id)+'" aria-current="'+(!!sel&&sel.familyId===g.fid)+'">'+
-      '<span class="item-title">'+esc(r.title)+(r.type==='External'?'<span class="badge">Link</span>':'')+
+      '<span class="item-title">'+esc(r.title)+(isBookmarked(g.fid)?bmMark():'')+(r.type==='External'?'<span class="badge">Link</span>':'')+
         (g.active.length>1?'<span class="badge ver-badge">'+g.active.length+' versions</span>':'')+'</span>'+
       monthStrip(g.logs)+
       '<span class="item-meta">'+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+esc(meta)+'</span>'+
@@ -1819,7 +1861,8 @@ function renderDetail(){
   const hc=coverOf(r);
   if(hc) h+=hc.book?'<div class="hero book"><img data-thumb="'+esc(hc.path)+'" data-size="w960h640" alt="Book cover"></div>'
     :'<button type="button" class="hero" data-act="photo" data-pid="'+esc(hc.pid)+'" aria-label="Open photo"><img data-thumb="'+esc(hc.path)+'" data-size="w960h640" alt=""></button>';
-  h+='<h2>'+esc(r.title)+'</h2>';
+  const bm=isBookmarked(r.familyId);
+  h+='<div class="titlerow"><h2>'+esc(r.title)+'</h2><button type="button" class="bmk" data-act="bookmark" aria-pressed="'+bm+'" aria-label="'+(bm?'Remove bookmark':'Bookmark this recipe')+'" title="'+(bm?'Remove bookmark':'Bookmark')+'">'+BM_SVG(bm)+'</button></div>';
   if(multi) h+='<p class="verline"><strong>'+esc(vName(r))+'</strong>'+(r.changeNote?'<br>'+esc(r.changeNote):'')+'</p>';
   const sl=srcLine(r,ed), url=recipeUrl(r);
   if(sl) h+='<p class="source">'+sl+'</p>';
@@ -1838,7 +1881,8 @@ function renderDetail(){
     h+='<section class="logbox" aria-labelledby="log-h"><h3 id="log-h">Made it?</h3><div class="logrow">'+
        '<input id="log-date" type="date" data-rid="'+esc(r.id)+'" value="'+esc(keepDate)+'" max="'+today()+'" aria-label="Date made">'+
        '<textarea id="log-comment" data-rid="'+esc(r.id)+'" rows="2" placeholder="How did it go? Anything to change next time?" aria-label="Comment">'+esc(keepCom)+'</textarea>'+
-       '</div><button type="button" class="btn primary" data-act="log">✓ Record that I made it</button></section>';
+       '</div><div class="logact"><button type="button" class="btn primary" data-act="log">✓ Record that I made it</button>'+
+       (bm?'<label class="check logbm"><input id="log-unbm" type="checkbox"><span>Remove bookmark</span></label>':'')+'</div></section>';
   }
 
   if(r.type==='External' && !r.ingredients.length && !r.instructions.length){
@@ -3330,6 +3374,7 @@ function bind(){
     if(act==='newver') openNewVersion(r);
     if(act==='print'){ document.body.classList.remove('share-printing'); window.print(); }
     if(act==='share') openShare(r);
+    if(act==='bookmark') toggleBookmark(r);
     if(act==='delete'){
       if(familyOf(r).length>1){ openDelete(r); return; }
       if(confirm('Delete "'+r.title+'" and its cooking history? This can\'t be undone.')){ const fid=r.familyId, had=familyHasPhotos(fid); commit({t:'delete',id:r.id}); state.selected=null; render(); if(had) removeFamilyPhotos(fid); toast('Recipe deleted'); }
@@ -3337,8 +3382,11 @@ function bind(){
     if(act==='log'){
       const date=$('#log-date').value||today(), comment=$('#log-comment').value.trim();
       $('#log-comment').value='';
-      commit({t:'log',id:r.id,e:{id:uid('l-'),date,comment,at:new Date().toISOString()}});
-      toast('Recorded for '+fmtDate(date));
+      const unbm=!!($('#log-unbm') && $('#log-unbm').checked && isBookmarked(r.familyId));
+      const ops=[{t:'log',id:r.id,e:{id:uid('l-'),date,comment,at:new Date().toISOString()}}];
+      if(unbm) ops.push({t:'unbookmark',fid:r.familyId});
+      commitMany(ops);
+      toast('Recorded for '+fmtDate(date)+(unbm?', bookmark removed':''));
     }
     if(act==='unlog'){ if(confirm('Remove this entry from the cooking history?')) commit({t:'unlog',id:r.id,eid:el.dataset.eid}); }
     if(act==='paste-version'){ openImport({versionOf:r.id}); return; }
