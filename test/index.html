@@ -365,14 +365,36 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
   .cols{display:grid;grid-template-columns:2fr 3fr;gap:34px}
   .cols .section{margin-top:30px}
 }
+/* Full screen recipe (Release 5): only where the split view exists. body.fs is the remembered
+   choice; with it on, the screen shows either the list or the recipe, like a phone. */
+.fsbar{display:none}
+@media screen and (min-width:900px){
+  .fsbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:-6px -8px 2px}
+  .fsbar .fs-back{display:none;margin-right:auto}
+  body.fs .layout{grid-template-columns:1fr}
+  body.fs .list-pane{border-right:none;padding-left:max(16px,calc((100% - 980px)/2));padding-right:max(16px,calc((100% - 980px)/2))}
+  body.fs.show-detail .topbar{display:none}
+  body.fs.show-detail .list-pane{display:none}
+  body.fs:not(.show-detail) .detail-pane{display:none}
+  body.fs .detail{max-width:1200px;padding:0 36px calc(56px + var(--sb));font-size:1.125rem}
+  body.fs .fsbar{position:sticky;top:0;z-index:5;margin:0 -36px 8px;padding:calc(8px + var(--st)) 28px 8px;background:var(--card);border-bottom:1px solid var(--line)}
+  body.fs .fsbar .fs-back{display:inline-flex}
+  body.fs .detail h2{font-size:2.5rem}
+  body.fs .section h3{font-size:1.45rem}
+  body.fs .cols{grid-template-columns:1fr;gap:0}
+}
+@media screen and (min-width:900px) and (orientation:landscape){
+  body.fs .cols{grid-template-columns:2fr 3fr;gap:44px}
+}
 @media (max-width:520px){.row2{grid-template-columns:1fr}.detail h2{font-size:1.8rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media print{
-  .hero,.photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
+  .hero,.photos-sec,.active,.topbar,.lockbar,.list-pane,.actions,.fsbar,.logbox,.back,.history .rm,.toast,.anno-add,.addnote,.banner,.versions-sec,.allhist{display:none!important}
   body{display:block;height:auto;background:#fff}
   .layout{display:block}
   .detail-pane{position:static!important;transform:none!important;visibility:visible!important;overflow:visible}
   .ing input,.method .step-lab input,.tick-clear{display:none!important}
+  body.fs .detail-pane{display:block!important}
   .ing input:checked+span,.method li.done .step-t,.method li.done .step-n{color:inherit;text-decoration:none}
   .method li.next>.line-row{background:none;box-shadow:none}
   .method .annos{margin-left:28px}
@@ -627,7 +649,6 @@ window.RECIPE_CONFIG = {
   <div class="dlg-head"><h2 id="set-h">Settings</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
   <div class="dlg-body">
     <label class="check"><input id="s-viewonly" type="checkbox"><span><strong>View only on this device</strong><br><span class="muted">Hides adding, editing, notes and logging. Useful on your phone.</span></span></label>
-    <label class="check" style="margin-top:14px"><input id="s-awake" type="checkbox"><span><strong>Keep the screen awake while a recipe is open</strong><br><span id="s-awake-hint" class="muted">Stops this device dimming or locking while you cook. Uses more battery.</span></span></label>
     <div class="field edit-only"><span class="lbl">Tags</span>
       <p class="hint" style="margin:0 0 10px">Rename, merge, reorder or delete tag values, and sort out Unsorted tags.</p>
       <button id="s-tags" class="btn" type="button">Manage tags</button>
@@ -683,7 +704,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '5.0';
-const BUILD = 'R5 step 1 (test)';
+const BUILD = 'R5 step 2 (test)';
 const DATA_VERSION = 5;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -1590,7 +1611,7 @@ function monthStrip(logs){
   return '<span class="months" role="img" aria-label="Made in '+on+' of the last 12 months" title="Made in '+on+' of the last 12 months">'+cells+'</span>';
 }
 function render(){
-  setTimeout(updateWake,0);
+  applyFullScreen();
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
   document.title=(TEST?'TEST: ':'')+CONFIG.bookTitle;
   $('#testflag').hidden=!TEST;
@@ -1723,6 +1744,8 @@ function renderDetail(){
 
   let h='<article class="detail">';
   h+='<button type="button" class="btn ghost back" data-act="back">‹ All recipes</button>';
+  h+='<div class="fsbar"><button type="button" class="btn ghost fs-back" data-act="back">‹ Back to list</button>'+
+     '<button type="button" class="btn ghost" data-act="fullscreen">'+(fullScreen()?'Exit full screen':'⤢ Full screen')+'</button></div>';
   if(!current){
     h+='<div class="banner"><p>'+(r.archived?'<strong>'+esc(vName(r))+'</strong> is archived. It\'s hidden from your list but kept here.':'You\'re looking at <strong>'+esc(vName(r))+'</strong>, which isn\'t the current version.')+'</p><div class="stack">'+
       '<button type="button" class="btn" data-act="gocurrent">Show current version</button>'+
@@ -1877,27 +1900,26 @@ function refreshTicks(){
 }
 function tickClearBtn(any){ return '<button type="button" class="linkbtn tick-clear" data-act="clearticks"'+(any?'':' hidden')+'>Clear ticks</button>'; }
 
-/* ── Keep the screen awake (optional, per device) ────── */
-let wakeLock=null, wakeBusy=false;
-function wakeSupported(){ return !!(navigator.wakeLock && navigator.wakeLock.request); }
-function recipeOpen(){
-  if(!state.selected || $('#app').hidden || document.visibilityState!=='visible') return false;
-  return window.matchMedia('(min-width:900px)').matches || document.body.classList.contains('show-detail');
+/* ── Full screen on iPad (remembered on this device) ── */
+function fullScreen(){ return !!ls.get('fullScreen',false); }
+function wide(){ return window.matchMedia('(min-width:900px)').matches; }
+function applyFullScreen(){ document.body.classList.toggle('fs',fullScreen()); }
+function setFullScreen(on){
+  ls.set('fullScreen',!!on);
+  if(on && state.selected) document.body.classList.add('show-detail');
+  applyFullScreen(); renderDetail();
 }
-async function updateWake(){
-  const want=ls.get('keepAwake',false) && wakeSupported() && recipeOpen();
-  if(want && !wakeLock && !wakeBusy){
-    wakeBusy=true;
-    try{ wakeLock=await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release',()=>{ wakeLock=null; }); }
-    catch(e){ wakeLock=null; console.warn('Wake lock not available',e); }
-    finally{ wakeBusy=false; }
-    if(wakeLock && !(ls.get('keepAwake',false) && recipeOpen())) updateWake();
-  } else if(!want && wakeLock){
-    const w=wakeLock; wakeLock=null; try{ await w.release(); }catch(e){}
+function backToList(){
+  document.body.classList.remove('show-detail');
+  if(fullScreen() && wide()){
+    const lp=$('.list-pane'); lp.scrollTop=state.listScroll||0;
+    const it=$('#list .item[aria-current="true"]');
+    if(it){ const r=it.getBoundingClientRect(), pr=lp.getBoundingClientRect(); if(r.top<pr.top||r.bottom>pr.bottom) it.scrollIntoView({block:'center'}); }
   }
 }
 
 function select(id){
+  if(fullScreen() && wide() && !document.body.classList.contains('show-detail')) state.listScroll=$('.list-pane').scrollTop;
   const changed=state.selected!==id;
   state.selected=id; render();
   if(changed) $('#detail').scrollTop=0;
@@ -2972,8 +2994,6 @@ async function runCleanup(){
 /* ── Settings ────────────────────────────────────────── */
 function openSettings(){
   $('#s-viewonly').checked=!!ls.get('viewOnly',false);
-  $('#s-awake').checked=wakeSupported() && !!ls.get('keepAwake',false); $('#s-awake').disabled=!wakeSupported();
-  $('#s-awake-hint').textContent=wakeSupported()?'Stops this device dimming or locking while you cook. Uses more battery.':'This browser can\'t keep the screen awake, so this is switched off.';
   $('#s-file').innerHTML='Dropbox › Apps › <em>your app name</em> › '+esc(FILE.replace(/^\//,''))+(TEST?' (test mode: remove ?test from the address to use your real book)':'');
   $('#s-ver').textContent='App version '+APP_VERSION+', build '+BUILD+', data format '+DATA_VERSION+(TEST?', using the test file':'')+
     (state.locked?'. The recipe file is format '+state.locked+', so this copy needs updating.':'');
@@ -2981,7 +3001,6 @@ function openSettings(){
 }
 function saveSettings(){
   ls.set('viewOnly',$('#s-viewonly').checked);
-  ls.set('keepAwake',wakeSupported() && $('#s-awake').checked);
   $('#dlg-settings').close(); render();
 }
 function downloadBackup(){
@@ -3026,7 +3045,8 @@ function bind(){
   $('#detail').addEventListener('click',e=>{
     const el=e.target.closest('[data-act]'); if(!el) return;
     const r=state.db.recipes.find(x=>x.id===state.selected); const act=el.dataset.act;
-    if(act==='back'){ document.body.classList.remove('show-detail'); updateWake(); return; }
+    if(act==='back'){ backToList(); return; }
+    if(act==='fullscreen'){ setFullScreen(!fullScreen()); $('#detail').scrollTop=0; return; }
     if(!r) return;
     const byId=id=>state.db.recipes.find(x=>x.id===id);
     if(act==='tick'){ setTick(r.id,el.dataset.i,el.checked); return; }
@@ -3160,7 +3180,6 @@ function bind(){
       const before=JSON.stringify(state.ticks); loadTicks();
       if(JSON.stringify(state.ticks)!==before && !$('#app').hidden) renderDetail();
     }
-    updateWake();
     if(document.visibilityState==='visible' && ls.get('token',null) && !$('#app').hidden && Date.now()-state.lastPull>30000) pull();
   });
 }
@@ -3169,6 +3188,8 @@ function bind(){
 async function init(){
   /* Release 1 removed Claude API import: clear any saved key and model */
   ls.del('apiKey'); ls.del('model');
+  /* Release 5 step 2 dropped the keep-screen-awake switch tried in step 1 */
+  ls.del('keepAwake');
   if(ls.get('viewOnly',null)===null) ls.set('viewOnly',window.matchMedia('(max-width: 600px)').matches);
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
   bind();
