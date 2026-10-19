@@ -47,6 +47,23 @@ a{color:var(--basil)}
 .badge.review{background:#FBF4E4;color:var(--saffron)}
 .tag.unsorted{border-style:dashed}
 
+/* Section switcher (Release 6): Recipes | Bookshelf, room for a third section */
+.sections{flex:none;display:flex;padding:3px;gap:2px;border:1px solid var(--line);border-radius:var(--r);background:var(--card);margin:0 6px}
+.sections button{min-height:36px;padding:0 14px;border:none;border-radius:7px;background:none;font:600 .9rem/1 var(--sans);color:var(--muted);white-space:nowrap}
+.sections button[aria-pressed="true"]{background:var(--basil-soft);color:var(--basil);box-shadow:inset 0 0 0 1px var(--basil-edge)}
+@media (max-width:599px){
+  .topbar{flex-wrap:wrap}
+  .sections{order:10;flex:1 0 100%;margin:6px 0 0}
+  .sections button{flex:1}
+}
+body:not(.sec-recipes) .rec-only{display:none!important}
+.fs-off{display:none}
+.shelf{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:24px 16px calc(24px + var(--sb))}
+.shelf-empty{max-width:520px;margin:12vh auto 0;text-align:center}
+.shelf-empty h2{font:600 1.6rem/1.2 var(--serif);margin:0 0 10px}
+.shelf-empty p{margin:0 0 8px;color:var(--ink)}
+.shelf-empty .muted{color:var(--muted);font-size:.92rem}
+
 /* Read-only lock (file saved by a newer app) */
 .lockbar{flex:none;padding:12px 16px;background:#FBF4E4;border-bottom:1px solid #EAD8AC}
 .lockbar strong{display:block;font-size:1rem}
@@ -413,6 +430,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
   body.fs .layout{grid-template-columns:1fr}
   body.fs .list-pane{border-right:none;padding-left:max(16px,calc((100% - 980px)/2));padding-right:max(16px,calc((100% - 980px)/2))}
   body.fs.show-detail .topbar{display:none}
+  body.fs.sec-recipes:not(.show-detail) .fs-off{display:inline-flex}
   body.fs.show-detail .list-pane{display:none}
   body.fs:not(.show-detail) .detail-pane{display:none}
   body.fs .detail{max-width:1200px;padding:0 36px calc(56px + var(--sb));font-size:1.125rem}
@@ -479,10 +497,12 @@ window.RECIPE_CONFIG = {
 <div id="app" hidden>
   <header class="topbar">
     <h1 class="book-title">Recipe Book</h1>
+    <nav id="sections" class="sections" aria-label="Sections"></nav>
     <span id="testflag" class="testflag" hidden>Test file</span>
     <button id="sync" class="sync" type="button" title="Tap to sync now"></button>
-    <button id="btn-import" class="btn edit-only" type="button">Import</button>
-    <button id="btn-add" class="btn primary edit-only" type="button">Add</button>
+    <button id="btn-fsoff" class="btn ghost fs-off rec-only" type="button">Exit full screen</button>
+    <button id="btn-import" class="btn edit-only rec-only" type="button">Import</button>
+    <button id="btn-add" class="btn primary edit-only rec-only" type="button">Add</button>
     <button id="btn-settings" class="btn icon ghost" type="button" aria-label="Settings">&#9881;&#xFE0E;</button>
   </header>
   <div id="lockbar" class="lockbar" role="alert" hidden>
@@ -512,6 +532,14 @@ window.RECIPE_CONFIG = {
     </aside>
     <main id="detail" class="detail-pane" aria-live="polite"></main>
   </div>
+  <!-- Bookshelf (Release 6): the cookbooks you own. Step 1 shows an empty shelf. -->
+  <section id="shelf" class="shelf" aria-labelledby="shelf-h" hidden>
+    <div class="shelf-empty">
+      <h2 id="shelf-h">Bookshelf</h2>
+      <p>This is where the cookbooks you own will go, with their recipe lists, so you can search every book on the shelf.</p>
+      <p class="muted">Adding books comes in the next test build.</p>
+    </div>
+  </section>
 </div>
 
 <!-- Edit recipe -->
@@ -605,18 +633,18 @@ window.RECIPE_CONFIG = {
   <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="del-archive" class="btn" type="button">Archive this version</button><button id="del-all" class="btn danger" type="button">Delete all versions</button></div>
 </dialog>
 
-<!-- Import: paste ChatGPT's filled-in template (or any recipe text) -->
+<!-- Import: paste the AI's filled-in template (or any recipe text) -->
 <dialog id="dlg-import" aria-labelledby="imp-h">
   <div class="dlg-head"><h2 id="imp-h">Import a recipe</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
   <div class="dlg-body">
     <div class="impstep">
-      <p><strong>1.</strong> Copy the prompt and paste it into ChatGPT, with your recipe photos or the recipe's web address.</p>
-      <div><button id="imp-copy" class="btn" type="button">Copy ChatGPT prompt</button></div>
+      <p><strong>1.</strong> Copy the prompt and paste it into your AI, with your recipe photos or the recipe's web address.</p>
+      <div><button id="imp-copy" class="btn" type="button">Copy AI prompt</button></div>
       <p id="imp-copied" class="msg ok" hidden></p>
-      <textarea id="imp-prompt" rows="6" readonly hidden aria-label="ChatGPT prompt"></textarea>
+      <textarea id="imp-prompt" rows="6" readonly hidden aria-label="AI prompt"></textarea>
     </div>
     <div class="field">
-      <label for="imp-text"><strong>2.</strong> Paste ChatGPT's reply here</label>
+      <label for="imp-text"><strong>2.</strong> Paste the AI's reply here</label>
       <textarea id="imp-text" rows="12" placeholder="Paste the filled-in template, or any recipe text" spellcheck="false"></textarea>
       <p class="hint" id="imp-hint">Plain recipe text works too. If the reply has several recipes, you'll check them one after another.</p>
       <p class="hint" id="imp-vernote" hidden>The pasted recipe becomes a new version. The current version and its cooking history stay as they are.</p>
@@ -696,7 +724,7 @@ window.RECIPE_CONFIG = {
       <div class="shopts" role="radiogroup" aria-label="Send as">
         <label class="shopt"><input type="radio" name="sh-fmt" value="text" checked><span><strong>Text</strong><br><span class="muted">For Messages and quick sends. No photo.</span></span></label>
         <label class="shopt"><input type="radio" name="sh-fmt" value="html"><span><strong>Web page</strong><br><span class="muted">One file that opens in any browser, with the photo. Good for email or keeping a copy.</span></span></label>
-        <label class="shopt"><input type="radio" name="sh-fmt" value="pdf"><span><strong>PDF</strong><br><span class="muted">Opens the print screen. Tap Share or Save to Files there to make the PDF.</span></span></label>
+        <label class="shopt"><input type="radio" name="sh-fmt" value="pdf"><span><strong>Save as PDF</strong><br><span class="muted">Opens the print screen, then tap Share to send or save it as a PDF.</span></span></label>
       </div>
     </div>
     <label id="sh-noteswrap" class="check"><input id="sh-notes" type="checkbox" checked><span><strong>Include my notes</strong><br><span class="muted">Your notes and margin notes. Cooking history and rating are never shared.</span></span></label>
@@ -765,8 +793,8 @@ window.RECIPE_CONFIG = {
 (function(){
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
-const APP_VERSION = '5.0';
-const BUILD = 'R5 step 5 (test)';
+const APP_VERSION = '6.0';
+const BUILD = 'R6 step 1 (test)';
 const DATA_VERSION = 6;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -1711,7 +1739,7 @@ function monthStrip(logs){
   return '<span class="months" role="img" aria-label="Made in '+on+' of the last 12 months" title="Made in '+on+' of the last 12 months">'+cells+'</span>';
 }
 function render(){
-  applyFullScreen();
+  applyFullScreen(); renderSections();
   document.querySelectorAll('.book-title').forEach(el=>el.textContent=CONFIG.bookTitle);
   document.title=(TEST?'TEST: ':'')+CONFIG.bookTitle;
   $('#testflag').hidden=!TEST;
@@ -2014,6 +2042,28 @@ function refreshTicks(){
   $$('#detail .tick-clear').forEach(b=>{ b.hidden=!any; });
 }
 function tickClearBtn(any){ return '<button type="button" class="linkbtn tick-clear" data-act="clearticks"'+(any?'':' hidden')+'>Clear ticks</button>'; }
+
+/* ── Sections (Release 6) ───────────────────────────── */
+/* The top switcher is built from this list, so Meal plan can be added later as one more entry. */
+const SECTIONS = [
+  {id:'recipes',label:'Recipes',pane:'.layout'},
+  {id:'bookshelf',label:'Bookshelf',pane:'#shelf'}
+];
+function section(){ const s=ls.get('section','recipes'); return SECTIONS.some(x=>x.id===s)?s:'recipes'; }
+function renderSections(){
+  const cur=section(), nav=$('#sections');
+  if(nav && nav.childElementCount!==SECTIONS.length)
+    nav.innerHTML=SECTIONS.map(x=>'<button type="button" data-sec="'+esc(x.id)+'">'+esc(x.label)+'</button>').join('');
+  $$('#sections button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.sec===cur)));
+  SECTIONS.forEach(x=>{
+    document.body.classList.toggle('sec-'+x.id,x.id===cur);
+    const el=$(x.pane); if(el) el.hidden=x.id!==cur;
+  });
+}
+function setSection(id){
+  if(!SECTIONS.some(x=>x.id===id) || id===section()) return;
+  ls.set('section',id); renderSections();
+}
 
 /* ── Full screen on iPad (remembered on this device) ── */
 function fullScreen(){ return !!ls.get('fullScreen',false); }
@@ -2392,7 +2442,7 @@ function openDelete(r){
   $('#dlg-delete').showModal();
 }
 
-/* ── Import (paste box and ChatGPT template, no API) ── */
+/* ── Import (paste box and AI template, no API) ─────── */
 let impMode=null, impQueue=[], impTotal=0;
 function buildPrompt(){
   const t=state.db.taxonomy||{}, list=g=>(t[g]||[]).join(', ');
@@ -2462,7 +2512,7 @@ const IMPORT_FIELDS={'title':'title','recipe title':'title','recipe name':'title
   'course':'course','cuisine':'cuisine','main ingredient':'mainIngredient','main ingredients':'mainIngredient','diet':'diet','dietary':'diet',
   'effort':'effort','occasion or season':'occasion','occasion':'occasion','season':'occasion','occasion season':'occasion'};
 const SECTION_WORDS={'recipe':'recipe','ingredients':'ing','ingredient':'ing','method':'method','instructions':'method','steps':'method','directions':'method','notes':'notes','note':'notes','end':'end'};
-/* Strips Markdown bold, headings, bullets, numbering and quote marks that ChatGPT sometimes adds */
+/* Strips Markdown bold, headings, bullets, numbering and quote marks that AI replies sometimes add */
 function cleanLine(l){
   return String(l).replace(/\*\*|__/g,'').replace(/^\s*#{1,6}\s*/,'').replace(/^\s*>\s*/,'').replace(/^\s*(?:[-•*–·]|\d+[.)])\s+/,'').replace(/\s+$/,'').trim();
 }
@@ -2575,7 +2625,7 @@ function openImport(mode){
 function impMsg(m){ const el=$('#imp-msg'); el.textContent=m||''; el.hidden=!m; }
 function runImport(){
   const t=$('#imp-text').value;
-  if(!t.trim()){ impMsg('Paste ChatGPT\'s reply, or some recipe text, first.'); return; }
+  if(!t.trim()){ impMsg('Paste the AI\'s reply, or some recipe text, first.'); return; }
   let drafts=parseTemplate(t);
   if(!drafts) drafts=[parsePlain(t.replace(/^\s*```.*$/gm,''))];
   drafts=drafts.filter(d=>d.title || d.ingredients.length || d.instructions.length);
@@ -2584,7 +2634,7 @@ function runImport(){
   const base=impMode?state.db.recipes.find(x=>x.id===impMode.versionOf):null;
   if(base){
     const linkOnly=base.type==='External' && !base.ingredients.length;
-    openEdit(versionDraft(base,drafts[0]),false,{versionOf:base.id,label:linkOnly?'Full recipe':'',note:'Pasted from ChatGPT'});
+    openEdit(versionDraft(base,drafts[0]),false,{versionOf:base.id,label:linkOnly?'Full recipe':'',note:'Pasted from AI'});
     if(drafts.length>1) toast('Only the first recipe was used');
     return;
   }
@@ -3354,6 +3404,9 @@ function bind(){
   $('#btn-add').addEventListener('click',()=>openEdit({type:'Full'},true));
   $('#btn-import').addEventListener('click',()=>openImport(null));
   $('#btn-settings').addEventListener('click',openSettings);
+  $('#sections').addEventListener('click',e=>{ const b=e.target.closest('[data-sec]'); if(b) setSection(b.dataset.sec); });
+  /* Full screen can be turned off from the list as well as from a recipe; the split view comes back with the same recipe */
+  $('#btn-fsoff').addEventListener('click',()=>{ const lp=$('.list-pane'), top=lp.scrollTop; setFullScreen(false); lp.scrollTop=top; });
 
   bindSwipe();
   $('#sh-go').addEventListener('click',runShare);
