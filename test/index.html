@@ -58,11 +58,48 @@ a{color:var(--basil)}
 }
 body:not(.sec-recipes) .rec-only{display:none!important}
 .fs-off{display:none}
-.shelf{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:24px 16px calc(24px + var(--sb))}
-.shelf-empty{max-width:520px;margin:12vh auto 0;text-align:center}
-.shelf-empty h2{font:600 1.6rem/1.2 var(--serif);margin:0 0 10px}
-.shelf-empty p{margin:0 0 8px;color:var(--ink)}
-.shelf-empty .muted{color:var(--muted);font-size:.92rem}
+.shelf{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(32px + var(--sb))}
+.shelf-in{max-width:1100px;margin:0 auto}
+.shelf-head{display:flex;align-items:flex-end;gap:12px;margin:4px 0 18px}
+.shelf-head>div{flex:1;min-width:0}
+.shelf-head h2{font:600 1.6rem/1.2 var(--serif);margin:0}
+.shelf-head .count{margin:4px 0 0}
+.shelf-empty{max-width:480px;margin:10vh auto 0;text-align:center}
+.shelf-empty h3{font:600 1.3rem/1.25 var(--serif);margin:0 0 8px}
+.shelf-empty p{margin:0 0 14px;color:var(--muted)}
+.shelf-lock{padding:12px 14px;border-radius:var(--r-sm);background:#FBF4E4;border:1px solid #EAD8AC;margin:0 0 16px;font-size:.92rem}
+.shelf-lock strong{display:block;font-size:1rem}
+/* Covers stand like books: portrait, with a spine shadow on the left edge */
+.books{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:20px 14px}
+@media (min-width:600px){ .books{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:22px 18px} }
+@media (min-width:900px){ .books{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:28px 24px} }
+.book{display:flex;flex-direction:column;width:100%;padding:0;border:none;background:none;text-align:left;color:var(--ink)}
+.bcover{position:relative;display:block;aspect-ratio:2/3;border-radius:2px 5px 5px 2px;overflow:hidden;background:var(--paper);box-shadow:0 1px 2px rgba(31,38,34,.18),0 6px 14px -6px rgba(31,38,34,.35)}
+.bcover::after{content:"";position:absolute;inset:0 auto 0 0;width:9px;background:linear-gradient(90deg,rgba(0,0,0,.22),rgba(255,255,255,.12) 55%,rgba(0,0,0,0));pointer-events:none}
+.bcover img{display:block;width:100%;height:100%;object-fit:cover}
+.bplain{display:flex;flex-direction:column;justify-content:space-between;height:100%;padding:12px 10px 10px 16px}
+.bplain .t{font:600 clamp(.85rem,2.6vw,1.02rem)/1.22 var(--serif);display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word}
+.bplain .a{font-size:.75rem;color:var(--muted)}
+.book .bt{margin-top:10px;font:600 .95rem/1.25 var(--serif);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.book .ba{font-size:.8rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.book:focus-visible{outline:none}
+.book:focus-visible .bcover{outline:3px solid var(--basil);outline-offset:3px}
+.bookpage{max-width:860px;margin:0 auto}
+.bk-top{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:26px;align-items:start;margin-top:8px}
+@media (max-width:520px){ .bk-top{grid-template-columns:110px 1fr;gap:16px} }
+.bk-top .bcover{width:100%}
+.bk-top h2{font:600 1.9rem/1.15 var(--serif);margin:0}
+@media (max-width:520px){ .bk-top h2{font-size:1.4rem} }
+.bk-by{margin:6px 0 0;font-size:1.02rem}
+.bk-facts{margin:12px 0 0;font-size:.88rem;color:var(--muted)}
+.bk-facts span{display:block}
+.bk-notes{margin:14px 0 0;white-space:pre-wrap}
+.bk-top .stack{margin-top:16px}
+.bk-contents{margin-top:30px}
+.bk-contents .empty{padding:18px;border:1px dashed var(--line);border-radius:var(--r);color:var(--muted);margin:0}
+.bkcv{width:84px;height:126px}
+.opt{font-weight:400;color:var(--muted);font-size:.82rem}
+.msg.warn{background:#FBF4E4;color:#7A5410}
 
 /* Read-only lock (file saved by a newer app) */
 .lockbar{flex:none;padding:12px 16px;background:#FBF4E4;border-bottom:1px solid #EAD8AC}
@@ -533,13 +570,7 @@ window.RECIPE_CONFIG = {
     <main id="detail" class="detail-pane" aria-live="polite"></main>
   </div>
   <!-- Bookshelf (Release 6): the cookbooks you own. Step 1 shows an empty shelf. -->
-  <section id="shelf" class="shelf" aria-labelledby="shelf-h" hidden>
-    <div class="shelf-empty">
-      <h2 id="shelf-h">Bookshelf</h2>
-      <p>This is where the cookbooks you own will go, with their recipe lists, so you can search every book on the shelf.</p>
-      <p class="muted">Adding books comes in the next test build.</p>
-    </div>
-  </section>
+  <section id="shelf" class="shelf" aria-label="Bookshelf" hidden></section>
 </div>
 
 <!-- Edit recipe -->
@@ -746,14 +777,15 @@ window.RECIPE_CONFIG = {
       <p class="hint" style="margin:0 0 10px">Books, homemade sources and others. Websites all come under Online.</p>
       <button id="s-sources" class="btn" type="button">Manage sources</button>
     </div>
-    <div class="field"><span class="lbl">Recipe file</span>
+    <div class="field"><span class="lbl">Recipe and bookshelf files</span>
       <p id="s-file" class="hint" style="margin:0"></p>
       <div class="stack" style="margin-top:10px">
         <button id="s-reload" class="btn" type="button">Reload from Dropbox</button>
-        <button id="s-backup" class="btn" type="button">Download a backup (recipes only)</button>
+        <button id="s-backup" class="btn" type="button">Download recipes backup</button>
+        <button id="s-shelfbackup" class="btn" type="button">Download bookshelf backup</button>
         <button id="s-disconnect" class="btn danger" type="button">Disconnect Dropbox</button>
       </div>
-      <p class="hint">Photos stay in Dropbox, which keeps its own version history of them. The backup covers recipes only.</p>
+      <p class="hint">Each backup is one file, a copy of recipes.json or cookbooks.json. To restore, put it back in the app's Dropbox folder under that name. Photos and covers stay in Dropbox, which keeps its own version history of them.</p>
     </div>
     <div class="field"><span class="lbl">Photos on this device</span>
       <p class="hint" style="margin:0 0 10px">Photos you've viewed are kept on this device so they open quickly. Clearing them is safe; they download again from Dropbox.</p>
@@ -785,6 +817,28 @@ window.RECIPE_CONFIG = {
 </dialog>
 <input id="ph-input" type="file" accept="image/*" multiple hidden>
 <input id="cover-input" type="file" accept="image/*" hidden>
+<input id="bk-cover-input" type="file" accept="image/*" hidden>
+
+<!-- Add or edit a book on the Bookshelf (Release 6) -->
+<dialog id="dlg-book" aria-labelledby="bk-h">
+  <div class="dlg-head"><h2 id="bk-h">Add a book</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body">
+    <div class="field"><label for="bk-isbn">ISBN <span class="opt">optional</span></label>
+      <input id="bk-isbn" type="text" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="978…">
+      <p class="hint">On the back cover, above or below the barcode. 10 or 13 digits, with or without dashes.</p></div>
+    <div class="field"><label for="bk-title">Title</label><input id="bk-title" type="text" autocomplete="off"></div>
+    <div class="field"><label for="bk-author">Author <span class="opt">optional</span></label><input id="bk-author" type="text" autocomplete="off"></div>
+    <div class="field"><label for="bk-notes">Notes <span class="opt">optional</span></label><textarea id="bk-notes" rows="3"></textarea></div>
+    <div class="field"><span class="lbl">Cover photo</span>
+      <div class="secover"><span id="bk-coverimg" class="secv bkcv">No cover</span>
+        <div class="stack"><button id="bk-coveradd" class="btn" type="button">Add cover photo</button><button id="bk-coverdel" class="btn danger" type="button">Remove</button></div></div>
+      <p class="hint">Take a photo of the front cover or choose one. It's uploaded when you save, so it needs a connection.</p>
+    </div>
+    <p id="bk-warn" class="msg warn" hidden></p>
+    <p id="bk-msg" class="msg err" hidden></p>
+  </div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button><button id="bk-save" class="btn primary" type="button">Add book</button></div>
+</dialog>
 
 <div id="toast" class="toast" role="status" hidden></div>
 <div id="share-print"></div>
@@ -794,7 +848,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '6.0';
-const BUILD = 'R6 step 1 (test)';
+const BUILD = 'R6 step 2a (test)';
 const DATA_VERSION = 6;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -1359,8 +1413,9 @@ async function dbxFetch(url,opts,retried){
   if(res.status===401){ if(!retried) return dbxFetch(url,opts,true); throw authError('Dropbox rejected the sign-in.'); }
   return res;
 }
-async function dbxDownload(){
-  const res=await dbxFetch(DBX_CONTENT+'download',{method:'POST',headers:{'Dropbox-API-Arg':headerArg({path:FILE})}});
+async function dbxDownload(path){
+  path=path||FILE;
+  const res=await dbxFetch(DBX_CONTENT+'download',{method:'POST',headers:{'Dropbox-API-Arg':headerArg({path})}});
   if(res.status===409){
     const j=await res.json().catch(()=>({}));
     if(String(j.error_summary||'').indexOf('not_found')>=0) return {notFound:true};
@@ -1369,7 +1424,7 @@ async function dbxDownload(){
   if(!res.ok) throw new Error('Dropbox download failed ('+res.status+').');
   let rev=null; try{ rev=JSON.parse(res.headers.get('Dropbox-API-Result')||'{}').rev||null; }catch(e){}
   const text=await res.text();
-  let data; try{ data=JSON.parse(text); }catch(e){ throw new Error('The recipe file in Dropbox isn\'t valid JSON. Fix or replace it, then reload.'); }
+  let data; try{ data=JSON.parse(text); }catch(e){ throw new Error('The '+(path===FILE?'recipe':'bookshelf')+' file in Dropbox isn\'t valid JSON. Fix or replace it, then reload.'); }
   return {data,rev,text};
 }
 async function dbxPut(path,text,mode,autorename){
@@ -1458,18 +1513,21 @@ function syncError(e){
   if(e instanceof TypeError || !navigator.onLine){ setStatus('offline'); return; }
   setStatus('error',e && e.message);
 }
-function setStatus(kind,msg){
+/* Recipes and the Bookshelf each keep their own sync status; the top bar shows the one for the section on screen */
+function setStatus(kind,msg){ state.sync={kind,msg}; renderSync(); if(kind==='error' && msg) toast(msg); }
+function renderSync(){
   const el=$('#sync'); if(!el) return;
-  if(state.locked && kind!=='loading') kind='locked';
-  const n=state.queue.length;
+  const bs=section()==='bookshelf', s=(bs?shelf.sync:state.sync)||{kind:''};
+  let kind=s.kind;
+  if((bs?(shelf.locked||state.locked):state.locked) && kind!=='loading') kind='locked';
+  const n=(bs?shelf.queue:state.queue).length;
   const txt={loading:'Checking Dropbox…',saving:'Saving…',saved:'Saved',
     offline:n?'Offline, '+n+' change'+(n>1?'s':'')+' waiting':'Offline',
     error:'Sync problem, tap to retry',locked:'Read only'}[kind]||'';
   el.textContent=txt; el.className='sync'+(kind==='offline'||kind==='locked'?' warn':kind==='error'?' err':'');
-  el.title=kind==='locked'?'This app needs updating before it can save':(msg||'Tap to sync now');
-  if(kind==='error' && msg) toast(msg);
+  el.title=kind==='locked'?'This app needs updating before it can save':(s.msg||'Tap to sync now');
 }
-function syncNow(){ (state.queue.length && !state.locked) ? flush() : pull(); }
+function syncNow(){ (state.queue.length && !state.locked) ? flush() : pull(); shelfSyncNow(); }
 
 /* ── Dropbox sign-in (PKCE) ──────────────────────────── */
 let pkcePrepared=null;
@@ -1521,7 +1579,8 @@ function showApp(){
   loadTicks();
   const c=ls.get('cache'+DK,null);
   if(c&&c.db){ state.db=normalise(c.db).d; state.queue.forEach(op=>applyOp(state.db,op)); }
-  render(); pull();
+  shelfLoad();
+  render(); pull(); shelfPull();
 }
 
 /* ── Families and versions ───────────────────────────── */
@@ -2059,10 +2118,302 @@ function renderSections(){
     document.body.classList.toggle('sec-'+x.id,x.id===cur);
     const el=$(x.pane); if(el) el.hidden=x.id!==cur;
   });
+  renderSync();
+  if(cur==='bookshelf') renderShelf();
 }
 function setSection(id){
   if(!SECTIONS.some(x=>x.id===id) || id===section()) return;
   ls.set('section',id); renderSections();
+}
+
+/* ── Bookshelf data: /cookbooks.json (Release 6) ─────── */
+/* The cookbooks Andrew owns live in their own file, separate from the recipes, with their own
+   version number, version guard, cache and queue of unsaved changes. Saving the Bookshelf never
+   rewrites the recipe file. The file is created on the first Bookshelf save. */
+const SHELF_FILE = TEST ? '/cookbooks-test.json' : '/cookbooks.json';
+const SK = SHELF_FILE === '/cookbooks.json' ? '' : ':' + SHELF_FILE;
+const SHELF_VERSION = 1;
+const MAX_SHELF_VERSION = SHELF_VERSION;
+function emptyShelf(){ return {version:SHELF_VERSION,books:[]}; }
+const shelf={ db:emptyShelf(), queue:ls.get('shelfQueue'+SK,[]), locked:null, loaded:false, lastPull:0, sync:null, book:null };
+let shelfPulling=false, shelfFlushing=false;
+
+/* Fills missing ids, drops books with no title and entries with no title, and adds missing lists.
+   A well-formed file comes back unchanged, so running this twice changes nothing. */
+function normShelf(raw){
+  let changed=false;
+  if(!raw || typeof raw!=='object' || Array.isArray(raw)){ raw={}; changed=true; }
+  const d=Object.assign({},raw);
+  const v=Number(d.version); if(!isFinite(v) || v<1){ d.version=SHELF_VERSION; changed=true; }
+  if(!Array.isArray(d.books)){ d.books=[]; changed=true; }
+  /* Ids already in the file are kept (the first copy wins); only missing or repeated ids are filled */
+  const fillIds=(list,make)=>{
+    const keep=new Set(), seen=new Set();
+    list.forEach(x=>{ if(x.id && !keep.has(x.id)) keep.add(x.id); });
+    list.forEach((x,i)=>{
+      if(x.id && !seen.has(x.id)){ seen.add(x.id); return; }
+      let id=make(x,i); while(keep.has(id)||seen.has(id)) id+='b';
+      x.id=id; seen.add(id); changed=true;
+    });
+  };
+  d.books=d.books.filter(b=>{ const ok=b && typeof b==='object' && String(b.title||'').trim(); if(!ok) changed=true; return ok; }).map(b=>Object.assign({},b));
+  fillIds(d.books,(b,i)=>'b-'+slug(b.title)+'-'+(i+1));
+  d.books.forEach(o=>{
+    if(typeof o.title!=='string'){ o.title=String(o.title); changed=true; }
+    if(!Array.isArray(o.entries)){ o.entries=[]; changed=true; }
+    o.entries=o.entries.filter(e=>{ const ok=e && typeof e==='object' && String(e.title||'').trim(); if(!ok) changed=true; return ok; }).map(e=>Object.assign({},e));
+    fillIds(o.entries,(e,j)=>'e-'+(j+1));
+    if(o.chapters!=null && !Array.isArray(o.chapters)){ delete o.chapters; changed=true; }
+  });
+  return {d,changed};
+}
+function shelfVersion(raw){ const v=Number(raw && raw.version); return isFinite(v) && v>0 ? v : 1; }
+function applyShelfOp(d,op){
+  const find=id=>d.books.find(b=>b.id===id);
+  switch(op.t){
+    case 'bookAdd': if(op.b && !find(op.b.id)) d.books.push(clone(op.b)); break;
+    case 'bookEdit': { const b=find(op.id); if(b) ['title','author','isbn','notes'].forEach(k=>{ if(op.f[k]!=null) b[k]=String(op.f[k]); }); break; }
+    case 'bookCover': { const b=find(op.id); if(b) b.cover=String(op.path||''); break; }
+    case 'bookDel': d.books=d.books.filter(b=>b.id!==op.id); break;
+  }
+  return d;
+}
+function shelfSaveCache(){ ls.set('shelfCache'+SK,{db:shelf.db}); }
+function shelfLoad(){
+  const c=ls.get('shelfCache'+SK,null);
+  shelf.db=c&&c.db?normShelf(c.db).d:emptyShelf();
+  shelf.queue.forEach(op=>applyShelfOp(shelf.db,op));
+}
+function shelfEditable(){ return !shelf.locked && !state.locked && !ls.get('viewOnly',false); }
+function shelfCommit(ops){
+  if(shelf.locked || state.locked){ toast('Update this app before editing'); return false; }
+  ops.forEach(op=>{ applyShelfOp(shelf.db,op); shelf.queue.push(op); });
+  ls.set('shelfQueue'+SK,shelf.queue); shelfSaveCache(); renderShelf(); shelfFlush();
+  return true;
+}
+function shelfStatus(kind,msg){ shelf.sync={kind,msg}; renderSync(); if(kind==='error' && msg && section()==='bookshelf') toast(msg); }
+function shelfError(e){
+  console.error(e);
+  if(e && e.auth){ syncError(e); return; }
+  if(e instanceof TypeError || !navigator.onLine){ shelfStatus('offline'); return; }
+  shelfStatus('error',e && e.message);
+}
+function shelfLock(v){ const first=!shelf.locked; shelf.locked=v; if($('#dlg-book').open) $('#dlg-book').close(); shelfStatus('locked'); renderShelf(); if(first && section()==='bookshelf') toast('Update this app before editing the Bookshelf'); }
+async function shelfPull(){
+  if(shelfPulling||shelfFlushing) return; shelfPulling=true; shelfStatus('loading');
+  try{
+    const r=await dbxDownload(SHELF_FILE);
+    /* Newer file: keep showing the cached copy and save nothing */
+    if(!r.notFound && shelfVersion(r.data)>MAX_SHELF_VERSION){ shelf.lastPull=Date.now(); shelfLock(shelfVersion(r.data)); return; }
+    if(shelf.locked){ shelf.locked=null; }
+    const base=r.notFound?emptyShelf():normShelf(clone(r.data)).d;
+    shelf.queue.forEach(op=>applyShelfOp(base,op));
+    shelf.db=base; shelf.loaded=true; shelfSaveCache(); renderShelf(); shelf.lastPull=Date.now();
+    shelfPulling=false;
+    if(shelf.queue.length) await shelfFlush(); else shelfStatus('saved');
+  }catch(e){ shelfError(e); }
+  finally{ shelfPulling=false; }
+}
+async function shelfFlush(){
+  if(shelfFlushing||!shelf.queue.length||shelf.locked||state.locked) return;
+  shelfFlushing=true; shelfStatus('saving');
+  let again=false;
+  try{
+    let done=false;
+    for(let attempt=0; attempt<4 && !done; attempt++){
+      const r=await dbxDownload(SHELF_FILE);
+      /* Version guard: never write over a bookshelf file from a newer app */
+      if(!r.notFound && shelfVersion(r.data)>MAX_SHELF_VERSION){ shelfLock(shelfVersion(r.data)); return; }
+      const base=r.notFound?emptyShelf():normShelf(r.data).d;
+      const n=shelf.queue.length;
+      shelf.queue.slice(0,n).forEach(op=>applyShelfOp(base,op));
+      const mode=r.notFound?'add':(r.rev?{'.tag':'update',update:r.rev}:'overwrite');
+      const up=await dbxPut(SHELF_FILE,JSON.stringify(base,null,2),mode,false);
+      if(up.conflict) continue;
+      shelf.queue=shelf.queue.slice(n); ls.set('shelfQueue'+SK,shelf.queue);
+      const local=clone(base); shelf.queue.forEach(op=>applyShelfOp(local,op));
+      shelf.db=local; shelf.loaded=true; shelfSaveCache(); renderShelf(); shelf.lastPull=Date.now();
+      done=true; again=shelf.queue.length>0;
+    }
+    if(!done) shelfStatus('error','The bookshelf file kept changing while saving. Tap to try again.');
+    else if(!again) shelfStatus('saved');
+  }catch(e){ shelfError(e); }
+  finally{ shelfFlushing=false; }
+  if(again) shelfFlush();
+}
+function shelfSyncNow(){ (shelf.queue.length && !shelf.locked) ? shelfFlush() : shelfPull(); }
+
+/* ── ISBN: stored as 13 digits; ISBN-10 is converted ── */
+function isbnCheck13(d12){ let s=0; for(let i=0;i<12;i++) s+=Number(d12[i])*(i%2?3:1); return String((10-s%10)%10); }
+function parseIsbn(input){
+  const c=String(input||'').toUpperCase().replace(/[\s\-‐‑–—.]/g,'');
+  if(!c) return {isbn:''};
+  if(/^\d{13}$/.test(c)){
+    if(!/^97[89]/.test(c)) return {err:'A 13-digit ISBN starts with 978 or 979. Check the number.'};
+    return isbnCheck13(c.slice(0,12))===c[12]?{isbn:c}:{err:'That ISBN doesn\'t add up. Check the digits against the barcode.'};
+  }
+  if(/^\d{9}[\dX]$/.test(c)){
+    let s=0; for(let i=0;i<10;i++) s+=(c[i]==='X'?10:Number(c[i]))*(10-i);
+    if(s%11) return {err:'That ISBN doesn\'t add up. Check the digits against the barcode.'};
+    const d12='978'+c.slice(0,9); return {isbn:d12+isbnCheck13(d12)};
+  }
+  return {err:'An ISBN has 10 or 13 digits. Check the number.'};
+}
+
+/* ── Bookshelf screen ───────────────────────────────── */
+function bookSortKey(t){ return normText(t).replace(/^(the|a|an)\s+/,''); }
+function sortedBooks(){ return shelf.db.books.slice().sort((a,b)=>bookSortKey(a.title).localeCompare(bookSortKey(b.title),'en-GB')||a.title.localeCompare(b.title,'en-GB')); }
+function entryCount(){ return shelf.db.books.reduce((n,b)=>n+(b.entries||[]).length,0); }
+function bookCoverHtml(b){
+  return '<span class="bcover" style="background:'+tileColour(b.id)+'">'+(b.cover?'<img data-thumb="'+esc(b.cover)+'" alt="">':
+    '<span class="bplain"><span class="t">'+esc(b.title)+'</span>'+(b.author?'<span class="a">'+esc(b.author)+'</span>':'')+'</span>')+'</span>';
+}
+function shelfLockHtml(){
+  if(!shelf.locked) return '';
+  return '<div class="shelf-lock" role="alert"><strong>Update this app before editing the Bookshelf</strong>Your bookshelf file was saved by a newer version of this app (format '+shelf.locked+
+    '). This copy only understands up to format '+MAX_SHELF_VERSION+', so editing the Bookshelf is switched off to protect the file. '+
+    (shelf.queue.length?shelf.queue.length+' unsaved change'+(shelf.queue.length>1?'s are':' is')+' kept on this device. ':'')+'Close the app fully and open it again to load the update.</div>';
+}
+function renderShelf(){
+  const pane=$('#shelf'); if(!pane || section()!=='bookshelf') return;
+  const ed=shelfEditable(), top=pane.scrollTop;
+  const b=shelf.book?shelf.db.books.find(x=>x.id===shelf.book):null;
+  if(shelf.book && !b) shelf.book=null;
+  let h='<div class="shelf-in">'+shelfLockHtml();
+  if(b){
+    const n=(b.entries||[]).length, facts=[];
+    if(b.isbn) facts.push('<span>ISBN '+esc(b.isbn)+'</span>');
+    facts.push('<span>'+(n?n+' recipe'+(n>1?'s':'')+' listed':'No recipes listed yet')+'</span>');
+    if(b.addedAt) facts.push('<span>Added '+esc(fmtDate(String(b.addedAt).slice(0,10)))+'</span>');
+    h+='<div class="bookpage"><button type="button" class="btn ghost" data-shelf="back" style="margin-left:-10px">‹ Bookshelf</button>'+
+      '<div class="bk-top">'+bookCoverHtml(b)+'<div><h2>'+esc(b.title)+'</h2>'+(b.author?'<p class="bk-by">'+esc(b.author)+'</p>':'')+
+      '<p class="bk-facts">'+facts.join('')+'</p>'+(b.notes?'<p class="bk-notes">'+esc(b.notes)+'</p>':'')+
+      (ed?'<div class="stack"><button type="button" class="btn" data-shelf="edit">Edit book</button><button type="button" class="btn danger" data-shelf="delete">Delete book</button></div>':'')+
+      '</div></div><section class="section bk-contents"><h3>Contents</h3>'+
+      (n?'':'<p class="empty">The book\'s recipe list will go here. Adding contents comes in the next test build.</p>')+'</section></div>';
+  } else {
+    const books=sortedBooks(), nb=books.length, ne=entryCount();
+    if(!nb){
+      h+='<div class="shelf-empty"><h3>No books on the shelf yet</h3><p>'+(ed?'Add the cookbooks you own, with a photo of each cover, so you can browse and later search them here.':'Books added on the iPad appear here.')+'</p>'+
+        (ed?'<button type="button" class="btn primary" data-shelf="add">Add a book</button>':'')+'</div>';
+    } else {
+      h+='<div class="shelf-head"><div><h2>Bookshelf</h2><p class="count">'+nb+' book'+(nb>1?'s':'')+', '+ne+' recipe'+(ne===1?'':'s')+' indexed</p></div>'+
+        (ed?'<button type="button" class="btn primary" data-shelf="add">Add a book</button>':'')+'</div>'+
+        '<ul class="books">'+books.map(x=>'<li><button type="button" class="book" data-book="'+esc(x.id)+'" aria-label="'+esc(x.title+(x.author?', '+x.author:''))+'">'+bookCoverHtml(x)+
+          '<span class="bt">'+esc(x.title)+'</span>'+(x.author?'<span class="ba">'+esc(x.author)+'</span>':'')+'</button></li>').join('')+'</ul>';
+    }
+  }
+  pane.innerHTML=h+'</div>';
+  pane.scrollTop=top;
+  loadThumbs();
+}
+function openBookPage(id){ shelf.book=id; renderShelf(); $('#shelf').scrollTop=0; }
+function closeBookPage(){ const id=shelf.book; shelf.book=null; renderShelf(); const el=id&&$('#shelf .book[data-book="'+CSS.escape(id)+'"]'); if(el){ el.scrollIntoView({block:'center'}); el.focus({preventScroll:true}); } }
+
+/* ── Add or edit a book (iPad) ──────────────────────── */
+/* The cover is picked in the dialog and uploaded on Save, so Save saves everything at once */
+let bkCtx=null;
+function bkMsg(m){ const el=$('#bk-msg'); el.textContent=m||''; el.hidden=!m; }
+function bkWarn(m){ const el=$('#bk-warn'); el.textContent=m||''; el.hidden=!m; }
+function bkSaveLabel(){ const c=bkCtx; $('#bk-save').textContent=c&&c.busy?'Saving…':c&&c.warned?'Save anyway':c&&c.id?'Save book':'Add book'; $('#bk-save').disabled=!!(c&&c.busy); }
+function renderBkCover(){
+  const c=bkCtx; if(!c) return;
+  const b=c.id?shelf.db.books.find(x=>x.id===c.id):null;
+  const showOld=!c.file && !c.remove && b && b.cover;
+  const box=$('#bk-coverimg');
+  if(c.file) box.innerHTML='<img src="'+esc(c.fileUrl)+'" alt="New cover">';
+  else if(showOld) box.innerHTML='<img data-thumb="'+esc(b.cover)+'" alt="Cover">';
+  else box.textContent='No cover';
+  const has=!!(c.file || showOld);
+  $('#bk-coveradd').textContent=has?'Replace cover photo':'Add cover photo';
+  $('#bk-coverdel').hidden=!has;
+  loadThumbs();
+}
+function openBook(id){
+  if(!shelfEditable()){ if(shelf.locked||state.locked) toast('Update this app before editing'); return; }
+  const b=id?shelf.db.books.find(x=>x.id===id):null; if(id && !b) return;
+  bkCtx={id:b?b.id:null,file:null,fileUrl:'',remove:false,warned:'',busy:false};
+  $('#bk-h').textContent=b?'Edit book':'Add a book';
+  $('#bk-isbn').value=b?(b.isbn||''):''; $('#bk-title').value=b?b.title:''; $('#bk-author').value=b?(b.author||''):''; $('#bk-notes').value=b?(b.notes||''):'';
+  bkMsg(''); bkWarn(''); bkSaveLabel(); renderBkCover();
+  $('#dlg-book').showModal();
+  setTimeout(()=>$(b?'#bk-title':'#bk-isbn').focus(),60);
+}
+function bkPick(file){
+  const c=bkCtx; if(!c || !file) return;
+  if(c.fileUrl) URL.revokeObjectURL(c.fileUrl);
+  c.file=file; c.fileUrl=URL.createObjectURL(file); c.remove=false; renderBkCover();
+}
+function bkRemoveCover(){
+  const c=bkCtx; if(!c) return;
+  if(c.file){ URL.revokeObjectURL(c.fileUrl); c.file=null; c.fileUrl=''; }
+  else c.remove=true;
+  renderBkCover();
+}
+function bkClosed(){ const c=bkCtx; if(c && c.fileUrl) URL.revokeObjectURL(c.fileUrl); bkCtx=null; }
+async function saveBook(){
+  const c=bkCtx; if(!c || c.busy) return;
+  bkMsg('');
+  const title=$('#bk-title').value.replace(/\s+/g,' ').trim();
+  if(!title){ bkMsg('Give the book a title.'); $('#bk-title').focus(); return; }
+  const pi=parseIsbn($('#bk-isbn').value);
+  if(pi.err){ bkMsg(pi.err); $('#bk-isbn').focus(); return; }
+  const others=shelf.db.books.filter(x=>x.id!==c.id), warns=[];
+  const sameT=others.find(x=>tkey(x.title)===tkey(title));
+  if(sameT) warns.push('You already have a book called "'+sameT.title+'"'+(sameT.author?' by '+sameT.author:'')+'.');
+  const sameI=pi.isbn && others.find(x=>x.isbn===pi.isbn);
+  if(sameI) warns.push('"'+sameI.title+'" already has this ISBN.');
+  const sig=warns.join('|');
+  if(sig && c.warned!==sig){ c.warned=sig; bkWarn(warns.join(' ')+' Save anyway if this is a different book or a second copy.'); bkSaveLabel(); return; }
+  if(c.file && !navigator.onLine){ bkMsg('Adding a cover needs a connection. Remove the photo to save without it, or try again when you\'re online.'); return; }
+  const id=c.id||('b-'+slug(title)+'-'+Date.now().toString(36));
+  const existing=c.id?shelf.db.books.find(x=>x.id===c.id):null;
+  const old=existing && existing.cover || '';
+  let path=null;
+  if(c.file){
+    c.busy=true; bkSaveLabel();
+    try{
+      const blob=await resizeImage(c.file,1600,0.85), thumb=await resizeImage(blob,480,0.8);
+      /* A new file name each time, so other devices never show an old cover from their saved copies */
+      path=PHOTO_ROOT+'/books/'+id+'-'+Date.now().toString(36)+'.jpg';
+      const up=await dbxPut(path,blob,'add',false); if(up.conflict) throw new Error('Couldn\'t save the cover. Try again.');
+      cachePut('f:'+path,blob); cachePut(thumbKey(path),thumb); blobUrl(thumbKey(path),thumb);
+    }catch(e){
+      console.error(e); c.busy=false; bkSaveLabel();
+      if(e && e.auth){ $('#dlg-book').close(); syncError(e); return; }
+      bkMsg((e&&e.message)||'The cover couldn\'t be uploaded. Check your connection and try again.'); return;
+    }
+  }
+  const fields={title,author:$('#bk-author').value.trim(),isbn:pi.isbn,notes:$('#bk-notes').value.trim()};
+  const ops=[];
+  if(!c.id) ops.push({t:'bookAdd',b:Object.assign({id},fields,{cover:path||'',addedAt:today(),entries:[]})});
+  else {
+    ops.push({t:'bookEdit',id,f:fields});
+    if(path) ops.push({t:'bookCover',id,path});
+    else if(c.remove && old) ops.push({t:'bookCover',id,path:''});
+  }
+  if(!shelfCommit(ops)){ c.busy=false; bkSaveLabel(); return; }
+  if(old && (path || c.remove)){
+    cacheDel(thumbKey(old)); cacheDel('f:'+old);
+    if(navigator.onLine) dbxDelete(old).catch(e=>console.error(e));
+  }
+  $('#dlg-book').close();
+  toast(c.id?'Book saved':'Book added');
+  if(!c.id) openBookPage(id);
+}
+function deleteBook(id){
+  const b=shelf.db.books.find(x=>x.id===id); if(!b || !shelfEditable()) return;
+  if(!confirm('Delete "'+b.title+'" from your Bookshelf?'+(b.cover?' Its cover photo is deleted from Dropbox too.':'')+' Your recipes and sources aren\'t changed.')) return;
+  const cover=b.cover||'';
+  if(!shelfCommit([{t:'bookDel',id}])) return;
+  if(cover){ cacheDel(thumbKey(cover)); cacheDel('f:'+cover); if(navigator.onLine) dbxDelete(cover).catch(e=>console.error(e)); }
+  shelf.book=null; renderShelf();
+  toast('Book deleted');
+}
+function downloadShelfBackup(){
+  const blob=new Blob([JSON.stringify(shelf.db,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='cookbooks-backup-'+today()+'.json';
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1000);
 }
 
 /* ── Full screen on iPad (remembered on this device) ── */
@@ -3172,9 +3523,15 @@ async function openCleanup(){
     if(state.queue.length) await flush();
     await pull();
     if(state.queue.length){ clText('','Some changes are still waiting to save. Try again once the status says Saved.'); return; }
+    /* Book covers count as used, so the Bookshelf must be loaded and saved first */
+    if(shelf.queue.length) await shelfFlush();
+    await shelfPull();
+    if(shelf.locked){ clText('','The Bookshelf file needs a newer app. Update this app first.'); return; }
+    if(!shelf.loaded || shelf.queue.length){ clText('','The Bookshelf couldn\'t be checked, so nothing was removed. Try again once it says Saved.'); return; }
     const used=new Set();
     state.db.recipes.forEach(r=>(r.photos||[]).forEach(p=>used.add(p.path.toLowerCase())));
     (state.db.sources||[]).forEach(x=>{ if(x.coverPhoto) used.add(x.coverPhoto.toLowerCase()); });
+    shelf.db.books.forEach(b=>{ if(b.cover) used.add(String(b.cover).toLowerCase()); });
     const usedList=Array.from(used), entries=await dbxListAll(PHOTO_ROOT), cutoff=Date.now()-86400000;
     const files=entries.filter(e=>e['.tag']==='file'), folders=entries.filter(e=>e['.tag']==='folder').map(e=>e.path_lower);
     const recent=f=>Date.parse(f.server_modified||0)>cutoff;
@@ -3357,7 +3714,7 @@ window.addEventListener('afterprint',()=>{ document.body.classList.remove('share
 /* ── Settings ────────────────────────────────────────── */
 function openSettings(){
   $('#s-viewonly').checked=!!ls.get('viewOnly',false);
-  $('#s-file').innerHTML='Dropbox › Apps › <em>your app name</em> › '+esc(FILE.replace(/^\//,''))+(TEST?' (test mode: remove ?test from the address to use your real book)':'');
+  $('#s-file').innerHTML='Dropbox › Apps › <em>your app name</em> › '+esc(FILE.replace(/^\//,''))+' and '+esc(SHELF_FILE.replace(/^\//,''))+(TEST?' (test mode: remove ?test from the address to use your real book)':'');
   $('#s-ver').textContent='App version '+APP_VERSION+', build '+BUILD+', data format '+DATA_VERSION+(TEST?', using the test file':'')+
     (state.locked?'. The recipe file is format '+state.locked+', so this copy needs updating.':'');
   $('#dlg-settings').showModal();
@@ -3537,16 +3894,36 @@ function bind(){
   $('#ta-name').addEventListener('input',taInfo);
   $('#ta-sel').addEventListener('change',taInfo);
   $('#ta-name').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); runTagAction(); } });
-  $('#s-reload').addEventListener('click',()=>{ $('#dlg-settings').close(); pull(); });
+  $('#s-reload').addEventListener('click',()=>{ $('#dlg-settings').close(); pull(); shelfPull(); });
   $('#s-backup').addEventListener('click',downloadBackup);
+  $('#s-shelfbackup').addEventListener('click',downloadShelfBackup);
+  /* Bookshelf */
+  $('#shelf').addEventListener('click',e=>{
+    const bk=e.target.closest('[data-book]'); if(bk){ openBookPage(bk.dataset.book); return; }
+    const a=e.target.closest('[data-shelf]'); if(!a) return;
+    const act=a.dataset.shelf;
+    if(act==='add') openBook(null);
+    else if(act==='back') closeBookPage();
+    else if(act==='edit') openBook(shelf.book);
+    else if(act==='delete') deleteBook(shelf.book);
+  });
+  $('#bk-save').addEventListener('click',saveBook);
+  $('#bk-coveradd').addEventListener('click',()=>{ $('#bk-cover-input').value=''; $('#bk-cover-input').click(); });
+  $('#bk-cover-input').addEventListener('change',e=>{ const f=e.target.files&&e.target.files[0]; if(f) bkPick(f); });
+  $('#bk-coverdel').addEventListener('click',bkRemoveCover);
+  $('#dlg-book').addEventListener('close',bkClosed);
+  ['#bk-title','#bk-isbn'].forEach(sel=>$(sel).addEventListener('input',()=>{ bkMsg(''); if(bkCtx && bkCtx.warned){ bkCtx.warned=''; bkWarn(''); bkSaveLabel(); } }));
+  $('#bk-isbn').addEventListener('blur',()=>{ const v=$('#bk-isbn').value; if(!v.trim()) return; const pi=parseIsbn(v); if(pi.err) bkMsg(pi.err); else bkMsg(''); });
   $('#s-clean').addEventListener('click',()=>{ saveSettings(); openCleanup(); });
   $('#cl-go').addEventListener('click',runCleanup);
   $('#s-photocache').addEventListener('click',async()=>{ await cacheClear(); toast('Saved photos cleared from this device'); renderDetail(); });
   vwBind();
   $('#s-disconnect').addEventListener('click',()=>{
-    const warn=state.queue.length?' You have '+state.queue.length+' unsaved change(s) that will be lost.':'';
+    const nq=state.queue.length+shelf.queue.length;
+    const warn=nq?' You have '+nq+' unsaved change(s) that will be lost.':'';
     if(!confirm('Disconnect Dropbox on this device?'+warn)) return;
     ls.del('token'); ls.del('queue'+DK); ls.del('cache'+DK); state.queue=[]; state.db=emptyDb(); state.selected=null; state.locked=null;
+    ls.del('shelfQueue'+SK); ls.del('shelfCache'+SK); shelf.queue=[]; shelf.db=emptyShelf(); shelf.book=null; shelf.locked=null; shelf.loaded=false;
     $('#dlg-settings').close(); showConnect();
   });
 
@@ -3557,6 +3934,7 @@ function bind(){
       if(JSON.stringify(state.ticks)!==before && !$('#app').hidden) renderDetail();
     }
     if(document.visibilityState==='visible' && ls.get('token',null) && !$('#app').hidden && Date.now()-state.lastPull>30000) pull();
+    if(document.visibilityState==='visible' && ls.get('token',null) && !$('#app').hidden && Date.now()-shelf.lastPull>30000) shelfPull();
   });
 }
 
