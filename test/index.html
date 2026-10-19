@@ -100,6 +100,22 @@ body:not(.sec-recipes) .rec-only{display:none!important}
 .bkcv{width:84px;height:126px}
 .opt{font-weight:400;color:var(--muted);font-size:.82rem}
 .msg.warn{background:#FBF4E4;color:#7A5410}
+.isbnrow{display:flex;gap:8px;flex-wrap:wrap}
+.isbnrow input{flex:1 1 180px;min-width:0}
+#bk-lumsg{margin-top:8px}
+.found{margin-top:10px;padding:12px;border:1px solid var(--basil-edge);background:var(--basil-soft);border-radius:var(--r);display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+.found .fcv{width:72px;height:108px;border-radius:2px 5px 5px 2px;overflow:hidden;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;font-size:.7rem;color:var(--muted);text-align:center}
+.found .fcv img{width:100%;height:100%;object-fit:cover}
+.found .ft{font:600 1.02rem/1.25 var(--serif);margin:0}
+.found .fa{margin:2px 0 0;font-size:.9rem}
+.found .fsrc{margin:6px 0 0;font-size:.78rem;color:var(--muted)}
+.found .check{margin-top:8px}
+.found .stack{margin-top:10px}
+dialog.scan{width:min(560px,100vw)}
+.scan-stage{position:relative;background:#111;aspect-ratio:4/3;overflow:hidden}
+.scan-stage video{width:100%;height:100%;object-fit:cover;display:block}
+.scan-frame{position:absolute;left:12%;right:12%;top:32%;bottom:32%;border:3px solid rgba(255,255,255,.9);border-radius:10px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.scan-msg{margin:0;padding:12px 18px;font-size:.92rem}
 
 /* Read-only lock (file saved by a newer app) */
 .lockbar{flex:none;padding:12px 16px;background:#FBF4E4;border-bottom:1px solid #EAD8AC}
@@ -819,13 +835,24 @@ window.RECIPE_CONFIG = {
 <input id="cover-input" type="file" accept="image/*" hidden>
 <input id="bk-cover-input" type="file" accept="image/*" hidden>
 
+<!-- Scan a book's barcode with the camera (Release 6, step 2b) -->
+<dialog id="dlg-scan" class="scan" aria-labelledby="scan-h">
+  <div class="dlg-head"><h2 id="scan-h">Scan barcode</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="scan-stage"><video id="scan-video" playsinline muted autoplay></video><span class="scan-frame" aria-hidden="true"></span></div>
+  <p id="scan-msg" class="scan-msg">Hold the barcode on the back of the book inside the frame.</p>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Type it instead</button></div>
+</dialog>
+
 <!-- Add or edit a book on the Bookshelf (Release 6) -->
 <dialog id="dlg-book" aria-labelledby="bk-h">
   <div class="dlg-head"><h2 id="bk-h">Add a book</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
   <div class="dlg-body">
     <div class="field"><label for="bk-isbn">ISBN <span class="opt">optional</span></label>
-      <input id="bk-isbn" type="text" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="978…">
-      <p class="hint">On the back cover, above or below the barcode. 10 or 13 digits, with or without dashes.</p></div>
+      <div class="isbnrow"><input id="bk-isbn" type="text" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="978…">
+        <button id="bk-lookup" class="btn" type="button">Look up</button><button id="bk-scan" class="btn" type="button">Scan barcode</button></div>
+      <p class="hint">On the back cover, by the barcode. 10 or 13 digits, with or without dashes. Look up fills in the details from free book databases.</p>
+      <p id="bk-lumsg" class="msg warn" hidden></p>
+      <div id="bk-found" class="found" hidden></div></div>
     <div class="field"><label for="bk-title">Title</label><input id="bk-title" type="text" autocomplete="off"></div>
     <div class="field"><label for="bk-author">Author <span class="opt">optional</span></label><input id="bk-author" type="text" autocomplete="off"></div>
     <div class="field"><label for="bk-notes">Notes <span class="opt">optional</span></label><textarea id="bk-notes" rows="3"></textarea></div>
@@ -848,7 +875,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '6.0';
-const BUILD = 'R6 step 2a (test)';
+const BUILD = 'R6 step 2b (test)';
 const DATA_VERSION = 6;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -2335,7 +2362,7 @@ function openBook(id){
   bkCtx={id:b?b.id:null,file:null,fileUrl:'',remove:false,warned:'',busy:false};
   $('#bk-h').textContent=b?'Edit book':'Add a book';
   $('#bk-isbn').value=b?(b.isbn||''):''; $('#bk-title').value=b?b.title:''; $('#bk-author').value=b?(b.author||''):''; $('#bk-notes').value=b?(b.notes||''):'';
-  bkMsg(''); bkWarn(''); bkSaveLabel(); renderBkCover();
+  bkMsg(''); bkWarn(''); bkLuMsg(''); $('#bk-found').hidden=true; bkSaveLabel(); renderBkCover();
   $('#dlg-book').showModal();
   setTimeout(()=>$(b?'#bk-title':'#bk-isbn').focus(),60);
 }
@@ -2409,6 +2436,165 @@ function deleteBook(id){
   if(cover){ cacheDel(thumbKey(cover)); cacheDel('f:'+cover); if(navigator.onLine) dbxDelete(cover).catch(e=>console.error(e)); }
   shelf.book=null; renderShelf();
   toast('Book deleted');
+}
+
+/* ── ISBN lookup (step 2b): Open Library first, then Google Books ── */
+/* Both are free and need no key. Lookup only suggests: nothing is filled until Andrew confirms,
+   and only empty fields are filled. It never blocks saving a book by hand. */
+async function getJson(url,ms){
+  const ac=new AbortController(), t=setTimeout(()=>ac.abort(),ms||9000);
+  try{ const res=await fetch(url,{signal:ac.signal}); if(!res.ok) return null; return await res.json(); }
+  finally{ clearTimeout(t); }
+}
+async function fromOpenLibrary(isbn){
+  const j=await getJson('https://openlibrary.org/api/books?bibkeys=ISBN:'+isbn+'&format=json&jscmd=data');
+  const x=j && j['ISBN:'+isbn]; if(!x || !x.title) return null;
+  const cv=x.cover||{};
+  return {title:String(x.title).trim(),author:(x.authors||[]).map(a=>a.name).filter(Boolean).join(', '),
+    cover:cv.large||cv.medium||'',from:'Open Library'};
+}
+async function fromGoogle(isbn){
+  const j=await getJson('https://www.googleapis.com/books/v1/volumes?q=isbn:'+isbn);
+  const v=j && j.items && j.items[0] && j.items[0].volumeInfo; if(!v || !v.title) return null;
+  const il=v.imageLinks||{};
+  let cover=il.thumbnail||il.smallThumbnail||'';
+  if(cover) cover=cover.replace(/^http:/,'https:').replace(/&edge=curl/g,'');
+  return {title:String(v.title).trim(),author:(v.authors||[]).join(', '),cover,from:'Google Books'};
+}
+async function lookupIsbn(isbn){
+  let a=null, b=null, failed=0;
+  try{ a=await fromOpenLibrary(isbn); }catch(e){ console.error(e); failed++; }
+  if(!a || !a.cover || !a.author){ try{ b=await fromGoogle(isbn); }catch(e){ console.error(e); failed++; } }
+  if(!a && !b) return failed===2?{err:'net'}:null;
+  const r=Object.assign({},a||b);
+  if(a && b){ if(!r.author) r.author=b.author; if(!r.cover && b.cover){ r.cover=b.cover; r.coverFrom='Google Books'; } }
+  return r;
+}
+function bkLuMsg(m){ const el=$('#bk-lumsg'); el.textContent=m||''; el.hidden=!m; }
+async function runLookup(){
+  const c=bkCtx; if(!c || c.looking) return;
+  bkLuMsg(''); $('#bk-found').hidden=true; c.found=null;
+  const raw=$('#bk-isbn').value;
+  if(!raw.trim()){ bkLuMsg('Type or scan the ISBN first.'); $('#bk-isbn').focus(); return; }
+  const pi=parseIsbn(raw); if(pi.err){ bkMsg(pi.err); return; }
+  if(!navigator.onLine){ bkLuMsg('No connection. Add the details by hand, or look it up later.'); return; }
+  c.looking=true; const btn=$('#bk-lookup'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Looking up…';
+  let r=null;
+  try{ r=await lookupIsbn(pi.isbn); }
+  finally{ c.looking=false; btn.disabled=false; btn.textContent='Look up'; }
+  if(bkCtx!==c) return;
+  if(r && r.err){ bkLuMsg('No connection to the book databases. Add the details by hand, or try again.'); return; }
+  if(!r){ bkLuMsg('No match found. Add the details by hand.'); return; }
+  c.found=Object.assign(r,{isbn:pi.isbn});
+  renderFound();
+}
+function renderFound(){
+  const c=bkCtx, f=c&&c.found, box=$('#bk-found'); if(!f){ box.hidden=true; return; }
+  const b=c.id?shelf.db.books.find(x=>x.id===c.id):null;
+  const hasCover=!!(c.file || (b && b.cover && !c.remove));
+  const t=$('#bk-title').value.trim(), a=$('#bk-author').value.trim();
+  const fills=[]; if(!t && f.title) fills.push('title'); if(!a && f.author) fills.push('author');
+  box.innerHTML='<span class="fcv">'+(f.cover?'<img src="'+esc(f.cover)+'" alt="Cover found">':'No cover found')+'</span><div>'+
+    '<p class="ft">'+esc(f.title)+'</p>'+(f.author?'<p class="fa">'+esc(f.author)+'</p>':'')+
+    '<p class="fsrc">Found on '+esc(f.from)+(f.coverFrom?', cover from '+esc(f.coverFrom):'')+'. '+
+      (fills.length?'Fills in the '+fills.join(' and ')+'; fields you\'ve already typed are left alone.':'Your title and author are already filled in, so they\'re left alone.')+'</p>'+
+    (f.cover?'<label class="check"><input id="bk-usecover" type="checkbox"'+(hasCover?'':' checked')+'><span>Use this cover'+(hasCover?' instead of the current one':'')+'</span></label>':'')+
+    '<div class="stack"><button id="bk-useit" class="btn primary" type="button">Use these details</button><button id="bk-notit" class="btn" type="button">Not this book</button></div></div>';
+  box.hidden=false;
+}
+/* The cover is downloaded and then goes through the normal photo pipeline on Save, so it works offline later */
+async function fetchCover(url){
+  const ac=new AbortController(), t=setTimeout(()=>ac.abort(),15000);
+  try{
+    const res=await fetch(url,{signal:ac.signal,mode:'cors'}); if(!res.ok) throw new Error('status '+res.status);
+    const blob=await res.blob();
+    if(!/^image\//.test(blob.type) || blob.size<1500) throw new Error('not an image');
+    return blob;
+  } finally{ clearTimeout(t); }
+}
+async function useFound(){
+  const c=bkCtx, f=c&&c.found; if(!f) return;
+  if(!$('#bk-title').value.trim() && f.title) $('#bk-title').value=f.title;
+  if(!$('#bk-author').value.trim() && f.author) $('#bk-author').value=f.author;
+  const wantCover=f.cover && $('#bk-usecover') && $('#bk-usecover').checked;
+  if(wantCover){
+    const btn=$('#bk-useit'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Getting cover…';
+    try{ const blob=await fetchCover(f.cover); if(bkCtx===c) bkPick(blob); }
+    catch(e){ console.error(e); if(bkCtx===c){ c.found=null; $('#bk-found').hidden=true; bkLuMsg('Details filled in, but that cover couldn\'t be downloaded. Use Add cover photo to take a photo of it instead.'); } return; }
+  }
+  if(bkCtx!==c) return;
+  c.found=null; $('#bk-found').hidden=true; bkMsg('');
+  toast(wantCover?'Details and cover filled in. Tap Save to keep them':'Details filled in. Tap Save to keep them');
+}
+
+/* ── Barcode scan (step 2b) ─────────────────────────── */
+/* Safari has no built-in barcode reader, so a small library is loaded the first time it's needed,
+   from a pinned version on a CDN. Where the browser has its own reader, that is used instead. */
+const ZXING_URL='https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js';
+let zxingP=null, scan=null;
+function loadZxing(){
+  if(window.ZXing) return Promise.resolve(window.ZXing);
+  if(zxingP) return zxingP;
+  zxingP=new Promise((res,rej)=>{
+    const sc=document.createElement('script'); sc.src=ZXING_URL; sc.async=true; sc.crossOrigin='anonymous';
+    sc.onload=()=>window.ZXing?res(window.ZXing):rej(new Error('The scanner didn\'t load.'));
+    sc.onerror=()=>rej(new Error('The scanner didn\'t load.'));
+    document.head.appendChild(sc);
+  });
+  zxingP.catch(()=>{ zxingP=null; });
+  return zxingP;
+}
+function scanMsg(m){ $('#scan-msg').textContent=m; }
+function stopScan(){
+  const s=scan; scan=null; if(!s) return;
+  s.stopped=true;
+  try{ if(s.reader) s.reader.reset(); }catch(e){}
+  if(s.raf) cancelAnimationFrame(s.raf);
+  const v=$('#scan-video'); if(v.srcObject){ v.srcObject.getTracks().forEach(t=>t.stop()); v.srcObject=null; }
+}
+function scanHit(text){
+  const s=scan; if(!s || s.stopped) return;
+  const code=String(text||'').replace(/\D/g,'');
+  if(!/^97[89]\d{10}$/.test(code)){ scanMsg('That barcode isn\'t an ISBN. Look for the one starting 978 or 979.'); return; }
+  const pi=parseIsbn(code); if(pi.err) return;
+  stopScan(); $('#dlg-scan').close();
+  $('#bk-isbn').value=pi.isbn; bkMsg('');
+  runLookup();
+}
+async function startScan(){
+  if(!bkCtx) return;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ bkLuMsg('This device can\'t use the camera here. Type the ISBN instead.'); return; }
+  scan={stopped:false};
+  scanMsg('Starting the camera…');
+  $('#dlg-scan').showModal();
+  const s=scan, v=$('#scan-video');
+  try{
+    let native=null;
+    if('BarcodeDetector' in window){
+      try{ const f=await window.BarcodeDetector.getSupportedFormats(); if(f.includes('ean_13')) native=new window.BarcodeDetector({formats:['ean_13']}); }catch(e){}
+    }
+    if(native){
+      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+      if(s.stopped){ stream.getTracks().forEach(t=>t.stop()); return; }
+      v.srcObject=stream; await v.play().catch(()=>{});
+      scanMsg('Hold the barcode on the back of the book inside the frame.');
+      const tick=async()=>{ if(s.stopped) return; try{ const r=await native.detect(v); if(r && r[0]) scanHit(r[0].rawValue); }catch(e){} if(!s.stopped) s.raf=requestAnimationFrame(tick); };
+      tick(); return;
+    }
+    if(!navigator.onLine) throw new Error('The scanner needs a connection the first time it\'s used.');
+    const Z=await loadZxing(); if(s.stopped) return;
+    const hints=new Map(); hints.set(Z.DecodeHintType.POSSIBLE_FORMATS,[Z.BarcodeFormat.EAN_13]); hints.set(Z.DecodeHintType.TRY_HARDER,true);
+    const reader=new Z.BrowserMultiFormatReader(hints,250); s.reader=reader;
+    scanMsg('Hold the barcode on the back of the book inside the frame.');
+    const cb=(res)=>{ if(res) scanHit(res.getText?res.getText():res.text); };
+    if(typeof reader.decodeFromConstraints==='function') await reader.decodeFromConstraints({video:{facingMode:{ideal:'environment'}},audio:false},v,cb);
+    else await reader.decodeFromVideoDevice(undefined,v,cb);
+  }catch(e){
+    console.error(e); if(s.stopped) return;
+    const denied=e && (e.name==='NotAllowedError' || e.name==='SecurityError');
+    scanMsg(denied?'The camera isn\'t allowed. Allow camera access for this app in Settings, or type the ISBN instead.':
+      ((e && e.message && /connection|load/.test(e.message))?e.message+' Type the ISBN instead, or try again online.':'The camera couldn\'t start. Type the ISBN instead.'));
+  }
 }
 function downloadShelfBackup(){
   const blob=new Blob([JSON.stringify(shelf.db,null,2)],{type:'application/json'});
@@ -3908,10 +4094,19 @@ function bind(){
     else if(act==='delete') deleteBook(shelf.book);
   });
   $('#bk-save').addEventListener('click',saveBook);
+  $('#bk-lookup').addEventListener('click',runLookup);
+  $('#bk-scan').addEventListener('click',startScan);
+  $('#bk-isbn').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); runLookup(); } });
+  $('#bk-found').addEventListener('click',e=>{
+    if(e.target.closest('#bk-useit')) useFound();
+    else if(e.target.closest('#bk-notit')){ if(bkCtx) bkCtx.found=null; $('#bk-found').hidden=true; bkLuMsg('Add the details by hand, or check the ISBN and try again.'); }
+  });
+  $('#dlg-scan').addEventListener('close',stopScan);
   $('#bk-coveradd').addEventListener('click',()=>{ $('#bk-cover-input').value=''; $('#bk-cover-input').click(); });
   $('#bk-cover-input').addEventListener('change',e=>{ const f=e.target.files&&e.target.files[0]; if(f) bkPick(f); });
   $('#bk-coverdel').addEventListener('click',bkRemoveCover);
   $('#dlg-book').addEventListener('close',bkClosed);
+  $('#bk-isbn').addEventListener('input',()=>{ if(bkCtx && bkCtx.found){ bkCtx.found=null; $('#bk-found').hidden=true; } bkLuMsg(''); });
   ['#bk-title','#bk-isbn'].forEach(sel=>$(sel).addEventListener('input',()=>{ bkMsg(''); if(bkCtx && bkCtx.warned){ bkCtx.warned=''; bkWarn(''); bkSaveLabel(); } }));
   $('#bk-isbn').addEventListener('blur',()=>{ const v=$('#bk-isbn').value; if(!v.trim()) return; const pi=parseIsbn(v); if(pi.err) bkMsg(pi.err); else bkMsg(''); });
   $('#s-clean').addEventListener('click',()=>{ saveSettings(); openCleanup(); });
