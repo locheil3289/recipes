@@ -115,6 +115,7 @@ button.ent:hover{background:var(--paper)}
 .gs{color:var(--muted);font-style:italic}
 .ent.flash{animation:flash 1.6s ease-out}
 @keyframes flash{0%,40%{background:var(--basil-soft)}100%{background:transparent}}
+.chap-none{margin:0;padding:8px 6px;border-bottom:1px solid var(--line);color:var(--muted);font-size:.88rem}
 .chaplist{list-style:none;margin:8px 0 0;padding:0;columns:2 220px}
 .chaplist li{padding:3px 0;break-inside:avoid}
 .chaplist .pg{color:var(--muted);font-size:.85rem;margin-left:6px}
@@ -951,7 +952,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '6.0';
-const BUILD = 'R6 step 3 (test)';
+const BUILD = 'R6 step 3.1 (test)';
 const DATA_VERSION = 6;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -2457,8 +2458,17 @@ function closeBookPage(){ const id=shelf.book; shelf.book=null; renderShelf(); c
 function pageNum(p){ const m=String(p==null?'':p).match(/\d+/); return m?Number(m[0]):NaN; }
 function entryKey(e){ return tkey(e.title)+'|'+String(e.page==null?'':e.page).trim().toLowerCase(); }
 function nextEntryId(b){ let n=0; (b.entries||[]).forEach(e=>{ const m=/^e-(\d+)/.exec(e.id||''); if(m) n=Math.max(n,Number(m[1])); }); return 'e-'+(n+1); }
+/* Indexes often print titles all in lower case or all in capitals: those become sentence case.
+   Titles with mixed case are left exactly as they are. */
+function sentenceCase(t){
+  t=String(t||'').replace(/\s+/g,' ').trim(); if(!t) return t;
+  const letters=t.replace(/[^A-Za-zÀ-ÿ]/g,'');
+  if(letters && letters===letters.toUpperCase() && letters.length>3) t=t.toLowerCase();
+  else if(letters!==letters.toLowerCase()) return t;
+  return t.replace(/[A-Za-zÀ-ÿ]/,c=>c.toUpperCase());
+}
 function cleanEntry(r){
-  const e={title:String(r.title||'').replace(/\s+/g,' ').trim()};
+  const e={title:sentenceCase(r.title)};
   const page=String(r.page==null?'':r.page).trim(); if(page) e.page=page;
   const ch=String(r.chapter||'').trim(); if(ch) e.chapter=ch;
   if(r.course){ e.course=r.course; e.courseGuessed=!!r.courseGuessed; }
@@ -2495,7 +2505,7 @@ function buildContentsPrompt(b){
     '',
     'Rules:',
     '- One line per recipe: Title | Page | Chapter | Course | Main ingredient',
-    '- Copy titles and page numbers faithfully, as printed.',
+    '- Copy page numbers exactly as printed. Copy titles faithfully, but write them in sentence case: a capital for the first word and for names (e.g. "Harissa chicken traybake", "Ottolenghi\'s shakshuka"), even if the book prints them all in lower case or capitals.',
     '- Only list recipes you can see in the photos. Don\'t add anything from your own knowledge of the book, and don\'t invent recipes.',
     '- Course and Main ingredient: choose only from the allowed values below, or leave blank if it isn\'t clear.',
     '- Index at the back of the book:',
@@ -2602,7 +2612,7 @@ function renderPreview(){
   if(r.skipped) notes.push(r.skipped+' line'+(r.skipped>1?'s':'')+' without a page number '+(r.skipped>1?'were':'was')+' left out.');
   let h='<p class="pv-sum"><strong>'+esc(bits.join(', '))+'.</strong></p>'+notes.map(n=>'<p class="hint" style="margin:0 0 6px">'+esc(n)+'</p>').join('');
   if(rows.length) h+='<div class="pv-wrap"><table class="pv"><thead><tr><th>Recipe</th><th>Page</th><th>Chapter</th><th>Course</th><th>Main ingredient</th></tr></thead><tbody>'+
-    rows.map(o=>'<tr'+(o.d?' class="dup" title="Already listed"':'')+'><td>'+esc(o.x.title)+'</td><td>'+esc(o.x.page||'')+'</td><td>'+esc(o.ch||'')+'</td><td>'+esc(o.x.course||'')+'</td><td>'+esc(o.x.mainIngredient||'')+'</td></tr>').join('')+'</tbody></table></div>';
+    rows.map(o=>'<tr'+(o.d?' class="dup" title="Already listed"':'')+'><td>'+esc(sentenceCase(o.x.title))+'</td><td>'+esc(o.x.page||'')+'</td><td>'+esc(o.ch||'')+'</td><td>'+esc(o.x.course||'')+'</td><td>'+esc(o.x.mainIngredient||'')+'</td></tr>').join('')+'</tbody></table></div>';
   if(r.chapters.length) h+='<p class="hint">Chapters: '+esc(r.chapters.map(x=>x.name+(x.startPage?' (p. '+x.startPage+')':'')).join(', '))+'</p>';
   if((b.entries||[]).length) h+='<label class="check pv-mode"><input id="ct-replace" type="checkbox"'+(replace?' checked':'')+'><span><strong>Replace the book\'s contents</strong><br><span class="muted">Clears the '+b.entries.length+' recipes listed now and saves these instead. Recipes already linked to your collection keep their link when the title and page match.</span></span></label>';
   $('#ct-preview').innerHTML=h;
@@ -2714,10 +2724,11 @@ function renderBookContents(b){
   }
   if(!list.length){ box.innerHTML='<p class="muted">No recipes in this book match "'+esc(shelf.bq)+'".</p>'; return; }
   const order=bookChapters(b), groups=new Map();
-  list.forEach(e=>{ const k=e.chapter||''; if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(e); });
+  if(!words.length) (b.chapters||[]).forEach(c=>{ if(c.name && !Array.from(groups.keys()).some(k=>tkey(k)===tkey(c.name))) groups.set(c.name,[]); });
+  list.forEach(e=>{ const k0=e.chapter||'', k=Array.from(groups.keys()).find(x=>tkey(x)===tkey(k0)); const key=k!==undefined?k:k0; if(!groups.has(key)) groups.set(key,[]); groups.get(key).push(e); });
   const keys=Array.from(groups.keys()).sort((a,c)=>{
     if(!a) return 1; if(!c) return -1;
-    const fa=pageNum(groups.get(a)[0].page), fc=pageNum(groups.get(c)[0].page);
+    const ga=groups.get(a), gc=groups.get(c), fa=ga.length?pageNum(ga[0].page):NaN, fc=gc.length?pageNum(gc[0].page):NaN;
     const ia=order.findIndex(n=>tkey(n)===tkey(a)), ic=order.findIndex(n=>tkey(n)===tkey(c));
     const ca=(b.chapters||[]).find(x=>tkey(x.name)===tkey(a)), cc=(b.chapters||[]).find(x=>tkey(x.name)===tkey(c));
     const sa=ca&&!isNaN(pageNum(ca.startPage))?pageNum(ca.startPage):(isNaN(fa)?1e9:fa), sc=cc&&!isNaN(pageNum(cc.startPage))?pageNum(cc.startPage):(isNaN(fc)?1e9:fc);
@@ -2727,7 +2738,7 @@ function renderBookContents(b){
   box.innerHTML=keys.map(k=>{
     const ch=(b.chapters||[]).find(x=>tkey(x.name)===tkey(k));
     return '<div class="chap">'+(single?'':'<h4>'+esc(k||'No chapter')+(ch&&ch.startPage?'<span class="pg">from p. '+esc(ch.startPage)+'</span>':'')+'</h4>')+
-      '<ul class="ents">'+groups.get(k).map(e=>entryRow(b,e,ed)).join('')+'</ul></div>';
+      (groups.get(k).length?'<ul class="ents">'+groups.get(k).map(e=>entryRow(b,e,ed)).join('')+'</ul>':'<p class="chap-none">No recipes listed yet</p>')+'</div>';
   }).join('');
 }
 /* Bookshelf search: titles, chapters, course and main ingredient across every book */
