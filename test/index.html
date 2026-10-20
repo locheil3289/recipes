@@ -61,7 +61,8 @@ body:not(.sec-recipes) .rec-only{display:none!important}
 .shelf{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(32px + var(--sb))}
 .shelf-in{max-width:1100px;margin:0 auto}
 .shelf-head{display:flex;align-items:flex-end;gap:12px;margin:4px 0 18px}
-.shelf-head>div{flex:1;min-width:0}
+.shelf-head>div:first-child{flex:1;min-width:0}
+@media (max-width:599px){ .shelf-head{flex-wrap:wrap;align-items:flex-start} .shelf-head>.stack{width:100%} }
 .shelf-head h2{font:600 1.6rem/1.2 var(--serif);margin:0}
 .shelf-head .count{margin:4px 0 0}
 .shelf-empty{max-width:480px;margin:10vh auto 0;text-align:center}
@@ -853,6 +854,14 @@ window.RECIPE_CONFIG = {
       </div>
       <p class="hint">Each backup is one file, a copy of recipes.json or cookbooks.json. To restore, put it back in the app's Dropbox folder under that name. Photos and covers stay in Dropbox, which keeps its own version history of them.</p>
     </div>
+    <div class="field"><span class="lbl">Exports for meal planning</span>
+      <div class="stack" style="margin-top:6px">
+        <button id="s-mealexport" class="btn primary" type="button">Export for meal planning</button>
+        <button id="s-recjson" class="btn" type="button">Recipes (JSON)</button>
+        <button id="s-shelfcsv" class="btn" type="button">Bookshelf (CSV)</button>
+      </div>
+      <p class="hint">Export for meal planning shares both files at once, ready to save to Files or Dropbox or attach to your AI project. The recipes file is your full recipes.json; the Bookshelf CSV has one row per recipe in your cookbooks. Exporting never changes anything in Dropbox.</p>
+    </div>
     <div class="field"><span class="lbl">Photos on this device</span>
       <p class="hint" style="margin:0 0 10px">Photos you've viewed are kept on this device so they open quickly. Clearing them is safe; they download again from Dropbox.</p>
       <button id="s-photocache" class="btn" type="button">Clear saved photos</button>
@@ -985,7 +994,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '6.0';
-const BUILD = 'R6 step 4 (test)';
+const BUILD = 'R6 step 5 (test)';
 const DATA_VERSION = 7;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -2498,7 +2507,7 @@ function renderShelf(){
         (ed?'<button type="button" class="btn primary" data-shelf="add">Add a book</button>':'')+'</div>';
     } else {
       h+='<div class="shelf-head"><div><h2>Bookshelf</h2><p class="count">'+nb+' book'+(nb>1?'s':'')+', '+ne+' recipe'+(ne===1?'':'s')+' indexed</p></div>'+
-        (ed?'<button type="button" class="btn primary" data-shelf="add">Add a book</button>':'')+'</div>'+
+        '<div class="stack"><button type="button" class="btn" data-shelf="export">Export for meal planning</button>'+(ed?'<button type="button" class="btn primary" data-shelf="add">Add a book</button>':'')+'</div></div>'+
         (ne?'<div class="shelf-search"><input id="shelf-q" class="search" type="search" placeholder="Search recipes in your cookbooks" autocomplete="off" value="'+esc(shelf.q||'')+'">'+
           chipRow('course','Course')+chipRow('mainIngredient','Main ingredient')+'<div id="shelf-res" class="sres"></div></div>':'')+
         '<ul class="books" id="shelf-grid">'+books.map(x=>'<li><button type="button" class="book" data-book="'+esc(x.id)+'" aria-label="'+esc(x.title+(x.author?', '+x.author:''))+'">'+bookCoverHtml(x)+
@@ -3174,6 +3183,54 @@ async function useFound(){
   toast(wantCover?'Details and cover filled in. Tap Save to keep them':'Details filled in. Tap Save to keep them');
 }
 
+
+/* ── Exports for meal planning (step 5) ─────────────── */
+/* Read-only, so allowed on iPhone too. Nothing is written to Dropbox. */
+function csvCell(v){ v=v==null?'':String(v); return /[",\r\n]|^\s|\s$/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function yn(v){ return v?'Y':'N'; }
+function bookshelfCsv(){
+  const head=['book_title','author','isbn','chapter','recipe','page','course','course_guessed','main_ingredient','main_ingredient_guessed','imported'];
+  const rows=[head];
+  sortedBooks().forEach(b=>{
+    const base=[b.title,b.author||'',b.isbn||''];
+    const es=(b.entries||[]).slice().sort(byPage);
+    if(es.length){
+      es.forEach(e=>rows.push(base.concat([e.chapter||'',e.title,e.page||'',e.course||'',e.course?yn(e.courseGuessed):'',e.mainIngredient||'',e.mainIngredient?yn(e.mainIngredientGuessed):'',yn(entryImported(e))])));
+    } else if((b.chapters||[]).length){
+      b.chapters.forEach(c=>rows.push(base.concat([c.name,'','','','','','',''])));
+    } else rows.push(base.concat(['','','','','','','','']));
+  });
+  return rows.map(r=>r.map(csvCell).join(',')).join('\r\n')+'\r\n';
+}
+function exportFiles(){
+  const d=today();
+  return {
+    rec:new File([JSON.stringify(state.db,null,2)],'recipes-'+d+'.json',{type:'application/json'}),
+    csv:new File([bookshelfCsv()],'bookshelf-'+d+'.csv',{type:'text/csv'})
+  };
+}
+function saveExport(f){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(f); a.download=f.name;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+}
+function unsavedNote(){
+  const n=state.queue.length+shelf.queue.length;
+  return n?' It includes '+n+' change'+(n>1?'s':'')+' not yet saved to Dropbox.':'';
+}
+/* One tap: both files through the share sheet. Where sharing files isn't supported, two downloads. */
+async function exportForMealPlanning(){
+  const f=exportFiles(), files=[f.rec,f.csv];
+  let canShare=false; try{ canShare=!!(navigator.canShare && navigator.canShare({files})); }catch(e){}
+  if(canShare){
+    try{ await navigator.share({files,title:'Recipes and Bookshelf'}); toast('Exported'+(unsavedNote()?'.'+unsavedNote():'')); }
+    catch(e){ if(e && e.name==='AbortError') return; console.error(e); saveExport(f.rec); setTimeout(()=>saveExport(f.csv),700); toast('Sharing didn\'t work, so both files were downloaded'); }
+    return;
+  }
+  saveExport(f.rec); setTimeout(()=>saveExport(f.csv),700);
+  toast('Downloaded '+f.rec.name+' and '+f.csv.name+unsavedNote());
+}
+function exportRecipesJson(){ const f=exportFiles().rec; saveExport(f); toast('Downloaded '+f.name+unsavedNote()); }
+function exportShelfCsv(){ const f=exportFiles().csv; saveExport(f); toast('Downloaded '+f.name+unsavedNote()); }
 function downloadShelfBackup(){
   const blob=new Blob([JSON.stringify(shelf.db,null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='cookbooks-backup-'+today()+'.json';
@@ -4685,6 +4742,9 @@ function bind(){
   $('#s-reload').addEventListener('click',()=>{ $('#dlg-settings').close(); pull(); shelfPull(); });
   $('#s-backup').addEventListener('click',downloadBackup);
   $('#s-shelfbackup').addEventListener('click',downloadShelfBackup);
+  $('#s-mealexport').addEventListener('click',exportForMealPlanning);
+  $('#s-recjson').addEventListener('click',exportRecipesJson);
+  $('#s-shelfcsv').addEventListener('click',exportShelfCsv);
   /* Bookshelf */
   $('#shelf').addEventListener('click',e=>{
     const en=e.target.closest('.ent[data-entry]');
@@ -4700,6 +4760,7 @@ function bind(){
     if(chip){ const set=shelfChips()[chip.dataset.chip], v=chip.dataset.v; set.has(v)?set.delete(v):set.add(v); chip.setAttribute('aria-pressed',String(set.has(v))); renderShelfResults(); return; }
     const a=e.target.closest('[data-shelf]'); if(!a) return;
     const act=a.dataset.shelf;
+    if(act==='export'){ exportForMealPlanning(); return; }
     if(act==='contents') openContents(shelf.book);
     else if(act==='link') openLink(shelf.book);
     else if(act==='linkto') linkBook(shelf.book,a.dataset.sid);
