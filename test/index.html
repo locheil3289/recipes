@@ -133,6 +133,21 @@ button.ent:hover{background:var(--paper)}
 .pv th{position:sticky;top:0;background:var(--paper);font-weight:600}
 .pv tr.dup td{color:var(--muted);text-decoration:line-through}
 .pv-mode{margin-top:12px}
+/* Links between the Bookshelf and recipes (step 4) */
+.bk-link{margin:14px 0 0;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);font-size:.92rem}
+.bk-link .stack{margin-top:8px}
+.bk-link.suggest{border-color:var(--basil-edge);background:var(--basil-soft)}
+.imp{color:var(--basil);font-weight:700;margin-left:6px}
+.en-link{margin-top:12px;padding:10px 12px;border-radius:var(--r-sm);background:var(--paper);font-size:.92rem}
+.en-link .stack{margin-top:8px}
+.lk-list{list-style:none;margin:0;padding:0}
+.lk-list button{display:block;width:100%;text-align:left;padding:11px 10px;border:none;border-bottom:1px solid var(--line);background:none;color:var(--ink)}
+.lk-list button:hover{background:var(--paper)}
+.lk-list .m{display:block;font-size:.82rem;color:var(--muted)}
+.mt-row{padding:9px 0;border-bottom:1px solid var(--line)}
+.mt-row .why{display:block;font-size:.8rem;color:var(--muted)}
+.mt-arrow{color:var(--muted);margin:0 4px}
+.cbhint{margin:10px 2px 0}
 .bkcv{width:84px;height:126px}
 .opt{font-weight:400;color:var(--muted);font-size:.82rem}
 .msg.warn{background:#FBF4E4;color:#7A5410}
@@ -514,7 +529,7 @@ dialog::backdrop{background:rgba(24,34,29,.45)}
   .fsbar .fs-back{display:none;margin-right:auto}
   body.fs .layout{grid-template-columns:1fr}
   body.fs .list-pane{border-right:none;padding-left:max(16px,calc((100% - 980px)/2));padding-right:max(16px,calc((100% - 980px)/2))}
-  body.fs.show-detail .topbar{display:none}
+  body.fs.sec-recipes.show-detail .topbar{display:none}
   body.fs.sec-recipes:not(.show-detail) .fs-off{display:inline-flex}
   body.fs.show-detail .list-pane{display:none}
   body.fs:not(.show-detail) .detail-pane{display:none}
@@ -614,6 +629,7 @@ window.RECIPE_CONFIG = {
       <section id="browse" class="browse" aria-labelledby="browse-h" hidden></section>
       <p id="count" class="count"></p>
       <ul id="list" class="list"></ul>
+      <p id="cbhint" class="cbhint" hidden><button type="button" class="linkbtn" id="cbhint-btn"></button></p>
     </aside>
     <main id="detail" class="detail-pane" aria-live="polite"></main>
   </div>
@@ -771,6 +787,8 @@ window.RECIPE_CONFIG = {
     <div class="field" id="se-kindwrap"><span class="lbl">Kind</span><div class="seg" id="se-kind"><button type="button" data-v="Book">Book</button><button type="button" data-v="Homemade">Homemade</button><button type="button" data-v="Other">Other</button></div></div>
     <div class="field" id="se-authwrap"><label for="se-author">Author</label><input id="se-author" type="text" autocomplete="off"></div>
     <div class="field"><label for="se-notes">Notes</label><textarea id="se-notes" rows="3"></textarea></div>
+    <div class="field" id="se-bookwrap" hidden><label for="se-book">On your Bookshelf</label><select id="se-book" class="field-select"></select>
+      <p class="hint">Link this source to the book on your Bookshelf. They share the cover, and the book's contents show which recipes you've already added.</p></div>
     <div class="field" id="se-coverwrap" hidden><span class="lbl">Cover photo</span>
       <div class="secover"><span id="se-coverimg" class="secv">No cover</span>
         <div class="stack"><button id="se-coveradd" class="btn" type="button">Add cover photo</button><button id="se-coverdel" class="btn danger" type="button">Remove</button></div></div>
@@ -889,6 +907,20 @@ window.RECIPE_CONFIG = {
   <div class="dlg-foot" id="ct-foot2" hidden><button id="ct-back" class="btn left" type="button">‹ Back</button><button class="btn" data-close type="button">Cancel</button><button id="ct-save" class="btn primary" type="button">Save</button></div>
 </dialog>
 
+<!-- Link a book to a recipe source (Release 6, step 4) -->
+<dialog id="dlg-link" aria-labelledby="lk-h">
+  <div class="dlg-head"><h2 id="lk-h">Link to a recipe source</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body" id="lk-body"></div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Cancel</button></div>
+</dialog>
+
+<!-- Match a source's recipes to a book's contents (Release 6, step 4) -->
+<dialog id="dlg-match" aria-labelledby="mt-h">
+  <div class="dlg-head"><h2 id="mt-h">Match your recipes</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
+  <div class="dlg-body" id="mt-body"></div>
+  <div class="dlg-foot"><button class="btn" data-close type="button">Not now</button><button id="mt-save" class="btn primary" type="button">Link ticked recipes</button></div>
+</dialog>
+
 <!-- One contents entry (Release 6, step 3) -->
 <dialog id="dlg-entry" aria-labelledby="en-h">
   <div class="dlg-head"><h2 id="en-h">Edit recipe</h2><button class="btn icon ghost" data-close type="button" aria-label="Close">&#10005;</button></div>
@@ -903,6 +935,7 @@ window.RECIPE_CONFIG = {
       <div class="field"><label for="en-main">Main ingredient</label><select id="en-main" class="field-select"></select></div>
     </div>
     <p id="en-guess" class="hint" hidden></p>
+    <div id="en-link" class="en-link" hidden></div>
     <p id="en-msg" class="msg err" hidden></p>
   </div>
   <div class="dlg-foot"><button id="en-del" class="btn danger left" type="button">Delete</button><button class="btn" data-close type="button">Cancel</button><button id="en-save" class="btn primary" type="button">Save</button></div>
@@ -952,8 +985,8 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '6.0';
-const BUILD = 'R6 step 3.1 (test)';
-const DATA_VERSION = 6;
+const BUILD = 'R6 step 4 (test)';
+const DATA_VERSION = 7;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
 const MAX_DATA_VERSION = DATA_VERSION;
@@ -1148,6 +1181,14 @@ function fixSources(d,addHomemade){
   const seen=new Set();
   d.sources=(Array.isArray(d.sources)?d.sources:[]).filter(s=>s && s.id && !seen.has(String(s.id)) && seen.add(String(s.id)))
     .map(s=>Object.assign({},s,{id:String(s.id),name:String(s.name||'Untitled source'),kind:SOURCE_KINDS.includes(s.kind)?s.kind:'Other',author:String(s.author||''),notes:String(s.notes||''),coverPhoto:String(s.coverPhoto||'')}));
+  /* Format 7: a Book source may link to a Bookshelf book with bookId. Only Book sources keep it,
+     and each book links to one source (the first one wins). Sources without a link are left alone. */
+  const linked=new Set();
+  d.sources.forEach(s=>{
+    if(!('bookId' in s)) return;
+    const b=String(s.bookId||'');
+    if(s.kind!=='Book' || !b || linked.has(b)) delete s.bookId; else { s.bookId=b; linked.add(b); }
+  });
   const on=d.sources.find(s=>s.id===ONLINE_ID);
   if(on) Object.assign(on,{name:'Online',kind:'Online',builtIn:true});
   else d.sources.unshift({id:ONLINE_ID,name:'Online',kind:'Online',author:'',notes:'',builtIn:true});
@@ -1463,6 +1504,13 @@ function applyOp(d,op){
       (op.order||[]).forEach(id=>{ const p=ps.find(x=>x.id===id); if(p && !out.includes(p)) out.push(p); });
       ps.forEach(p=>{ if(!out.includes(p)) out.push(p); });
       out.forEach((p,i)=>{ p.order=i; }); r.photos=out; break;
+    }
+    case 'sourceLink': {
+      const x=(d.sources||[]).find(y=>y.id===op.id); if(!x || x.kind!=='Book') break;
+      const b=String(op.bookId||'');
+      if(b) d.sources.forEach(y=>{ if(y!==x && y.bookId===b) delete y.bookId; });
+      if(b) x.bookId=b; else delete x.bookId;
+      break;
     }
     case 'sourceCover': { const x=(d.sources||[]).find(y=>y.id===op.id); if(x && x.id!==ONLINE_ID) x.coverPhoto=String(op.path||''); break; }
     case 'photoDel': { const r=find(op.id); if(r) r.photos=(r.photos||[]).filter(p=>p.id!==op.pid); break; }
@@ -1935,6 +1983,7 @@ function render(){
       '<span class="item-meta">'+(r.rating?'<span class="stars" aria-label="'+r.rating+' stars">'+stars(r.rating)+'</span>':'')+esc(meta)+'</span>'+
       '</button></li>';
   }).join(''):'<li class="empty">'+(total?'No recipes match. Try fewer words or remove a filter.':(canEdit()?'No recipes yet. Tap Add or Import to start.':'No recipes yet.'))+'</li>';
+  renderCbHint();
   renderDetail();
   loadThumbs();
 }
@@ -2306,10 +2355,23 @@ function applyShelfOp(d,op){
       break;
     }
     case 'entryDel': { const b=find(op.id); if(b) b.entries=(b.entries||[]).filter(x=>x.id!==op.eid); break; }
+    /* Links from entries to recipe families (step 4). One entry per family within a book. */
+    case 'entriesLink': {
+      const b=find(op.id); if(!b) break;
+      (op.links||[]).forEach(l=>{
+        const e=(b.entries||[]).find(x=>x.id===l.eid); if(!e) return;
+        const fid=String(l.familyId||'');
+        if(fid) b.entries.forEach(x=>{ if(x!==e && x.familyId===fid) delete x.familyId; });
+        if(fid) e.familyId=fid; else delete e.familyId;
+      });
+      break;
+    }
     case 'chaptersSet': { const b=find(op.id); if(!b) break; b.chapters=mergeChapters([],op.chapters||[]); if(!b.chapters.length) delete b.chapters; fillChapters(b); break; }
   }
   return d;
 }
+/* Book covers and contents also show on the Recipes side (shared covers, the cookbooks line) */
+function shelfChanged(){ if(section()==='bookshelf') renderShelf(); else render(); }
 function shelfSaveCache(){ ls.set('shelfCache'+SK,{db:shelf.db}); }
 function shelfLoad(){
   const c=ls.get('shelfCache'+SK,null);
@@ -2320,7 +2382,7 @@ function shelfEditable(){ return !shelf.locked && !state.locked && !ls.get('view
 function shelfCommit(ops){
   if(shelf.locked || state.locked){ toast('Update this app before editing'); return false; }
   ops.forEach(op=>{ applyShelfOp(shelf.db,op); shelf.queue.push(op); });
-  ls.set('shelfQueue'+SK,shelf.queue); shelfSaveCache(); renderShelf(); shelfFlush();
+  ls.set('shelfQueue'+SK,shelf.queue); shelfSaveCache(); shelfChanged(); shelfFlush();
   return true;
 }
 function shelfStatus(kind,msg){ shelf.sync={kind,msg}; renderSync(); if(kind==='error' && msg && section()==='bookshelf') toast(msg); }
@@ -2340,7 +2402,7 @@ async function shelfPull(){
     if(shelf.locked){ shelf.locked=null; }
     const base=r.notFound?emptyShelf():normShelf(clone(r.data)).d;
     shelf.queue.forEach(op=>applyShelfOp(base,op));
-    shelf.db=base; shelf.loaded=true; shelfSaveCache(); renderShelf(); shelf.lastPull=Date.now();
+    shelf.db=base; shelf.loaded=true; shelfSaveCache(); shelfChanged(); shelf.lastPull=Date.now();
     shelfPulling=false;
     if(shelf.queue.length) await shelfFlush(); else shelfStatus('saved');
   }catch(e){ shelfError(e); }
@@ -2364,7 +2426,7 @@ async function shelfFlush(){
       if(up.conflict) continue;
       shelf.queue=shelf.queue.slice(n); ls.set('shelfQueue'+SK,shelf.queue);
       const local=clone(base); shelf.queue.forEach(op=>applyShelfOp(local,op));
-      shelf.db=local; shelf.loaded=true; shelfSaveCache(); renderShelf(); shelf.lastPull=Date.now();
+      shelf.db=local; shelf.loaded=true; shelfSaveCache(); shelfChanged(); shelf.lastPull=Date.now();
       done=true; again=shelf.queue.length>0;
     }
     if(!done) shelfStatus('error','The bookshelf file kept changing while saving. Tap to try again.');
@@ -2407,6 +2469,7 @@ function shelfLockHtml(){
     (shelf.queue.length?shelf.queue.length+' unsaved change'+(shelf.queue.length>1?'s are':' is')+' kept on this device. ':'')+'Close the app fully and open it again to load the update.</div>';
 }
 function renderShelf(){
+  renderCbHint();
   const pane=$('#shelf'); if(!pane || section()!=='bookshelf') return;
   const ed=shelfEditable(), top=pane.scrollTop;
   /* Keep typing in a search box going if a sync redraws the screen */
@@ -2417,11 +2480,12 @@ function renderShelf(){
   if(b){
     const n=(b.entries||[]).length, nc=(b.chapters||[]).length, facts=[];
     if(b.isbn) facts.push('<span>ISBN '+esc(b.isbn)+'</span>');
-    facts.push('<span>'+(n?n+' recipe'+(n>1?'s':'')+' listed':'No recipes listed yet')+(nc?', '+nc+' chapter'+(nc>1?'s':''):'')+'</span>');
+    const ni=(b.entries||[]).filter(entryImported).length;
+    facts.push('<span>'+(n?n+' recipe'+(n>1?'s':'')+' listed':'No recipes listed yet')+(nc?', '+nc+' chapter'+(nc>1?'s':''):'')+(ni?', '+ni+' in your recipes':'')+'</span>');
     if(b.addedAt) facts.push('<span>Added '+esc(fmtDate(String(b.addedAt).slice(0,10)))+'</span>');
     h+='<div class="bookpage"><button type="button" class="btn ghost" data-shelf="back" style="margin-left:-10px">‹ Bookshelf</button>'+
       '<div class="bk-top">'+bookCoverHtml(b)+'<div><h2>'+esc(b.title)+'</h2>'+(b.author?'<p class="bk-by">'+esc(b.author)+'</p>':'')+
-      '<p class="bk-facts">'+facts.join('')+'</p>'+(b.notes?'<p class="bk-notes">'+esc(b.notes)+'</p>':'')+
+      '<p class="bk-facts">'+facts.join('')+'</p>'+(b.notes?'<p class="bk-notes">'+esc(b.notes)+'</p>':'')+bookLinkHtml(b,ed)+
       (ed?'<div class="stack"><button type="button" class="btn" data-shelf="edit">Edit book</button><button type="button" class="btn danger" data-shelf="delete">Delete book</button></div>':'')+
       '</div></div><section class="bk-contents"><div class="ct-head"><h3>Contents</h3><span class="n">'+(n?n+' recipe'+(n>1?'s':''):'')+'</span></div>'+
       (ed||n?'<div class="ct-tools" style="margin-top:12px">'+(n?'<input id="bk-q" class="search" type="search" placeholder="Search this book" autocomplete="off" value="'+esc(shelf.bq||'')+'">':'')+
@@ -2645,6 +2709,7 @@ function openEntry(bid,eid){
   const g=[]; if(e && e.course && e.courseGuessed) g.push('course'); if(e && e.mainIngredient && e.mainIngredientGuessed) g.push('main ingredient');
   $('#en-guess').textContent=g.length?'The '+g.join(' and ')+' '+(g.length>1?'were':'was')+' guessed by the AI. Changing '+(g.length>1?'either':'it')+' marks it as checked.':''; $('#en-guess').hidden=!g.length;
   $('#en-del').hidden=!e; enMsg('');
+  $('#en-link').hidden=!e; $('#en-link').innerHTML=e?entryLinkHtml(b,e):'';
   $('#dlg-entry').showModal(); setTimeout(()=>$('#en-title').focus(),60);
 }
 function saveEntry(){
@@ -2707,7 +2772,8 @@ function tagLabel(e){
   return bits.length?'<span class="eg">'+bits.join(', ')+'</span>':'';
 }
 function entryRow(b,e,clickable){
-  const inner='<span class="et">'+esc(e.title)+'</span><span class="ep">'+(e.page?'p. '+esc(e.page):'')+'</span>'+tagLabel(e);
+  const imp=entryImported(e); if(imp) clickable=true;
+  const inner='<span class="et">'+esc(e.title)+(imp?'<span class="imp" title="In your recipes" aria-label="In your recipes">✓</span>':'')+'</span><span class="ep">'+(e.page?'p. '+esc(e.page):'')+'</span>'+tagLabel(e);
   const tag=clickable?'button':'div';
   return '<li><'+tag+(tag==='button'?' type="button"':'')+' class="ent" data-entry="'+esc(e.id)+'" data-bid="'+esc(b.id)+'">'+inner+'</'+tag+'></li>';
 }
@@ -2767,6 +2833,154 @@ function chipRow(g,label){
   const sorted=Array.from(vals).sort((a,b)=>{ const x=order.indexOf(a), y=order.indexOf(b); return (x<0?999:x)-(y<0?999:y) || a.localeCompare(b); });
   const sel=shelfChips()[g];
   return '<div class="chips"><span class="lbl">'+esc(label)+'</span>'+sorted.map(v=>'<button type="button" class="fchip" data-chip="'+g+'" data-v="'+esc(v)+'" aria-pressed="'+sel.has(v)+'">'+esc(v)+'</button>').join('')+'</div>';
+}
+
+/* ── Bookshelf and recipes, linked (step 4) ─────────── */
+/* A Book source can link to one Bookshelf book (source.bookId, recipe file format 7).
+   An entry links to a recipe family with entry.familyId (bookshelf file). "Imported" is worked out
+   from familyId pointing to a family that still exists, so deleting a recipe unlinks it. */
+function bookById(id){ return id?shelf.db.books.find(b=>b.id===id)||null:null; }
+function bookOfSource(x){ return x && x.kind==='Book' && x.bookId?bookById(x.bookId):null; }
+function linkedSource(bid){ return (state.db.sources||[]).find(x=>x.kind==='Book' && x.bookId===bid && bookById(x.bookId))||null; }
+function srcCover(x){ if(!x || x.kind!=='Book') return ''; if(x.coverPhoto) return x.coverPhoto; const b=bookOfSource(x); return b&&b.cover||''; }
+function famExists(fid){ return !!fid && state.db.recipes.some(r=>r.familyId===fid); }
+function entryImported(e){ return famExists(e && e.familyId); }
+function familyDefault(fid){ const f=(state.db.families||{})[fid]; const r=f&&state.db.recipes.find(x=>x.id===f.defaultId); return r||state.db.recipes.find(x=>x.familyId===fid)||null; }
+function openRecipeFamily(fid){ const r=familyDefault(fid); if(!r){ toast('That recipe has been deleted'); return; } if($('#dlg-entry').open) $('#dlg-entry').close(); setSection('recipes'); select(r.id); }
+function freeBookSources(bid){ return sourcesByKind('Book').filter(x=>!x.bookId || x.bookId===bid || !bookById(x.bookId)); }
+function titleSim(a,b){
+  const g=t=>{ const s=' '+normText(t).replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim()+' ', out=new Map(); for(let i=0;i<s.length-1;i++){ const k=s.slice(i,i+2); out.set(k,(out.get(k)||0)+1); } return out; };
+  const x=g(a), y=g(b); let n=0, tx=0, ty=0;
+  x.forEach(v=>tx+=v); y.forEach(v=>ty+=v);
+  x.forEach((v,k)=>{ n+=Math.min(v,y.get(k)||0); });
+  return tx+ty?2*n/(tx+ty):0;
+}
+function suggestSource(b){ const list=freeBookSources(b.id).filter(x=>!x.bookId); return list.find(x=>tkey(x.name)===tkey(b.title))||null; }
+function srcRecipeCount(sid){ return groups().filter(g=>g.def.sourceId===sid).length; }
+function bookLinkHtml(b,ed){
+  const x=linkedSource(b.id);
+  if(x){
+    const n=srcRecipeCount(x.id);
+    return '<div class="bk-link">In your recipes as the source <strong>'+esc(x.name)+'</strong>, '+(n?n+' recipe'+(n>1?'s':''):'no recipes yet')+'.'+
+      (ed?'<div class="stack">'+(n && (b.entries||[]).length?'<button type="button" class="btn" data-shelf="match">Match recipes</button>':'')+'<button type="button" class="btn" data-shelf="unlink">Unlink</button></div>':'')+'</div>';
+  }
+  if(!ed) return '';
+  const sg=suggestSource(b);
+  if(sg) return '<div class="bk-link suggest">Your recipes have a book source called <strong>'+esc(sg.name)+'</strong>. Link it to this book to share the cover and see which recipes you\'ve added.'+
+    '<div class="stack"><button type="button" class="btn primary" data-shelf="linkto" data-sid="'+esc(sg.id)+'">Link to '+esc(sg.name)+'</button><button type="button" class="btn" data-shelf="link">Choose another</button></div></div>';
+  return '<div class="bk-link">Not linked to a recipe source.<div class="stack"><button type="button" class="btn" data-shelf="link">Link to a source</button></div></div>';
+}
+function openLink(bid){
+  const b=bookById(bid); if(!b || !shelfEditable()) return;
+  const list=freeBookSources(bid).filter(x=>x.bookId!==bid).sort((a,c)=>titleSim(c.name,b.title)-titleSim(a.name,b.title)||a.name.localeCompare(c.name,'en-GB'));
+  $('#lk-h').textContent='Link "'+b.title+'"';
+  $('#lk-body').innerHTML='<p class="hint" style="margin:0 0 10px">Pick the recipe source for this book. A friend\'s book you\'ve borrowed recipes from should stay unlinked.</p>'+
+    (list.length?'<ul class="lk-list">'+list.map(x=>{ const n=srcRecipeCount(x.id); return '<li><button type="button" data-lk="'+esc(x.id)+'">'+esc(x.name)+'<span class="m">'+esc((x.author?x.author+', ':'')+(n?n+' recipe'+(n>1?'s':''):'no recipes'))+'</span></button></li>'; }).join('')+'</ul>':'<p class="muted">You have no other book sources.</p>')+
+    '<p style="margin:14px 0 0"><button type="button" class="btn" data-lk="__new">Create a source from this book</button></p>';
+  $('#dlg-link').showModal();
+}
+function linkBook(bid,sid,quiet){
+  const b=bookById(bid); if(!b || !shelfEditable()) return;
+  const ops=[];
+  if(sid==='__new'){
+    const same=sourcesByKind('Book').find(x=>tkey(x.name)===tkey(b.title));
+    if(same && (!same.bookId || !bookById(same.bookId))) sid=same.id;
+    else {
+      sid=srcId('Book',b.title); let n=2; while((state.db.sources||[]).some(x=>x.id===sid)) sid=srcId('Book',b.title)+'-'+(n++);
+      ops.push({t:'sourceSave',s:{id:sid,name:same?b.title+' (Bookshelf)':b.title,kind:'Book',author:b.author||'',notes:''}});
+    }
+  }
+  const old=linkedSource(bid); if(old && old.id!==sid) ops.push({t:'sourceLink',id:old.id,bookId:''});
+  ops.push({t:'sourceLink',id:sid,bookId:bid});
+  commitMany(ops);
+  if($('#dlg-link').open) $('#dlg-link').close();
+  renderShelf();
+  if(!quiet){ toast('Linked'); afterLink(sid,bid); }
+  return sid;
+}
+function unlinkBook(bid){
+  const x=linkedSource(bid); if(!x || !shelfEditable()) return;
+  if(!confirm('Unlink "'+x.name+'" from this book? Recipes already marked as added keep their marks.')) return;
+  commit({t:'sourceLink',id:x.id,bookId:''}); renderShelf(); toast('Unlinked');
+}
+/* After linking, offer to match the source's recipes to the book's contents */
+function afterLink(sid,bid){ const b=bookById(bid); if(b && (b.entries||[]).length && srcRecipeCount(sid)) setTimeout(()=>openMatch(bid),200); }
+function buildMatches(b,x){
+  const gs=groups().filter(g=>g.def.sourceId===x.id);
+  const linkedFams=new Set((b.entries||[]).filter(entryImported).map(e=>e.familyId));
+  const todo=gs.filter(g=>!linkedFams.has(g.fid)), free=(b.entries||[]).filter(e=>!entryImported(e));
+  const pairs=[];
+  todo.forEach(g=>{
+    const pn=pageNum(g.def.sourceRef);
+    free.forEach(e=>{
+      const sim=titleSim(g.def.title,e.title), samePage=!isNaN(pn) && pn===pageNum(e.page);
+      if(samePage || sim>=0.55) pairs.push({g,e,sim,samePage,score:(samePage?1:0)+sim});
+    });
+  });
+  pairs.sort((a,c)=>c.score-a.score);
+  const usedG=new Set(), usedE=new Set(), rows=[];
+  pairs.forEach(p=>{ if(usedG.has(p.g.fid) || usedE.has(p.e.id)) return; usedG.add(p.g.fid); usedE.add(p.e.id);
+    p.tick=p.samePage?p.sim>=0.3:p.sim>=0.8;
+    p.why=p.samePage?(p.sim>=0.3?'Same page':'Same page, but the titles differ'):'Similar title'+(p.g.def.sourceRef?', different page':'');
+    rows.push(p); });
+  rows.sort((a,c)=>a.g.def.title.localeCompare(c.g.def.title,'en-GB'));
+  return {rows,none:todo.filter(g=>!usedG.has(g.fid)),already:gs.length-todo.length};
+}
+let mtCtx=null;
+function openMatch(bid){
+  const b=bookById(bid), x=linkedSource(bid); if(!b || !x || !shelfEditable()) return;
+  const m=buildMatches(b,x); mtCtx={bid,rows:m.rows};
+  let h='<p style="margin:0 0 6px">Recipes from <strong>'+esc(x.name)+'</strong> matched to this book\'s contents, by page first and then by title. Untick any that are wrong.</p>';
+  if(m.already) h+='<p class="hint" style="margin:0 0 6px">'+m.already+' recipe'+(m.already>1?'s are':' is')+' already linked.</p>';
+  h+=m.rows.length?m.rows.map((p,i)=>'<label class="check mt-row"><input type="checkbox" data-mi="'+i+'"'+(p.tick?' checked':'')+'><span>'+esc(p.g.def.title)+(p.g.def.sourceRef?' <span class="muted">p. '+esc(p.g.def.sourceRef)+'</span>':'')+
+    '<span class="mt-arrow">→</span>'+esc(p.e.title)+(p.e.page?' <span class="muted">p. '+esc(p.e.page)+'</span>':'')+'<span class="why">'+esc(p.why)+'</span></span></label>').join(''):'<p class="muted">No matches found.</p>';
+  if(m.none.length) h+='<p class="hint" style="margin-top:12px">Not found in this book\'s contents: '+esc(m.none.map(g=>g.def.title).join(', '))+'. Leave '+(m.none.length>1?'them':'it')+', or add the missing entry with Add one recipe and tap Match recipes again.</p>';
+  $('#mt-body').innerHTML=h;
+  $('#mt-save').hidden=!m.rows.length;
+  $('#dlg-match').showModal();
+}
+function saveMatch(){
+  const c=mtCtx; if(!c) return;
+  const links=$$('#mt-body input[data-mi]').filter(i=>i.checked).map(i=>{ const p=c.rows[Number(i.dataset.mi)]; return {eid:p.e.id,familyId:p.g.fid}; });
+  if(!links.length){ $('#dlg-match').close(); return; }
+  if(shelfCommit([{t:'entriesLink',id:c.bid,links}])){ $('#dlg-match').close(); mtCtx=null; toast(links.length+' recipe'+(links.length>1?'s':'')+' linked'); }
+}
+/* Import a recipe straight from a contents entry: source and page are set, and saving links the entry */
+function importFromEntry(bid,eid){
+  const b=bookById(bid), e=b&&(b.entries||[]).find(x=>x.id===eid); if(!e) return;
+  if(!shelfEditable() || state.locked){ toast('Update this app before editing'); return; }
+  let x=linkedSource(bid);
+  const sid=x?x.id:linkBook(bid,suggestSource(b)?suggestSource(b).id:'__new',true);
+  if($('#dlg-match').open) $('#dlg-match').close();
+  if($('#dlg-entry').open) $('#dlg-entry').close();
+  openImport({entry:{bid,eid,sid,page:e.page||'',title:e.title}});
+  $('#imp-h').textContent='Import: '+e.title;
+}
+function entryLinkHtml(b,e){
+  if(entryImported(e)) return '<span class="imp" aria-hidden="true">✓</span> In your recipes.<div class="stack"><button type="button" class="btn" id="en-open">Open recipe</button><button type="button" class="btn" id="en-unlink">Unlink</button></div>';
+  return 'Not in your recipes yet.<div class="stack"><button type="button" class="btn" id="en-import">Import this recipe</button></div>';
+}
+/* "Also in your cookbooks" under recipe search results; entries already in your recipes aren't counted */
+function cookbookHits(q){
+  const words=qWords(q); if(!words.length) return 0;
+  let n=0; shelf.db.books.forEach(b=>(b.entries||[]).forEach(e=>{ if(!entryImported(e) && entryMatches(e,words)) n++; }));
+  return n;
+}
+function renderCbHint(){
+  const el=$('#cbhint'); if(!el) return;
+  const q=String(state.search||'').trim(), n=q?cookbookHits(q):0;
+  el.hidden=!n;
+  if(n) $('#cbhint-btn').textContent='Also in your cookbooks: '+n+' match'+(n>1?'es':'')+' ›';
+}
+function openCookbookSearch(){
+  shelf.book=null; shelf.q=String(state.search||''); shelf.chips=null;
+  setSection('bookshelf'); renderShelf(); $('#shelf').scrollTop=0;
+}
+function renderSeBooks(x){
+  const cur=x && x.bookId && bookById(x.bookId)?x.bookId:'';
+  const taken=new Set((state.db.sources||[]).filter(y=>y!==x && y.bookId && bookById(y.bookId)).map(y=>y.bookId));
+  const list=sortedBooks().filter(b=>b.id===cur || !taken.has(b.id));
+  $('#se-book').innerHTML='<option value="">Not on the Bookshelf</option>'+list.map(b=>'<option value="'+esc(b.id)+'"'+(b.id===cur?' selected':'')+'>'+esc(b.title)+(b.author?', '+esc(b.author):'')+'</option>').join('');
 }
 
 /* ── Add or edit a book (iPad) ──────────────────────── */
@@ -2863,8 +3077,9 @@ async function saveBook(){
 function deleteBook(id){
   const b=shelf.db.books.find(x=>x.id===id); if(!b || !shelfEditable()) return;
   if(!confirm('Delete "'+b.title+'" from your Bookshelf?'+(b.cover?' Its cover photo is deleted from Dropbox too.':'')+' Your recipes and sources aren\'t changed.')) return;
-  const cover=b.cover||'';
+  const cover=b.cover||'', ls0=linkedSource(id);
   if(!shelfCommit([{t:'bookDel',id}])) return;
+  if(ls0) commit({t:'sourceLink',id:ls0.id,bookId:''});
   if(cover){ cacheDel(thumbKey(cover)); cacheDel('f:'+cover); if(navigator.onLine) dbxDelete(cover).catch(e=>console.error(e)); }
   shelf.book=null; renderShelf();
   toast('Book deleted');
@@ -3184,7 +3399,7 @@ function openEdit(r,isNew,opts){
   opts=opts||{};
   const base=opts.versionOf?state.db.recipes.find(x=>x.id===opts.versionOf):null;
   editing={id:base?uid('r-'):(r.id||uid('r-')),isNew:!!isNew,created:base?new Date().toISOString():(r.created||new Date().toISOString()),
-    pv:base?{baseId:base.id}:null,importTime:r.time||'',importMinutes:r.timeMinutes||null};
+    pv:base?{baseId:base.id}:null,importTime:r.time||'',importMinutes:r.timeMinutes||null,linkEntry:opts.linkEntry||null};
   $('#edit-h').textContent=base?'New version':isNew?(opts.title||'New recipe'):'Edit recipe';
   $('#f-title').value=r.title||''; setupSrcFields(r);
   $('#f-serves').value=r.serves||''; $('#f-time').value=r.time||'';
@@ -3239,9 +3454,11 @@ function saveEdit(){
   } else {
     Object.assign(r,{familyId:r.id,parentId:null,versionNo:1,versionLabel:'Original',changeNote:'',archived:false,annotations:[]});
   }
-  const wasNew=!ex;
+  const wasNew=!ex, link=wasNew?editing.linkEntry:null;
   $('#dlg-edit').close(); editing=null;
   commitMany(src.ops.concat([{t:'upsert',r}]));
+  /* Imported from a Bookshelf entry: stay on the book, where the entry now shows its tick */
+  if(link){ shelfCommit([{t:'entriesLink',id:link.bid,links:[{eid:link.eid,familyId:r.familyId}]}]); state.selected=r.id; toast('Recipe added and ticked off in the book'); return; }
   select(r.id);
   toast(wasNew?'Recipe added':'Recipe saved');
 }
@@ -3538,6 +3755,16 @@ function runImport(){
     if(drafts.length>1) toast('Only the first recipe was used');
     return;
   }
+  if(impMode && impMode.entry){
+    const m=impMode.entry, d=drafts[0];
+    delete d.srcSpec; delete d.source;
+    d.sourceId=m.sid; d.sourceRef=m.page; d.siteName='';
+    if(!String(d.title||'').trim()) d.title=m.title;
+    impQueue=[]; impTotal=1;
+    openEdit(d,true,{title:'New recipe',linkEntry:{bid:m.bid,eid:m.eid}});
+    if(drafts.length>1) toast('Only the first recipe was used');
+    return;
+  }
   impQueue=drafts.slice(1); impTotal=drafts.length;
   openEdit(drafts[0],true,{title:impTotal>1?'New recipe (1 of '+impTotal+')':'New recipe'});
 }
@@ -3665,6 +3892,7 @@ function openSourceEdit(id){
   $('#se-h').textContent=x?'Edit source':'Add a source';
   $('#se-name').value=x?x.name:''; $('#se-author').value=x?x.author:''; $('#se-notes').value=x?x.notes:'';
   setSeg('#se-kind',x?x.kind:'Book');
+  renderSeBooks(x);
   renderSeCover();
   $('#se-namewrap').hidden=online; $('#se-kindwrap').hidden=online; $('#se-builtin').hidden=!online;
   syncSeKind();
@@ -3674,15 +3902,18 @@ function openSourceEdit(id){
 function syncSeKind(){
   const book=segVal('#se-kind')==='Book' && !(seCtx && seCtx.id===ONLINE_ID);
   $('#se-authwrap').hidden=!book; $('#se-coverwrap').hidden=!book;
+  $('#se-bookwrap').hidden=!book || !shelf.db.books.length;
 }
 /* Book cover photo: saved straight away (it needs a connection), separate from the Save button */
 function renderSeCover(){
   const c=seCtx, x=c&&c.id?(state.db.sources||[]).find(s=>s.id===c.id):null, has=!!(x && x.coverPhoto);
-  $('#se-coverimg').innerHTML=has?'<img data-thumb="'+esc(x.coverPhoto)+'" alt="Book cover">':'No cover';
+  const shared=!has && srcCover(x);
+  $('#se-coverimg').innerHTML=has?'<img data-thumb="'+esc(x.coverPhoto)+'" alt="Book cover">':shared?'<img data-thumb="'+esc(shared)+'" alt="Book cover from the Bookshelf">':'No cover';
   $('#se-coveradd').hidden=!x; $('#se-coverdel').hidden=!has;
   $('#se-coveradd').textContent=c&&c.busy?'Uploading…':has?'Replace cover photo':'Add cover photo';
   $('#se-coveradd').disabled=!!(c&&c.busy);
-  $('#se-coverhint').textContent=x?'Shown for this book\'s recipes until they have a dish photo. Cover changes are saved straight away.':'Save the source first, then add a cover photo.';
+  $('#se-coverhint').textContent=shared?'Using the cover from the Bookshelf. Add a photo here only if you want a different one for this source.':
+    x?'Shown for this book\'s recipes until they have a dish photo. Cover changes are saved straight away.':'Save the source first, then add a cover photo.';
   loadThumbs();
 }
 async function setSourceCover(sid,file){
@@ -3720,8 +3951,14 @@ function saveSourceEdit(){
   if(clash){ seMsg('There\'s already a '+kind.toLowerCase()+' source called "'+clash.name+'".'); return; }
   const id=c.id||srcId(kind,name);
   if(!c.id && (state.db.sources||[]).some(x=>x.id===id)){ seMsg('That source already exists.'); return; }
-  commit({t:'sourceSave',s:{id,name,kind,author:$('#se-author').value.trim(),notes:$('#se-notes').value.trim()}});
+  const ops=[{t:'sourceSave',s:{id,name,kind,author:$('#se-author').value.trim(),notes:$('#se-notes').value.trim()}}];
+  const was=c.id?(((state.db.sources||[]).find(x=>x.id===c.id)||{}).bookId||''):'';
+  const want=kind==='Book' && !$('#se-bookwrap').hidden?$('#se-book').value:was;
+  const relink=kind==='Book' && want!==was && (!want || shelf.db.books.some(b=>b.id===want));
+  if(relink) ops.push({t:'sourceLink',id,bookId:want});
+  commitMany(ops);
   $('#dlg-srcedit').close(); seCtx=null; toast(c.id?'Source saved':'Source added');
+  if(relink && want) afterLink(id,want);
   renderSourceManager(); if($('#dlg-srcview').open) renderSourceView();
   if(editing && $('#dlg-edit').open){ renderSrcPicker(); }
 }
@@ -3754,9 +3991,11 @@ function renderSourceView(){
   if(!x){ $('#dlg-srcview').close(); return; }
   const gs=groups().filter(g=>g.def.sourceId===x.id).sort((a,b)=>a.def.title.localeCompare(b.def.title,'en-GB',{sensitivity:'base'}));
   $('#sv-h').textContent=x.id===ONLINE_ID?'Online':x.name;
-  let h=(x.kind==='Book' && x.coverPhoto?'<div class="svcover"><img data-thumb="'+esc(x.coverPhoto)+'" alt="Book cover"></div>':'')+
+  const svc=srcCover(x), lb=bookOfSource(x);
+  let h=(svc?'<div class="svcover"><img data-thumb="'+esc(svc)+'" alt="Book cover"></div>':'')+
     '<p class="muted" style="margin:0">'+esc(x.id===ONLINE_ID?'Recipes from websites':x.kind+(x.author?' by '+x.author:''))+'</p>';
   if(x.notes) h+='<p class="notes" style="margin:0">'+esc(x.notes)+'</p>';
+  if(lb) h+='<p style="margin:0"><button type="button" class="linkbtn" data-svbook="'+esc(lb.id)+'">On your Bookshelf: '+esc(lb.title)+' ›</button></p>';
   h+=gs.length?'<ul class="srcrecipes">'+gs.map(g=>{
     const r=g.def, bits=[];
     if(x.kind==='Book' && r.sourceRef) bits.push('page '+r.sourceRef);
@@ -3827,7 +4066,7 @@ function photoSection(r,ed){
    Recipe pages are never used as covers. */
 function coverOf(r){
   const d=photosOf(r,'Dish')[0]; if(d) return {path:d.path,pid:d.id,book:false};
-  const x=srcOf(r); if(x && x.kind==='Book' && x.coverPhoto) return {path:x.coverPhoto,pid:null,book:true};
+  const x=srcOf(r), c=srcCover(x); if(c) return {path:c,pid:null,book:true};
   return null;
 }
 const THUMB_SIZE='w480h320';
@@ -4449,13 +4688,23 @@ function bind(){
   /* Bookshelf */
   $('#shelf').addEventListener('click',e=>{
     const en=e.target.closest('.ent[data-entry]');
-    if(en){ if(shelf.book===en.dataset.bid){ if(shelfEditable()) openEntry(en.dataset.bid,en.dataset.entry); } else openBookPage(en.dataset.bid,en.dataset.entry); return; }
+    if(en){
+      if(shelf.book===en.dataset.bid){
+        if(shelfEditable()) openEntry(en.dataset.bid,en.dataset.entry);
+        else { const b=bookById(en.dataset.bid), x=b&&(b.entries||[]).find(y=>y.id===en.dataset.entry); if(x && entryImported(x)) openRecipeFamily(x.familyId); }
+      } else openBookPage(en.dataset.bid,en.dataset.entry);
+      return;
+    }
     const bk=e.target.closest('[data-book]'); if(bk){ openBookPage(bk.dataset.book); return; }
     const chip=e.target.closest('[data-chip]');
     if(chip){ const set=shelfChips()[chip.dataset.chip], v=chip.dataset.v; set.has(v)?set.delete(v):set.add(v); chip.setAttribute('aria-pressed',String(set.has(v))); renderShelfResults(); return; }
     const a=e.target.closest('[data-shelf]'); if(!a) return;
     const act=a.dataset.shelf;
     if(act==='contents') openContents(shelf.book);
+    else if(act==='link') openLink(shelf.book);
+    else if(act==='linkto') linkBook(shelf.book,a.dataset.sid);
+    else if(act==='unlink') unlinkBook(shelf.book);
+    else if(act==='match') openMatch(shelf.book);
     else if(act==='entry') openEntry(shelf.book,null);
     else if(act==='chapters') openChapters(shelf.book);
     else if(act==='add') openBook(null);
@@ -4477,6 +4726,17 @@ function bind(){
   $('#en-del').addEventListener('click',deleteEntry);
   $('#en-title').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); saveEntry(); } });
   $('#ch-save').addEventListener('click',saveChapters);
+  $('#lk-body').addEventListener('click',e=>{ const b=e.target.closest('[data-lk]'); if(b) linkBook(shelf.book,b.dataset.lk); });
+  $('#mt-save').addEventListener('click',saveMatch);
+  $('#en-link').addEventListener('click',e=>{
+    const c=enCtx; if(!c) return;
+    const b=bookById(c.bid), x=b&&(b.entries||[]).find(y=>y.id===c.eid); if(!x) return;
+    if(e.target.closest('#en-open')) openRecipeFamily(x.familyId);
+    else if(e.target.closest('#en-import')) importFromEntry(c.bid,c.eid);
+    else if(e.target.closest('#en-unlink')){ if(shelfCommit([{t:'entriesLink',id:c.bid,links:[{eid:c.eid,familyId:''}]}])){ $('#en-link').innerHTML=entryLinkHtml(b,bookById(c.bid).entries.find(y=>y.id===c.eid)); toast('Unlinked'); } }
+  });
+  $('#cbhint-btn').addEventListener('click',openCookbookSearch);
+  $('#sv-body').addEventListener('click',e=>{ const b=e.target.closest('[data-svbook]'); if(b){ $('#dlg-srcview').close(); setSection('bookshelf'); openBookPage(b.dataset.svbook); } });
   $('#bk-lookup').addEventListener('click',runLookup);
   $('#bk-isbn').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); runLookup(); } });
   $('#bk-found').addEventListener('click',e=>{
