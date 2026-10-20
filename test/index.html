@@ -994,7 +994,7 @@ window.RECIPE_CONFIG = {
 'use strict';
 const CONFIG = window.RECIPE_CONFIG;
 const APP_VERSION = '6.0';
-const BUILD = 'R6 step 5 (test)';
+const BUILD = 'R6 step 5.1 (test)';
 const DATA_VERSION = 7;
 /* The newest file format this copy of the app can safely save. A file with a higher
    version was written by a newer app: this copy shows what it has cached and saves nothing. */
@@ -3222,7 +3222,7 @@ async function exportForMealPlanning(){
   const f=exportFiles(), files=[f.rec,f.csv];
   let canShare=false; try{ canShare=!!(navigator.canShare && navigator.canShare({files})); }catch(e){}
   if(canShare){
-    try{ await navigator.share({files,title:'Recipes and Bookshelf'}); toast('Exported'+(unsavedNote()?'.'+unsavedNote():'')); }
+    try{ await navigator.share({files}); /* files only: on iOS a title or text is saved as an extra .txt file */ toast('Exported'+(unsavedNote()?'.'+unsavedNote():'')); }
     catch(e){ if(e && e.name==='AbortError') return; console.error(e); saveExport(f.rec); setTimeout(()=>saveExport(f.csv),700); toast('Sharing didn\'t work, so both files were downloaded'); }
     return;
   }
